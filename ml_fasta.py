@@ -1,6 +1,5 @@
 #Creates a list of the sequence ids from input fasta file "skrev det här"
 def rd_ids (fa_file):
-    fa_file
     id_list = []
     for line in fa_file:
         if line.startswith('>'):
