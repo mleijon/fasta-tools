@@ -1,4 +1,4 @@
-#Creates a list of the sequence ids from input fasta file "skrev det här"
+#Creates a list of the sequence ids from input fasta file
 def rd_ids (fa_file):
     id_list = []
     for line in fa_file:
