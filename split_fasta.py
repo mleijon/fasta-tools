@@ -6,7 +6,7 @@ from fasta import FastaList
 class SpadesFasta(FastaList):
     """docstring for ."""
     def __init__(self, spades_file):
-        FastaList_init_(self,spades_file)
+        super(SpadesFasta,self).__init__(spades_file)
         t = []
         seq_pars = dict()
         self.seq_par_list = []
@@ -96,11 +96,11 @@ try:
     binf = open(args.b)
 except:
     sys.exit('input file error')
-#try:
-write_filtered_fa(binf)
-#except:
-binf.close()
-#sys.exit('error writing file')
+try:
+    write_filtered_fa(binf)
+except:
+    binf.close()
+    sys.exit('error writing file')
 if args.p and spades_file(finf):
     if '.' in args.f:
         name = args.f[:args.f.find('.')]+'.par'
