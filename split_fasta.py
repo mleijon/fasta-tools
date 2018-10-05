@@ -13,6 +13,12 @@ def rd_par_fas(fa_file):
             seq_par_list.append(seq_pars)
     return seq_par_list
 
+def countlines(infile):
+    with open(infile) as f:
+        for count, element in enumerate(f,1):
+            pass
+    return count
+
 #Creates dictionary of blast *no hits* ids
 def rd_ids_bla(bla_file):
     global nr_rmd
