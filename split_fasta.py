@@ -13,13 +13,6 @@ def rd_par_fas(fa_file):
             seq_par_list.append(seq_pars)
     return seq_par_list
 
-#counts the rows in infile
-def countlines(infile):
-    with infile as f:
-        for count, element in enumerate(f,1):
-            pass
-    return count
-
 #Creates dictionary of blast *no hits* ids
 def rd_ids_bla(bla_file):
     global nr_rmd
@@ -40,15 +33,13 @@ def rd_ids_bla(bla_file):
 def write_filtered_fa(fasta_in, blast_in):
     fil_fa = open('hits_'+args.f,'w')
     fil_re = open('nohits_'+args.f,'w')
-    fasta_in_seqs = rd_seqs(fasta_in)
-    fasta_in_seqids = rd_ids(fasta_in)
     fasta_exclude = rd_ids_bla(blast_in)
     j = 0
-    for ids in fasta_in_seqids:
+    for ids in fastalst.id_list:
         if ids not in fasta_exclude:
-            fil_fa.write(fasta_in_seqs[j])
+            fil_fa.write(fastalst.seq_list[j])
         else:
-            fil_re.write(fasta_in_seqs[j])
+            fil_re.write(fastalst.seq_list[j])
         j+=1
     fil_fa.close()
     fil_re.close()
@@ -87,7 +78,7 @@ def write_parfile (fa_file,fipa,inpname):
 import linecache
 import argparse
 import sys
-from ml_fasta import rd_ids, rd_seqs
+from fasta import FastaList
 parser = argparse.ArgumentParser(description='Split input fasta file based on existence of blast hits in input blast table file')
 parser.add_argument('-p',action='store_true',help='switch for parameter file output')
 parser.add_argument('-f',type = str,help='fastafile')
@@ -95,6 +86,7 @@ parser.add_argument('-b',type = str,help='blastfile')
 args = parser.parse_args()
 try:
     finf = open(args.f)
+    fastalst = FastaList(finf)
 except:
     sys.exit('input file error')
 try:
@@ -117,7 +109,7 @@ if args.p and spades_file(finf):
     fihi = open('hits_'+args.f)
     write_parfile(fihi,fipa,'hits_'+args.f)
     finf.seek(0)
-    percent_remove = round(100*nr_rmd/len(rd_seqs(finf)),0)
+    percent_remove = round(100*nr_rmd/len(fastalst.seq_list),0)
     fipa.write('%d sequences removed (%g%%)' % (nr_rmd,percent_remove))
     fipa.close()
     fihi.close()

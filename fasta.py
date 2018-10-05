@@ -1,11 +1,11 @@
 class FastaList(object):
     """docstring for fasta."""
-    def __init__(self, fa_file):
+    def __init__(self, fastafile):
         seq_list = []
         id_list = []
         newseq = ''
         first = True
-        for line in fa_file:
+        for line in fastafile:
             if line.startswith('>'):
                 id_list.append(line[1:].strip())
                 if not first:
