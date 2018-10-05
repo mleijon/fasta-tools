@@ -13,6 +13,7 @@ def rd_par_fas(fa_file):
             seq_par_list.append(seq_pars)
     return seq_par_list
 
+#counts the rows in infile
 def countlines(infile):
     with infile as f:
         for count, element in enumerate(f,1):
@@ -29,10 +30,8 @@ def rd_ids_bla(bla_file):
     for line in bla_file:
         j+=1
         if line.strip() == no_hit:
-            linelist.append(j-6)
-    for linenr in linelist:
-        no_hits[linecache.getline(args.b,linenr).strip()[7:]] = linenr
-    nr_rmd = len(linelist)
+            no_hits[linecache.getline(args.b,j-6).strip()[7:]] = j-6
+    nr_rmd = len(no_hits)
     linecache.clearcache()
     bla_file.seek(0)
     return no_hits
