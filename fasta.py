@@ -1,4 +1,4 @@
-class fasta(object):
+class FastaList(object):
     """docstring for fasta."""
     def __init__(self, fa_file):
         seq_list = []
