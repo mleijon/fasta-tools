@@ -6,6 +6,7 @@ from fasta import FastaList
 class SpadesFasta(FastaList):
     """docstring for ."""
     def __init__(self, spades_file):
+        FastaList_init_(self,spades_file)
         t = []
         seq_pars = dict()
         self.seq_par_list = []
