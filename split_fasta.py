@@ -14,7 +14,7 @@ def rd_par_fas(fa_file):
     return seq_par_list
 
 def countlines(infile):
-    with open(infile) as f:
+    with infile as f:
         for count, element in enumerate(f,1):
             pass
     return count
@@ -126,5 +126,6 @@ elif args.p:
     fipa = open('par_'+args.f,'w')
     fipa.write('No parameters, not a contigs fasta file created by spades.')
     fipa.close()
+print(countlines(binf))
 finf.close()
 binf.close()
