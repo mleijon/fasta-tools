@@ -2,16 +2,18 @@
 
 #Creates a list of dictionaries of the sequence parameters assuming SPADES (http://cab.spbu.ru/software/spades/) contigs
 # NODE (the sequence number), length (length of sequence), cov (read coverage of the contig)
-def rd_par_fas(fa_file):
-    t = []
-    seq_pars = dict()
-    seq_par_list = []
-    for line in fa_file:
-        if line.startswith('>'):
-            t = line.split('_')
-            seq_pars ={t[0][1:]:int(t[1]),t[2]:int(t[3]),t[4]:float(t[5])}
-            seq_par_list.append(seq_pars)
-    return seq_par_list
+from fasta import FastaList
+class SpadesFasta(FastaList):
+    """docstring for ."""
+    def __init__(self, spades_file):
+        t = []
+        seq_pars = dict()
+        self.seq_par_list = []
+        for line in spades_file:
+            if line.startswith('>'):
+                t = line.split('_')
+                seq_pars ={t[0][1:]:int(t[1]),t[2]:int(t[3]),t[4]:float(t[5])}
+                self.seq_par_list.append(seq_pars)
 
 #Creates dictionary of blast *no hits* ids
 def rd_ids_bla(bla_file):
@@ -30,7 +32,7 @@ def rd_ids_bla(bla_file):
     return no_hits
 
 # Write filtered fasta file not including sequeces with no blast hits
-def write_filtered_fa(fasta_in, blast_in):
+def write_filtered_fa(blast_in):
     fil_fa = open('hits_'+args.f,'w')
     fil_re = open('nohits_'+args.f,'w')
     fasta_exclude = rd_ids_bla(blast_in)
@@ -46,7 +48,7 @@ def write_filtered_fa(fasta_in, blast_in):
 
 #Check if the file appears to be created by Spades
 def spades_file(fa_file):
-    parameters = rd_par_fas(fa_file)
+    parameters = fastalst.seq_par_list
     for i in range(len(parameters)):
         if 'NODE' not in parameters[i]:
             return False
@@ -59,7 +61,7 @@ def spades_file(fa_file):
 
 #Writes a parameter file based on the ID-string created by Spades and som other parameters
 def write_parfile (fa_file,fipa,inpname):
-    parameters = rd_par_fas(fa_file)
+    parameters = fastalst.seq_par_list
     nr_of_contigs = len(parameters)
     sum_of_cov = 0
     sum_of_len = 0
@@ -86,19 +88,18 @@ parser.add_argument('-b',type = str,help='blastfile')
 args = parser.parse_args()
 try:
     finf = open(args.f)
-    fastalst = FastaList(finf)
+    fastalst = SpadesFasta(finf)
 except:
     sys.exit('input file error')
 try:
     binf = open(args.b)
 except:
     sys.exit('input file error')
-try:
-    write_filtered_fa(finf,binf)
-except:
-    finf.close()
-    binf.close()
-    sys.exit('error writing file')
+#try:
+write_filtered_fa(binf)
+#except:
+binf.close()
+#sys.exit('error writing file')
 if args.p and spades_file(finf):
     if '.' in args.f:
         name = args.f[:args.f.find('.')]+'.par'
@@ -117,6 +118,5 @@ elif args.p:
     fipa = open('par_'+args.f,'w')
     fipa.write('No parameters, not a contigs fasta file created by spades.')
     fipa.close()
-print(countlines(binf))
 finf.close()
 binf.close()
