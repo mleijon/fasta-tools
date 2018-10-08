@@ -17,12 +17,12 @@ class spadesFa(FastaList):
                 t = line.split('_')
                 seqPar ={t[0][1:]:int(t[1]),t[2]:int(t[3]),t[4]:float(t[5])}
                 self.seqParLst.append(seqPar)
-        self.nr_of_contigs = len(self.seqParLst)
+        self.nrOfContig = len(self.seqParLst)
         for i in range(len(self.seqParLst)):
             sumCov += self.seqParLst[i]['cov']
             sumLen += self.seqParLst[i]['length']
-        self.aver_length = round(sumLen/self.nr_of_contigs,0)
-        self.aver_cov = round(sumCov/self.nr_of_contigs,0)
+        self.avLen = round(sumLen/self.nrOfContig,0)
+        self.avCov = round(sumCov/self.nrOfContig,0)
         self.is_spadesFa = True
         for i in range(len(self.seqParLst)):
             if 'NODE' not in self.seqParLst[i]:
@@ -35,13 +35,13 @@ class spadesFa(FastaList):
 #Writes a parameter file based on the ID-string created by Spades and some other parameters
     def wrPar2File(self,parfile,inpname):
             parfile.write('Parameters for: '+inpname+'\n\n')
-            parfile.write('Number of contigs: %d\n' % self.nr_of_contigs)
-            parfile.write('Average contig length: %d\n' % self.aver_length)
-            parfile.write('Average contig coverage: %d\n' % self.aver_cov)
+            parfile.write('Number of contigs: %d\n' % self.nrOfContig)
+            parfile.write('Average contig length: %d\n' % self.avLen)
+            parfile.write('Average contig coverage: %d\n' % self.avCov)
             parfile.write('_________________________________________\n\n')
 
 #Creates dictionary of blast *no hits* ids
-def rd_ids_bla(bla_file):
+def NoBlastHit(bla_file):
     global nr_rmd       #nr of contigs removed
     no_hit = '***** No hits found ******'
     linelist = []
@@ -60,7 +60,7 @@ def rd_ids_bla(bla_file):
 def wrFiltFa(blast_in):
     fil_fa = open('hits_'+args.f,'w')
     fil_re = open('nohits_'+args.f,'w')
-    fasta_exclude = rd_ids_bla(blast_in)
+    fasta_exclude = NoBlastHit(blast_in)
     j = 0
     for ids in faLst.id_list:
         if ids not in fasta_exclude:
