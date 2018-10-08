@@ -44,7 +44,8 @@ class blastTbl(object):
     def __init__(self, inFile):
         super(blastTbl, self).__init__()
         self.noHits = self.noBlastHit(inFile)
-        self.nrNoHits = len(self.noBlastHit(inFile))
+        self.nrNoHits = len(self.noHits)
+        
 #Creates dictionary of blast *no hits* ids
     def noBlastHit(self,inFile):
         no_hit = '***** No hits found ******'
@@ -55,13 +56,11 @@ class blastTbl(object):
             j+=1
             if line.strip() == no_hit:
                 no_hits[linecache.getline(args.b,j-6).strip()[7:]] = j-6
-        nr_rmd = len(no_hits)
         linecache.clearcache()
-        inFile.seek(0)
         return no_hits
 
 # Write filtered fasta file not including sequeces with no blast hits
-def wrFiltFa():
+def WrFiles():
     try:
         fil_fa = open('hits_'+args.f,'w')
         fil_re = open('nohits_'+args.f,'w')
@@ -96,9 +95,7 @@ def wrFiltFa():
         fipa.close()
 
 #Main
-import linecache
-import argparse
-import sys
+import linecache; import argparse; import sys
 parser = argparse.ArgumentParser(description='Split input fasta file based on existence of blast hits in input blast table file')
 parser.add_argument('-p',action='store_true',help='switch for parameter file output')
 parser.add_argument('-f',type = str,help='fastafile')
@@ -111,6 +108,6 @@ except:
     sys.exit('input file error')
 faLst = spadesFa(finf)
 blLst = blastTbl(binf)
-wrFiltFa()
+WrFiles()
 finf.close()
 binf.close()
