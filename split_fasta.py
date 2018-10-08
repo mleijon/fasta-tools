@@ -7,8 +7,7 @@ class spadesFa(FastaList):
     """docstring for ."""
     def __init__(self, spades_file):
         super(spadesFa,self).__init__(spades_file)
-        sumCov = 0
-        sumLen = 0
+        sumCov = 0; sumLen = 0
         t = []
         seqPar = dict()
         self.seqParLst = []
@@ -40,42 +39,66 @@ class spadesFa(FastaList):
             parfile.write('Average contig coverage: %d\n' % self.avCov)
             parfile.write('_________________________________________\n\n')
 
+class blastTbl(object):
+    """docstring for blastTbl."""
+    def __init__(self, inFile):
+        super(blastTbl, self).__init__()
+        self.noHits = self.noBlastHit(inFile)
+        self.nrNoHits = len(self.noBlastHit(inFile))
 #Creates dictionary of blast *no hits* ids
-def NoBlastHit(bla_file):
-    global nr_rmd       #nr of contigs removed
-    no_hit = '***** No hits found ******'
-    linelist = []
-    no_hits = dict()
-    j = 0
-    for line in bla_file:
-        j+=1
-        if line.strip() == no_hit:
-            no_hits[linecache.getline(args.b,j-6).strip()[7:]] = j-6
-    nr_rmd = len(no_hits)
-    linecache.clearcache()
-    bla_file.seek(0)
-    return no_hits
+    def noBlastHit(self,inFile):
+        no_hit = '***** No hits found ******'
+        linelist = []
+        no_hits = dict()
+        j = 0
+        for line in inFile:
+            j+=1
+            if line.strip() == no_hit:
+                no_hits[linecache.getline(args.b,j-6).strip()[7:]] = j-6
+        nr_rmd = len(no_hits)
+        linecache.clearcache()
+        inFile.seek(0)
+        return no_hits
 
 # Write filtered fasta file not including sequeces with no blast hits
-def wrFiltFa(blast_in):
-    fil_fa = open('hits_'+args.f,'w')
-    fil_re = open('nohits_'+args.f,'w')
-    fasta_exclude = NoBlastHit(blast_in)
+def wrFiltFa():
+    try:
+        fil_fa = open('hits_'+args.f,'w')
+        fil_re = open('nohits_'+args.f,'w')
+    except:
+        sys.exit('error writing file')
     j = 0
     for ids in faLst.id_list:
-        if ids not in fasta_exclude:
+        if ids not in blLst.noHits:
             fil_fa.write(faLst.seq_list[j])
         else:
             fil_re.write(faLst.seq_list[j])
         j+=1
     fil_fa.close()
     fil_re.close()
+    if args.p and faLst.is_spadesFa:
+        if '.' in args.f:
+            name = args.f[:args.f.find('.')]+'.par'
+            fipa = open(name,'w')
+        else:
+            fipa = open(args.f+'.par','w')
+        faLst.wrPar2File(fipa,args.f)
+        fihi = open('hits_'+args.f)
+        faHitLst = spadesFa(fihi)
+        faHitLst.wrPar2File(fipa,'hits_'+args.f)
+        percent_remove = round(100*blLst.nrNoHits/len(faLst.seq_list),0)
+        fipa.write('%d sequences removed (%g%%)\n' % (blLst.nrNoHits,percent_remove))
+        fipa.close()
+        fihi.close()
+    elif args.p:
+        fipa = open('par_'+args.f,'w')
+        fipa.write('No parameters, not a contigs fasta file created by spades.')
+        fipa.close()
 
 #Main
 import linecache
 import argparse
 import sys
-from fasta import FastaList
 parser = argparse.ArgumentParser(description='Split input fasta file based on existence of blast hits in input blast table file')
 parser.add_argument('-p',action='store_true',help='switch for parameter file output')
 parser.add_argument('-f',type = str,help='fastafile')
@@ -87,28 +110,7 @@ try:
 except:
     sys.exit('input file error')
 faLst = spadesFa(finf)
-try:
-    wrFiltFa(binf)
-except:
-    binf.close()
-    sys.exit('error writing file')
-if args.p and faLst.is_spadesFa:
-    if '.' in args.f:
-        name = args.f[:args.f.find('.')]+'.par'
-        fipa = open(name,'w')
-    else:
-        fipa = open(args.f+'.par','w')
-    faLst.wrPar2File(fipa,args.f)
-    fihi = open('hits_'+args.f)
-    faHitLst = spadesFa(fihi)
-    faHitLst.wrPar2File(fipa,'hits_'+args.f)
-    percent_remove = round(100*nr_rmd/len(faLst.seq_list),0)
-    fipa.write('%d sequences removed (%g%%)' % (nr_rmd,percent_remove))
-    fipa.close()
-    fihi.close()
-elif args.p:
-    fipa = open('par_'+args.f,'w')
-    fipa.write('No parameters, not a contigs fasta file created by spades.')
-    fipa.close()
+blLst = blastTbl(binf)
+wrFiltFa()
 finf.close()
 binf.close()
