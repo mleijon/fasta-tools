@@ -51,8 +51,8 @@ class spadesFa(FastaList):
 class blastTbl(object):
     """Create a class from a blast table from the corrspondin contigs created by SPades.
 
-    Properties are a lst containing fasta ids for contigs with no blast hits and the number
-    of sequences without blast hits"""
+       Properties are a lst containing fasta ids for contigs with no blast hits and the
+       number of sequences without blast hits"""
     def __init__(self, inFile):
         super(blastTbl, self).__init__()
         self.noHits = self.noBlastHit(inFile)
