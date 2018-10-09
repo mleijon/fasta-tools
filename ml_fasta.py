@@ -7,7 +7,7 @@ def rd_ids (fa_file):
     fa_file.seek(0)
     return id_list
 
-#creates a list of fasta sequences from inut fasta file
+#creates a list of fasta test sequences from inut fasta file
 def rd_seqs (fa_file):
     seq_list = []
     newseq = ''
