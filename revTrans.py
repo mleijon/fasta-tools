@@ -12,4 +12,8 @@ class revTrans(object):
 
     def __init__(self, peptide):
         super(revTrans, self).__init__()
-    def crGen(aaPos,peptide,seqLst)
+    genLst = []
+    def crGen(aaPos,peptide,seqLst):
+        for aa in peptide:
+            for codons in geneCode[aa]:
+                
