@@ -12,8 +12,11 @@ class revTrans(object):
 
     def __init__(self, peptide):
         super(revTrans, self).__init__()
+        genLst =[]
         self.peptide = peptide
-    genLst = []
+        for codon in self.genCode[peptide[0]]:
+            genLst.append(codon)
+#        print(self.genCode[peptide[0]][codon])
     def crGen(self):
         for aa in self.peptide:
             print(self.genCode[aa])
