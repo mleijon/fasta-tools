@@ -14,12 +14,24 @@ class revTrans(object):
         super(revTrans, self).__init__()
         genLst =[]
         self.peptide = peptide
-        for codon in self.genCode[peptide[0]]:
+        for codon in self.genCode[self.peptide[0]]:
             genLst.append(codon)
-#        print(self.genCode[peptide[0]][codon])
-    def crGen(self):
-        for aa in self.peptide:
-            print(self.genCode[aa])
+        pep = self.peptide[1:]
+
+        def crGen(pep, genLst):
+            tempLst = genLst.copy()
+            genLst = []
+            for gene in tempLst:
+                for codon in self.genCode[pep[0]]:
+                    genLst.append(gene + codon)
+            pep = pep[1:]
+            if pep == "":
+                print(genLst)
+                return genLst
+            else:
+                crGen(pep, genLst)
+        self.genLst = crGen(pep, genLst)
+
 #main
-test = revTrans('FL')
-test.crGen()
+test = revTrans('GAW')
+#print(test.genLst)
