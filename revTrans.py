@@ -8,7 +8,11 @@ class revTrans(object):
                "H":["CAT", "CAC"],"I":["ATT", "ATC", "ATA"],"K":["AAA", "AAG"],"M":["ATG"],
                "P":["CCU", "CCC", "CCA", "CCG"],"S":["TCT", "TCC", "TCA", "TCG", "AGT", "AGC"],
                "T":["ACT", "ACC", "ACA", "ACG"],"W":["TGG"],"Y":["TAT", "TAC"],"V":["GTT", "GTC", "GTA", "GTG"],
-               "STOP":["TAA", "TGA", "TAG"]}
+               "*":["TAA", "TGA", "TAG"],"X":["TTT","TTC","TTA","TTG", "CTT", "CTC", "CTA", "CTG","GCT", "GCC",
+                    "GCA", "GCG", "CGT", "CGC", "CGA", "CGG", "AGA", "AGG","AAT", "AAC","GAT", "GAC","TGT",
+                    "TGC","CAA", "CAG","GAA", "GAG","GGU", "GGC", "GGA", "GGG","CAT", "CAC","ATT", "ATC",
+                    "ATA","AAA", "AAG","ATG","CCU", "CCC", "CCA", "CCG","TCT", "TCC", "TCA", "TCG", "AGT",
+                    "AGC","ACT", "ACC", "ACA", "ACG","TGG","TAT", "TAC","GTT", "GTC", "GTA", "GTG"]}
 
     def __init__(self, peptide):
         super(revTrans, self).__init__()
@@ -30,8 +34,25 @@ class revTrans(object):
                 return
             else:
                 crGen(pep, genLst)
-        crGen(pep, genLst)
+        if pep == "":
+            self.genLst = genLst
+        else:
+            crGen(pep, genLst)
 
 #main
-test = revTrans('MLRRGF')
-print(test.genLst)
+fusionPeptide = 'GLFGAIAGFI'
+gl = revTrans(fusionPeptide)
+
+def parseSeq (seq):
+    pass
+
+def wrfafromls (seqLst):
+    j = 0
+    filFa = open('seqfile.fa','w')
+    for seq in seqLst:
+        j+=1
+        filFa.write('> %d\n' % j)
+        filFa.write(seq+'\n')
+    filFa.close()
+
+wrfafromls(gl.genLst)
