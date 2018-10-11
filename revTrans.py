@@ -39,9 +39,38 @@ class revTrans(object):
         else:
             crGen(pep, genLst)
 
+class seqVar(object):
+    """docstring for seqVar."""
+    def __init__(self, peptide):
+        self.pepStr = peptide
+    def cheStr(self):
+        ctL = 0; ctR = 0
+        allowed = ["A","C","D","E","F","G","H","I","K","L","M","N",
+        "P","Q","R","S","T","V","W","X","Y","*","[","]"]
+        for ch in self.pepStr:
+            if ch not in allowed:
+                return False
+            elif ch == "[":
+                ctL += 1
+            elif ch == "]":
+                ctR += 1
+        if ctL != ctR:
+            return False
+        else:
+            return True
+
+
+            def cheDeg():
+                pass
+
+
+
 #main
-fusionPeptide = 'GLFGAIAGFI'
-gl = revTrans(fusionPeptide)
+fusionPeptide = 'GLFGA[GHW]IAGFI'
+gl = seqVar(fusionPeptide)
+
+print(gl.cheStr())
+
 
 def parseSeq (seq):
     pass
@@ -55,4 +84,4 @@ def wrfafromls (seqLst):
         filFa.write(seq+'\n')
     filFa.close()
 
-wrfafromls(gl.genLst)
+#wrfafromls(gl.genLst)
