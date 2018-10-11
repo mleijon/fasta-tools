@@ -26,12 +26,12 @@ class revTrans(object):
                     genLst.append(gene + codon)
             pep = pep[1:]
             if pep == "":
-                print(genLst)
-                return genLst
+                self.genLst = genLst
+                return
             else:
                 crGen(pep, genLst)
-        self.genLst = crGen(pep, genLst)
+        crGen(pep, genLst)
 
 #main
-test = revTrans('GAW')
-#print(test.genLst)
+test = revTrans('MLRRGF')
+print(test.genLst)
