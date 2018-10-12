@@ -4,14 +4,14 @@ class revTrans(object):
 
     genCode = {"F":["TTT","TTC"],"L":["TTA","TTG", "CTT", "CTC", "CTA", "CTG"],"A":["GCT", "GCC", "GCA", "GCG"],
                "R":["CGT", "CGC", "CGA", "CGG", "AGA", "AGG"],"N":["AAT", "AAC"],"D":["GAT", "GAC"],
-               "C":["TGT", "TGC"],"Q":["CAA", "CAG"],"E":["GAA", "GAG"],"G":["GGU", "GGC", "GGA", "GGG"],
+               "C":["TGT", "TGC"],"Q":["CAA", "CAG"],"E":["GAA", "GAG"],"G":["GGT", "GGC", "GGA", "GGG"],
                "H":["CAT", "CAC"],"I":["ATT", "ATC", "ATA"],"K":["AAA", "AAG"],"M":["ATG"],
-               "P":["CCU", "CCC", "CCA", "CCG"],"S":["TCT", "TCC", "TCA", "TCG", "AGT", "AGC"],
+               "P":["CCT", "CCC", "CCA", "CCG"],"S":["TCT", "TCC", "TCA", "TCG", "AGT", "AGC"],
                "T":["ACT", "ACC", "ACA", "ACG"],"W":["TGG"],"Y":["TAT", "TAC"],"V":["GTT", "GTC", "GTA", "GTG"],
                "*":["TAA", "TGA", "TAG"],"X":["TTT","TTC","TTA","TTG", "CTT", "CTC", "CTA", "CTG","GCT", "GCC",
                     "GCA", "GCG", "CGT", "CGC", "CGA", "CGG", "AGA", "AGG","AAT", "AAC","GAT", "GAC","TGT",
-                    "TGC","CAA", "CAG","GAA", "GAG","GGU", "GGC", "GGA", "GGG","CAT", "CAC","ATT", "ATC",
-                    "ATA","AAA", "AAG","ATG","CCU", "CCC", "CCA", "CCG","TCT", "TCC", "TCA", "TCG", "AGT",
+                    "TGC","CAA", "CAG","GAA", "GAG","GGT", "GGC", "GGA", "GGG","CAT", "CAC","ATT", "ATC",
+                    "ATA","AAA", "AAG","ATG","CCT", "CCC", "CCA", "CCG","TCT", "TCC", "TCA", "TCG", "AGT",
                     "AGC","ACT", "ACC", "ACA", "ACG","TGG","TAT", "TAC","GTT", "GTC", "GTA", "GTG"]}
 
     def __init__(self, peptide):
@@ -20,12 +20,13 @@ class revTrans(object):
             """docstring for seqVar."""
 
             def __init__(self, peptide):
-                self.pepStr = peptide
+                self.peptide = peptide
+
             def validStr(self):
                 ctL = 0; ctR = 0
                 allowed = ["A","C","D","E","F","G","H","I","K","L","M","N",
                 "P","Q","R","S","T","V","W","X","Y","*","[","]"]
-                for ch in self.pepStr:
+                for ch in self.peptide:
                     if ch not in allowed:
                         return False
                     elif ch == "[":
@@ -36,18 +37,16 @@ class revTrans(object):
                     return False
                 else:
                     return True
+
             def crVar(self):
-                variant = []
-                varLst = []
-                frag = ""
-                tmpLst = []
-                degen = False
-                for ch in self.pepStr:
+                variant = []; varLst = []; tmpLst = []; frag = ""
+                multiple = False
+                for ch in self.peptide:
                     if ch == "]":
-                        degen = False
+                        multiple = False
                         varLst.append(variant)
                         variant = []
-                    elif degen:
+                    elif multiple:
                         variant.append(ch)
                     else:
                         if ch == "[":
@@ -55,7 +54,7 @@ class revTrans(object):
                                 varLst.append([frag])
                                 frag = ""
                                 tmpLst = []
-                            degen = True
+                            multiple = True
                         else:
                             frag += ch
                 if frag != "":
@@ -73,10 +72,10 @@ class revTrans(object):
         self.valid = seqVar(peptide).validStr()
         if self.valid:
             for sequence in seqVar(peptide).crVar():
-                self.peptide = sequence
-                for codon in self.genCode[self.peptide[0]]:
+                for codon in self.genCode[sequence[0]]:
                     genLst.append(codon)
-                pep = self.peptide[1:]
+                pep = sequence[1:]
+
                 def crGen(pep, genLst):
                     tempLst = genLst.copy()
                     genLst = []
@@ -97,8 +96,8 @@ class revTrans(object):
 
 
 #main
-fusionPeptide = '[GA]WH'
-gl = revTrans(fusionPeptide)
+fusionPeptide = 'GLFGAIAGFI'
+gl = revTrans("AGNK")
 
 def wrfafromls (seqLst):
     j = 0
