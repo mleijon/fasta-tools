@@ -58,7 +58,34 @@ class seqVar(object):
             return False
         else:
             return True
-
+    def crVar(self):
+        genLst = []
+        variants = []
+        varLst = []
+        frag = ""
+        tmpLst = []
+        degen = False
+        for ch in self.pepStr:
+            if ch == "]":
+                degen = False
+                varLst.append(Variants)
+                Variants = []
+            elif degen:
+                Variants.append(ch)
+            else:
+                if ch == "[":
+                    if frag != "":
+                        tmpLst.append(frag)
+                        varLst.append(tmpLst)
+                        tmpLst = []
+                    degen = True
+                else:
+                    frag += ch
+        if frag != "":
+            tmpLst.append(frag)
+            varLst.append(tmpLst)
+            tmpLst = []
+            
 
             def cheDeg():
                 pass
