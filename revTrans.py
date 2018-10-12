@@ -96,8 +96,6 @@ class revTrans(object):
         print(self.genLst)
 
 
-
-
 #main
 fusionPeptide = '[GA]WH'
 gl = revTrans(fusionPeptide)
