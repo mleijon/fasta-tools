@@ -40,23 +40,26 @@ class revTrans(object):
 
             def crVar(self):
                 variant = []; varLst = []; tmpLst = []; frag = ""
-                multiple = False
+                multiple = False; leftParFirst = False
                 for ch in self.peptide:
                     if ch == "]":
+                        if not (leftParFirst):
+                            return []
                         multiple = False
-                        varLst.append(variant)
+                        if variant != []:
+                            varLst.append(variant)
+                            leftParFirst = False
                         variant = []
                     elif multiple:
                         variant.append(ch)
+                    elif ch == "[":
+                        leftParFirst = True
+                        if frag != "":
+                            varLst.append([frag])
+                            frag = ""
+                        multiple = True
                     else:
-                        if ch == "[":
-                            if frag != "":
-                                varLst.append([frag])
-                                frag = ""
-                                tmpLst = []
-                            multiple = True
-                        else:
-                            frag += ch
+                        frag += ch
                 if frag != "":
                     varLst.append([frag])
                 genLst = varLst.pop(0)
@@ -68,8 +71,12 @@ class revTrans(object):
                             genLst.append(segment + frag)
                 return genLst
 
+        if seqVar(peptide).crVar() == []:
+            self.valid = False
+        else:
+            self.valid = seqVar(peptide).validStr()
         genLst =[]
-        self.valid = seqVar(peptide).validStr()
+        print(seqVar(peptide).crVar())
         if self.valid:
             for sequence in seqVar(peptide).crVar():
                 for codon in self.genCode[sequence[0]]:
@@ -92,12 +99,10 @@ class revTrans(object):
                     self.genLst = genLst
                 else:
                     crGen(pep, genLst)
-        print(self.genLst)
-
 
 #main
 fusionPeptide = 'GLFGAIAGFI'
-gl = revTrans("AGNK")
+gl = revTrans("GLFGAIAGFI")
 
 def wrfafromls (seqLst):
     j = 0
@@ -107,5 +112,7 @@ def wrfafromls (seqLst):
         filFa.write('> %d\n' % j)
         filFa.write(seq+'\n')
     filFa.close()
-
-wrfafromls(gl.genLst)
+if gl.valid:
+    wrfafromls(gl.genLst)
+else:
+    print("Invalid input sequence.")
