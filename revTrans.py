@@ -68,15 +68,16 @@ class seqVar(object):
         for ch in self.pepStr:
             if ch == "]":
                 degen = False
-                varLst.append(Variants)
-                Variants = []
+                varLst.append(variants)
+                variants = []
             elif degen:
-                Variants.append(ch)
+                variants.append(ch)
             else:
                 if ch == "[":
                     if frag != "":
                         tmpLst.append(frag)
                         varLst.append(tmpLst)
+                        frag = ""
                         tmpLst = []
                     degen = True
                 else:
@@ -85,18 +86,14 @@ class seqVar(object):
             tmpLst.append(frag)
             varLst.append(tmpLst)
             tmpLst = []
-            
-
-            def cheDeg():
-                pass
-
+        return varLst
 
 
 #main
 fusionPeptide = 'GLFGA[GHW]IAGFI'
 gl = seqVar(fusionPeptide)
 
-print(gl.cheStr())
+print(gl.crVar())
 
 
 def parseSeq (seq):
