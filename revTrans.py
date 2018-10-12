@@ -38,12 +38,13 @@ class revTrans(object):
             self.genLst = genLst
         else:
             crGen(pep, genLst)
+        crgen(pep,genLst)
 
 class seqVar(object):
     """docstring for seqVar."""
     def __init__(self, peptide):
         self.pepStr = peptide
-    def cheStr(self):
+    def validStr(self):
         ctL = 0; ctR = 0
         allowed = ["A","C","D","E","F","G","H","I","K","L","M","N",
         "P","Q","R","S","T","V","W","X","Y","*","[","]"]
@@ -59,8 +60,7 @@ class seqVar(object):
         else:
             return True
     def crVar(self):
-        genLst = []
-        variants = []
+        variant = []
         varLst = []
         frag = ""
         tmpLst = []
@@ -68,26 +68,22 @@ class seqVar(object):
         for ch in self.pepStr:
             if ch == "]":
                 degen = False
-                varLst.append(variants)
-                variants = []
+                varLst.append(variant)
+                variant = []
             elif degen:
-                variants.append(ch)
+                variant.append(ch)
             else:
                 if ch == "[":
                     if frag != "":
-                        tmpLst.append(frag)
-                        varLst.append(tmpLst)
+                        varLst.append([frag])
                         frag = ""
                         tmpLst = []
                     degen = True
                 else:
                     frag += ch
         if frag != "":
-            tmpLst.append(frag)
-            varLst.append(tmpLst)
-            tmpLst = []
-
-
+            varLst.append([frag])
+        genLst = varLst.pop(0)
         for elem in varLst:
             tmpLst = genLst.copy()
             genLst = []
@@ -96,16 +92,13 @@ class seqVar(object):
                     genLst.append(segment + frag)
         return genLst
 
-
 #main
-fusionPeptide = 'GLFGA[GHW]IAGFI'
+fusionPeptide = '[GWH]IDDD[AL][XM]'
+seqLst = []
 gl = seqVar(fusionPeptide)
-
-print(gl.crVar())
-
-
-def parseSeq (seq):
-    pass
+if gl.validStr():
+    for peptides in gl.crVar():
+        seqLst += gl.crGen(fusionPeptide)
 
 def wrfafromls (seqLst):
     j = 0
@@ -116,4 +109,4 @@ def wrfafromls (seqLst):
         filFa.write(seq+'\n')
     filFa.close()
 
-#wrfafromls(gl.genLst)
+wrfafromls(seqLst)
