@@ -86,7 +86,15 @@ class seqVar(object):
             tmpLst.append(frag)
             varLst.append(tmpLst)
             tmpLst = []
-        return varLst
+
+
+        for elem in varLst:
+            tmpLst = genLst.copy()
+            genLst = []
+            for frag in elem:
+                for segment in tmpLst:
+                    genLst.append(segment + frag)
+        return genLst
 
 
 #main
