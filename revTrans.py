@@ -15,90 +15,92 @@ class revTrans(object):
                     "AGC","ACT", "ACC", "ACA", "ACG","TGG","TAT", "TAC","GTT", "GTC", "GTA", "GTG"]}
 
     def __init__(self, peptide):
-        super(revTrans, self).__init__()
-        genLst =[]
-        self.peptide = peptide
-        for codon in self.genCode[self.peptide[0]]:
-            genLst.append(codon)
-        pep = self.peptide[1:]
 
-        def crGen(pep, genLst):
-            tempLst = genLst.copy()
-            genLst = []
-            for gene in tempLst:
-                for codon in self.genCode[pep[0]]:
-                    genLst.append(gene + codon)
-            pep = pep[1:]
-            if pep == "":
-                self.genLst = genLst
-                return
-            else:
-                crGen(pep, genLst)
-        if pep == "":
-            self.genLst = genLst
-        else:
-            crGen(pep, genLst)
-        crgen(pep,genLst)
+        class seqVar(object):
+            """docstring for seqVar."""
 
-class seqVar(object):
-    """docstring for seqVar."""
-    def __init__(self, peptide):
-        self.pepStr = peptide
-    def validStr(self):
-        ctL = 0; ctR = 0
-        allowed = ["A","C","D","E","F","G","H","I","K","L","M","N",
-        "P","Q","R","S","T","V","W","X","Y","*","[","]"]
-        for ch in self.pepStr:
-            if ch not in allowed:
-                return False
-            elif ch == "[":
-                ctL += 1
-            elif ch == "]":
-                ctR += 1
-        if ctL != ctR:
-            return False
-        else:
-            return True
-    def crVar(self):
-        variant = []
-        varLst = []
-        frag = ""
-        tmpLst = []
-        degen = False
-        for ch in self.pepStr:
-            if ch == "]":
-                degen = False
-                varLst.append(variant)
-                variant = []
-            elif degen:
-                variant.append(ch)
-            else:
-                if ch == "[":
-                    if frag != "":
-                        varLst.append([frag])
-                        frag = ""
-                        tmpLst = []
-                    degen = True
+            def __init__(self, peptide):
+                self.pepStr = peptide
+            def validStr(self):
+                ctL = 0; ctR = 0
+                allowed = ["A","C","D","E","F","G","H","I","K","L","M","N",
+                "P","Q","R","S","T","V","W","X","Y","*","[","]"]
+                for ch in self.pepStr:
+                    if ch not in allowed:
+                        return False
+                    elif ch == "[":
+                        ctL += 1
+                    elif ch == "]":
+                        ctR += 1
+                if ctL != ctR:
+                    return False
                 else:
-                    frag += ch
-        if frag != "":
-            varLst.append([frag])
-        genLst = varLst.pop(0)
-        for elem in varLst:
-            tmpLst = genLst.copy()
-            genLst = []
-            for frag in elem:
-                for segment in tmpLst:
-                    genLst.append(segment + frag)
-        return genLst
+                    return True
+            def crVar(self):
+                variant = []
+                varLst = []
+                frag = ""
+                tmpLst = []
+                degen = False
+                for ch in self.pepStr:
+                    if ch == "]":
+                        degen = False
+                        varLst.append(variant)
+                        variant = []
+                    elif degen:
+                        variant.append(ch)
+                    else:
+                        if ch == "[":
+                            if frag != "":
+                                varLst.append([frag])
+                                frag = ""
+                                tmpLst = []
+                            degen = True
+                        else:
+                            frag += ch
+                if frag != "":
+                    varLst.append([frag])
+                genLst = varLst.pop(0)
+                for elem in varLst:
+                    tmpLst = genLst.copy()
+                    genLst = []
+                    for frag in elem:
+                        for segment in tmpLst:
+                            genLst.append(segment + frag)
+                return genLst
+
+        genLst =[]
+        self.valid = seqVar(peptide).validStr()
+        if self.valid:
+            for sequence in seqVar(peptide).crVar():
+                self.peptide = sequence
+                for codon in self.genCode[self.peptide[0]]:
+                    genLst.append(codon)
+                pep = self.peptide[1:]
+                def crGen(pep, genLst):
+                    tempLst = genLst.copy()
+                    genLst = []
+                    for gene in tempLst:
+                        for codon in self.genCode[pep[0]]:
+                            genLst.append(gene + codon)
+                    pep = pep[1:]
+                    if pep == "":
+                        self.genLst = genLst
+                        return
+                    else:
+                        crGen(pep, genLst)
+                if pep == "":
+                    self.genLst = genLst
+                else:
+                    crGen(pep, genLst)
+        print(self.genLst)
+
+
+
 
 #main
-fusionPeptide = '[GWH]IDDD[AL][XM]'
-seqLst = []
-gl = seqVar(fusionPeptide)
-if gl.validStr():
-    for peptides in gl.crVar():
-        seqLst += gl.crGen(fusionPeptide)
+fusionPeptide = '[GA]WH'
+gl = revTrans(fusionPeptide)
 
 def wrfafromls (seqLst):
     j = 0
@@ -109,4 +111,4 @@ def wrfafromls (seqLst):
         filFa.write(seq+'\n')
     filFa.close()
 
-wrfafromls(seqLst)
+wrfafromls(gl.genLst)
