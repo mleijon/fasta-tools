@@ -24,14 +24,21 @@ class revTrans(object):
 
             def validStr(self):
                 ctL = 0; ctR = 0
+                left = False
                 allowed = ["A","C","D","E","F","G","H","I","K","L","M","N",
                 "P","Q","R","S","T","V","W","X","Y","*","[","]"]
                 for ch in self.peptide:
                     if ch not in allowed:
                         return False
                     elif ch == "[":
+                        if left:
+                            return False
+                        left = True
                         ctL += 1
                     elif ch == "]":
+                        if not left:
+                            return False
+                        left = False
                         ctR += 1
                 if ctL != ctR:
                     return False
@@ -40,20 +47,16 @@ class revTrans(object):
 
             def crVar(self):
                 variant = []; varLst = []; tmpLst = []; frag = ""
-                multiple = False; leftParFirst = False
+                multiple = False
                 for ch in self.peptide:
                     if ch == "]":
-                        if not (leftParFirst):
-                            return []
                         multiple = False
                         if variant != []:
                             varLst.append(variant)
-                            leftParFirst = False
                         variant = []
                     elif multiple:
                         variant.append(ch)
                     elif ch == "[":
-                        leftParFirst = True
                         if frag != "":
                             varLst.append([frag])
                             frag = ""
@@ -71,12 +74,11 @@ class revTrans(object):
                             genLst.append(segment + frag)
                 return genLst
 
-        if seqVar(peptide).crVar() == []:
-            self.valid = False
-        else:
-            self.valid = seqVar(peptide).validStr()
+        # if seqVar(peptide).crVar() == []:
+        #     self.valid = False
+        # else:
+        self.valid = seqVar(peptide).validStr()
         genLst =[]
-        print(seqVar(peptide).crVar())
         if self.valid:
             for sequence in seqVar(peptide).crVar():
                 for codon in self.genCode[sequence[0]]:
