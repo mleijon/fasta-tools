@@ -77,8 +77,8 @@ class revTrans(object):
         # if seqVar(peptide).crVar() == []:
         #     self.valid = False
         # else:
-        self.valid = seqVar(peptide).validStr()
         genLst =[]
+        self.valid = seqVar(peptide).validStr()
         if self.valid:
             for sequence in seqVar(peptide).crVar():
                 for codon in self.genCode[sequence[0]]:
@@ -97,6 +97,7 @@ class revTrans(object):
                         return
                     else:
                         crGen(pep, genLst)
+                        
                 if pep == "":
                     self.genLst = genLst
                 else:
