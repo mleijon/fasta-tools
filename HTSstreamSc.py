@@ -9,6 +9,7 @@ for r1 in glob("./00-rawdata/*_R1_*.gz"):
     cmd = "hts_SuperDeduper -L ./01-Cleaned/" + s + "_stats.log -1 " + r1 + " -2 " + r2 + " -O | "
     cmd += "hts_SeqScreener -S -O -A -L ./01-Cleaned/" + s + "_stats.log | "
     cmd += "hts_PolyATTrim -m 100 -S -O -A -L ./01-Cleaned/" + s + "_stats.log | "
+    cmd += "hts_QWindowTrim -q 13 -S -O -A -L ./01-Cleaned/" + s + "_stats.log | "
     cmd += "hts_Stats -N phix-remover-adapters -S -A -L ./01-Cleaned/" + s + "_StatsStats.log -g -p ./01-Cleaned/" + s
     cleaning.write(cmd+'\n')
 cleaning.close()

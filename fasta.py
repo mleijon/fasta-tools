@@ -20,3 +20,10 @@ class FastaList(object):
         self.seq_list = seq_list
         self.id_list = id_list
         self.nr_seq = len(id_list)
+    def rev(self,seqLst):
+        revSeq =[]
+        for seq in seqLst:
+            
+        pass
+    def revComp(self,seqLst):
+        pass
