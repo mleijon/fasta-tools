@@ -1,5 +1,6 @@
 class FastaList(object):
     """docstring for fasta."""
+import gzip
     def __init__(self, fastafile):
         seq_list = []
         id_list = []
@@ -24,4 +25,3 @@ class FastaList(object):
         return seqLst[::-1]
     def revComp(self,seqLst):
         pass
-        
