@@ -21,9 +21,7 @@ class FastaList(object):
         self.id_list = id_list
         self.nr_seq = len(id_list)
     def rev(self,seqLst):
-        revSeq =[]
-        for seq in seqLst:
-            
-        pass
+        return seqLst[::-1]
     def revComp(self,seqLst):
         pass
+        
