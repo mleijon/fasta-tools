@@ -38,14 +38,6 @@ class spadesFa(FastaList):
             self.avLen = round(sumLen/self.nrOfContig,0)
             self.avCov = round(sumCov/self.nrOfContig,0)
 
-        # for i in range(len(self.seqParLst)):
-        #     if 'NODE' not in self.seqParLst[i]:
-        #         self.is_spadesFa = False
-        #     elif 'length' not in self.seqParLst[i]:
-        #         self.is_spadesFa = False
-        #     elif 'cov' not in self.seqParLst[i]:
-        #         self.is_spadesFa = False
-
 #Writes a parameter file based on the ID-string created by Spades and some other parameters
     def wrPar2File(self,parfile,inpname):
             parfile.write('Parameters for: '+inpname+'\n\n')
@@ -81,13 +73,14 @@ class blastTbl(object):
 # Write filtered fasta file not including sequeces with no blast hits and a fasta file
 #inclusing exlusively these contigs. A parameter file is also written using the FastaList class
 def WrFiles():
-    try:
+
         if args.f[-2:] == 'gz':
             fahits = 'hits_'+args.f[:-3]
             fanohits = 'nohits_'+args.f[:-3]
         else:
             fahits = 'hits_'+args.f
             fanohits = 'nohits_'+args.f
+    try:
         fil_fa = open(fahits,'w')
         fil_re = open(fanohits,'w')
     except:
