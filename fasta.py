@@ -29,8 +29,10 @@ class FastaList(object):
             faFiuz = open(self.faFile[:-3],'w')
             with gzip.open(self.faFile,'rt') as f:
                 faFiuz.write(f.read())
+                print('Decompressing...')
             faFiuz.close()
             faFiuz = open(self.faFile[:-3])
+            print('Done decompressing')
             return faFiuz
         else:
             faFi = open(self.faFile)

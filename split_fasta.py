@@ -20,25 +20,31 @@ class spadesFa(FastaList):
         t = []
         seqPar = dict()
         self.seqParLst = []
+        self.is_spadesFa = True
         for line in spades_file:
             if line.startswith('>'):
                 t = line.split('_')
+                if not (t[0] == 'NODE' and t[2] == 'length' and t[4] == 'cov'):
+                    self.is_spadesFa = False
+                    break
                 seqPar ={t[0][1:]:int(t[1]),t[2]:int(t[3]),t[4]:float(t[5])} #parses the id strings of fa-file
                 self.seqParLst.append(seqPar)
-        self.nrOfContig = len(self.seqParLst)
-        for i in range(len(self.seqParLst)):
-            sumCov += self.seqParLst[i]['cov']
-            sumLen += self.seqParLst[i]['length']
-        self.avLen = round(sumLen/self.nrOfContig,0)
-        self.avCov = round(sumCov/self.nrOfContig,0)
-        self.is_spadesFa = True
-        for i in range(len(self.seqParLst)):
-            if 'NODE' not in self.seqParLst[i]:
-                self.is_spadesFa = False
-            elif 'length' not in self.seqParLst[i]:
-                self.is_spadesFa = False
-            elif 'cov' not in self.seqParLst[i]:
-                self.is_spadesFa = False
+
+        if self.is_spadesFa:
+            self.nrOfContig = len(self.seqParLst)
+            for i in range(len(self.seqParLst)):
+                sumCov += self.seqParLst[i]['cov']
+                sumLen += self.seqParLst[i]['length']
+            self.avLen = round(sumLen/self.nrOfContig,0)
+            self.avCov = round(sumCov/self.nrOfContig,0)
+
+        # for i in range(len(self.seqParLst)):
+        #     if 'NODE' not in self.seqParLst[i]:
+        #         self.is_spadesFa = False
+        #     elif 'length' not in self.seqParLst[i]:
+        #         self.is_spadesFa = False
+        #     elif 'cov' not in self.seqParLst[i]:
+        #         self.is_spadesFa = False
 
 #Writes a parameter file based on the ID-string created by Spades and some other parameters
     def wrPar2File(self,parfile,inpname):
