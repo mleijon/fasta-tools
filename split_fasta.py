@@ -4,7 +4,7 @@
 # NODE (the sequence number), length (length of sequence), cov (read coverage of the contig)
 from fasta import FastaList
 class spadesFa(FastaList):
-    """Class with derived from a SPades contig fasta file with contig parameters as properties.
+    """Class derived from a SPades contig fasta file with contig parameters as properties.
 
        The SPades fasta-file header lines contain information on read coverage and contig length
        and a generic "NODE" number. This is stored in parameter dictionary as a property of the
@@ -53,6 +53,7 @@ class blastTbl(object):
 
        Properties are a lst containing fasta ids for contigs with no blast hits and the
        number of sequences without blast hits"""
+
     def __init__(self, inFile):
         super(blastTbl, self).__init__()
         self.noHits = self.noBlastHit(inFile)
