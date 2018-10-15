@@ -7,7 +7,7 @@ class FastaList(object):
         newseq = ''
         self.faFile = faFile
         first = True
-        for line in rdfi():
+        for line in self.rdfi():
             if line.startswith('>'):
                 id_list.append(line[1:].strip())
                 if not first:
@@ -17,22 +17,25 @@ class FastaList(object):
                 first = False
                 newseq +=line
         seq_list.append(newseq)
-        rdfi().seek(0)
+        self.rdfi().seek(0)
         nr_seq = len(seq_list)
         self.seq_list = seq_list
         self.id_list = id_list
         self.nr_seq = len(id_list)
     def rdfi(self):
-        import gzip; import tempfile
+        import gzip
 
         if self.faFile[-2:] == 'gz':
-            ftemp = tempfile.TemporaryFile()
+            faFiuz = open(self.faFile[:-3],'w')
             with gzip.open(self.faFile,'rt') as f:
-                ftemp.write(f.read())
-            return ftemp
+                faFiuz.write(f.read())
+            faFiuz.close()
+            faFiuz = open(self.faFile[:-3])
+            return faFiuz
         else:
-            fastafile = open(self.faFile)
-            return fastafile
+            faFi = open(self.faFile)
+            return faFi
+
     def rev(self,seqLst):
         return seqLst[::-1]
     def revComp(self,seqLst):

@@ -15,7 +15,7 @@ class spadesFa(FastaList):
        in the WrFiles() function of the main program.
        """
     def __init__(self, spades_file):
-        super(spadesFa,self).__init__(spades_file)
+        super(spadesFa,self).__init__(args.f)
         sumCov = 0; sumLen = 0
         t = []
         seqPar = dict()
@@ -76,30 +76,36 @@ class blastTbl(object):
 #inclusing exlusively these contigs. A parameter file is also written using the FastaList class
 def WrFiles():
     try:
-        fil_fa = open('hits_'+args.f,'w')
-        fil_re = open('nohits_'+args.f,'w')
+        if args.f[-2:] == 'gz':
+            fahits = 'hits_'+args.f[:-3]
+            fanohits = 'nohits_'+args.f[:-3]
+        else:
+            fahits = 'hits_'+args.f
+            fanohits = 'nohits_'+args.f
+        fil_fa = open(fahits,'w')
+        fil_re = open(fanohits,'w')
     except:
         sys.exit('error writing file')
     j = 0
-    for ids in faLst.id_list:
+    for ids in spFaLst.id_list:
         if ids not in blLst.noHits:
-            fil_fa.write(faLst.seq_list[j])
+            fil_fa.write(spFaLst.seq_list[j])
         else:
-            fil_re.write(faLst.seq_list[j])
+            fil_re.write(spFaLst.seq_list[j])
         j+=1
     fil_fa.close()
     fil_re.close()
-    if args.p and faLst.is_spadesFa:
+    if args.p and spFaLst.is_spadesFa:
         if '.' in args.f:
             name = args.f[:args.f.find('.')]+'.par'
             fipa = open(name,'w')
         else:
             fipa = open(args.f+'.par','w')
-        faLst.wrPar2File(fipa,args.f)
-        fihi = open('hits_'+args.f)
+        spFaLst.wrPar2File(fipa,args.f)
+        fihi = open(fahits)
         faHitLst = spadesFa(fihi)
-        faHitLst.wrPar2File(fipa,'hits_'+args.f)
-        percent_remove = round(100*blLst.nrNoHits/len(faLst.seq_list),0)
+        faHitLst.wrPar2File(fipa,fahits)
+        percent_remove = round(100*blLst.nrNoHits/len(spFaLst.seq_list),0)
         fipa.write('%d sequences removed (%g%%)\n' % (blLst.nrNoHits,percent_remove))
         fipa.close()
         fihi.close()
@@ -109,7 +115,7 @@ def WrFiles():
         fipa.close()
 
 #Main
-import linecache; import argparse; import sys
+import linecache; import argparse; import sys; import os
 parser = argparse.ArgumentParser(description='Split input fasta file based on existence of \
                                                 blast hits in input blast table file')
 parser.add_argument('-p',action='store_true',help='switch for parameter file output')
@@ -117,12 +123,15 @@ parser.add_argument('-f',type = str,help='fastafile')
 parser.add_argument('-b',type = str,help='blastfile')
 args = parser.parse_args()
 try:
-    finf = open(args.f)
     binf = open(args.b)
 except:
     sys.exit('input file error')
-faLst = spadesFa(finf)
+faLst = FastaList(args.f)
+finf = faLst.rdfi()
+spFaLst = spadesFa(finf)
 blLst = blastTbl(binf)
 WrFiles()
 finf.close()
+if args.f[-2:] == 'gz' and os.path.isfile(args.f[:-3]):
+    os.remove(args.f[:-3])
 binf.close()
