@@ -74,15 +74,21 @@ class blastTbl(object):
 # Write filtered fasta file not including sequeces with no blast hits and a fasta file
 #inclusing exlusively these contigs. A parameter file is also written using the FastaList class
 def WrFiles():
-    if args.f[-2:] == 'gz':
+    if args.f[-2:] == 'gz' or 'GZ':
         fahits = 'hits_'+args.f[:-3]
         fanohits = 'nohits_'+args.f[:-3]
     else:
         fahits = 'hits_'+args.f
         fanohits = 'nohits_'+args.f
+    if fahits[-2:] == 'fq' or 'FQ':
+        fahits = fahits[:-3]
+        fanohits = fanohits[:-3]
+    elif fahits[-5:] == 'fastq' or 'FASTQ':
+        fahits = fahits[:-5]
+        fanohits = fanohits[:-5]
     try:
-        fil_fa = open(fahits,'w')
-        fil_re = open(fanohits,'w')
+        fil_fa = open(fahits+'fa','w')
+        fil_re = open(fanohits+'fa','w')
     except:
         sys.exit('error writing file')
     j = 0
