@@ -2,17 +2,32 @@ class FastaList(object):
     """docstring for fasta."""
 
     def __init__(self, faFile):
-        seq_list = []
-        id_list = []
-        newseq = ''
+        seq_list = []; id_list = []; newseq = ''
+        self.gz = False; self.fq = True
         self.faName = faFile
-        if self.faName[-2:] == 'gz':
+        if self.faName[-2:] in ['gz','GZ']:
             self.gz = True
-        if self.gz:
+        if '.fq' in self.faName:
+            self.fqExt = '.fq'
+        elif '.FQ' in self.faName:
+            self.fqExt = '.FQ'
+        elif '.fastq' in self.faName:
+            self.fqExt = '.fastq'
+        elif '.FASTQ' in self.faName:
+            self.fqExt = '.FASTQ'
+        else:
+            self.fq = False
+        if '.gz' in self.faName:
+            self.gzExt = 'gz'
+        elif '.GZ' in self.faName:
+            self.gzExt = 'GZ'
+        else:
+            self.gz = False
+
+        if self.fq:
             self.faFile = self.fq2fa()
         else:
             self.faFile = self.rdfi()
-
         first = True
         for line in self.faFile:
             if line.startswith('>'):
@@ -36,19 +51,19 @@ class FastaList(object):
             faFiuz = open(self.faName[:-3],'w')
             with gzip.open(self.faName,'rt') as f:
                 faFiuz.write(f.read())
-                print('Decompressing...',end='',flush=True)
             faFiuz.close()
             faFiuz = open(self.faName[:-3])
-            print('Done decompressing',end='',flush=True)
             return faFiuz
         else:
             faFi = open(self.faName)
             return faFi
     def fq2fa(self):
-        outFa = open(self.faName[:self.faName.find('.gz')]+'fa')
+        if self.gz:
+            outFa = open(self.faName[:self.faName.find(self.fqExt + '.gz')]+'.fa','w')
+        else:
+            outFa = open(self.faName[:self.faName.find(self.fqExt)]+'.fa','w')
         j = 0
         for line in self.rdfi():
-            print('converting...',end='',flush=True)
             if line[0] == '@' and j % 4 == 0:
                 outFa.write(line.replace('@','>',1))
             elif j % 4 == 1:
@@ -57,12 +72,16 @@ class FastaList(object):
                 pass
             elif j % 4 == 3:
                 pass
-            else
+            else:
                 print('Not a fastq-file')
                 return
                 outFa.close()
-        print('Done converting...',end='',flush=True)
+            j+=1
         outFa.close()
+        if self.gz:
+            outFa = open(self.faName[:self.faName.find(self.fqExt + '.gz')]+'.fa')
+        else:
+            outFa = open(self.faName[:self.faName.find(self.fqExt)]+'.fa')
         return outFa
 
     def rev(self,seqLst):

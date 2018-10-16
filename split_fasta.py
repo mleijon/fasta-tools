@@ -73,13 +73,12 @@ class blastTbl(object):
 # Write filtered fasta file not including sequeces with no blast hits and a fasta file
 #inclusing exlusively these contigs. A parameter file is also written using the FastaList class
 def WrFiles():
-
-        if args.f[-2:] == 'gz':
-            fahits = 'hits_'+args.f[:-3]
-            fanohits = 'nohits_'+args.f[:-3]
-        else:
-            fahits = 'hits_'+args.f
-            fanohits = 'nohits_'+args.f
+    if args.f[-2:] == 'gz':
+        fahits = 'hits_'+args.f[:-3]
+        fanohits = 'nohits_'+args.f[:-3]
+    else:
+        fahits = 'hits_'+args.f
+        fanohits = 'nohits_'+args.f
     try:
         fil_fa = open(fahits,'w')
         fil_re = open(fanohits,'w')
@@ -109,7 +108,7 @@ def WrFiles():
         fipa.close()
         fihi.close()
     elif args.p:
-        fipa = open('par_'+args.f,'w')
+        fipa = open('par_'+args.f[:args.f.find('.')],'w')
         fipa.write('No parameters, not a contigs fasta file created by spades.')
         fipa.close()
 
