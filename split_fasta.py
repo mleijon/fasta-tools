@@ -72,18 +72,18 @@ class blastTbl(object):
         return no_hits
 
 # Write filtered fasta file not including sequeces with no blast hits and a fasta file
-#inclusing exlusively these contigs. A parameter file is also written using the FastaList class
+#including exlusively these contigs. A parameter file is also written using the FastaList class
 def WrFiles():
-    if args.f[-2:] == 'gz' or 'GZ':
+    if args.f[-2:] == ('gz' or 'GZ'):
         fahits = 'hits_'+args.f[:-3]
         fanohits = 'nohits_'+args.f[:-3]
     else:
         fahits = 'hits_'+args.f
         fanohits = 'nohits_'+args.f
-    if fahits[-2:] == 'fq' or 'FQ':
+    if fahits[-2:] == ('fq' or 'FQ'):
         fahits = fahits[:-3]
         fanohits = fanohits[:-3]
-    elif fahits[-5:] == 'fastq' or 'FASTQ':
+    elif fahits[-5:] == ('fastq' or 'FASTQ'):
         fahits = fahits[:-5]
         fanohits = fanohits[:-5]
     try:
