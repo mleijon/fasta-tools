@@ -39,8 +39,7 @@ class FastaList(object):
                 first = False
                 newseq +=line
         seq_list.append(newseq)
-        self.rdfi().seek(0)
-        nr_seq = len(seq_list)
+        self.faFile.seek(0)
         self.seq_list = seq_list
         self.id_list = id_list
         self.nr_seq = len(id_list)

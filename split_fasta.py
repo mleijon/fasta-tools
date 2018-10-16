@@ -23,8 +23,9 @@ class spadesFa(FastaList):
         self.is_spadesFa = True
         for line in spades_file:
             if line.startswith('>'):
+                line = line.strip()
                 t = line.split('_')
-                if not (t[0] == 'NODE' and t[2] == 'length' and t[4] == 'cov'):
+                if not (t[0][1:] == 'NODE' and t[2] == 'length' and t[4] == 'cov'):
                     self.is_spadesFa = False
                     break
                 seqPar ={t[0][1:]:int(t[1]),t[2]:int(t[3]),t[4]:float(t[5])} #parses the id strings of fa-file
@@ -125,7 +126,7 @@ try:
 except:
     sys.exit('input file error')
 faLst = FastaList(args.f)
-finf = faLst.rdfi()
+finf = faLst.faFile
 spFaLst = spadesFa(finf)
 blLst = blastTbl(binf)
 WrFiles()
