@@ -87,19 +87,19 @@ def WrFiles():
         fahits = fahits[:-5]
         fanohits = fanohits[:-5]
     try:
-        fil_fa = open(fahits+'fa','w')
-        fil_re = open(fanohits+'fa','w')
+        FiHit = open(fahits+'fa','w')
+        FiNoHit = open(fanohits+'fa','w')
     except:
         sys.exit('error writing file')
     j = 0
     for ids in spFaLst.id_list:
         if ids not in blLst.noHits:
-            fil_fa.write(spFaLst.seq_list[j])
+            FiHit.write(spFaLst.seq_list[j])
         else:
-            fil_re.write(spFaLst.seq_list[j])
+            FiNoHit.write(spFaLst.seq_list[j])
         j+=1
-    fil_fa.close()
-    fil_re.close()
+    FiHit.close()
+    FiNoHit.close()
     if args.p and spFaLst.is_spadesFa:
         if '.' in args.f:
             name = args.f[:args.f.find('.')]+'.par'
