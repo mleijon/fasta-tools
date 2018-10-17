@@ -106,7 +106,7 @@ def WrFiles():
     try:
         FiHit = open(fahits+'fa', 'w')
         FiNoHit = open(fanohits+'fa', 'w')
-    except:
+    except IOError:
         sys.exit('error writing file')
     j = 0
     for ids in spFaLst.id_list:
@@ -149,7 +149,7 @@ parser.add_argument('-b', type=str, help='blastfile')
 args = parser.parse_args()
 try:
     binf = open(args.b)
-except:
+except IOError:
     sys.exit('input file error')
 faLst = FastaList(args.f)
 finf = faLst.faFile

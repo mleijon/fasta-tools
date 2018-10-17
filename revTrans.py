@@ -1,18 +1,38 @@
 #!/usr/bin/python3
+
+
 class revTrans(object):
     """docstring for revTrans."""
 
-    genCode = {"F":["TTT","TTC"],"L":["TTA","TTG", "CTT", "CTC", "CTA", "CTG"],"A":["GCT", "GCC", "GCA", "GCG"],
-               "R":["CGT", "CGC", "CGA", "CGG", "AGA", "AGG"],"N":["AAT", "AAC"],"D":["GAT", "GAC"],
-               "C":["TGT", "TGC"],"Q":["CAA", "CAG"],"E":["GAA", "GAG"],"G":["GGT", "GGC", "GGA", "GGG"],
-               "H":["CAT", "CAC"],"I":["ATT", "ATC", "ATA"],"K":["AAA", "AAG"],"M":["ATG"],
-               "P":["CCT", "CCC", "CCA", "CCG"],"S":["TCT", "TCC", "TCA", "TCG", "AGT", "AGC"],
-               "T":["ACT", "ACC", "ACA", "ACG"],"W":["TGG"],"Y":["TAT", "TAC"],"V":["GTT", "GTC", "GTA", "GTG"],
-               "*":["TAA", "TGA", "TAG"],"X":["TTT","TTC","TTA","TTG", "CTT", "CTC", "CTA", "CTG","GCT", "GCC",
-                    "GCA", "GCG", "CGT", "CGC", "CGA", "CGG", "AGA", "AGG","AAT", "AAC","GAT", "GAC","TGT",
-                    "TGC","CAA", "CAG","GAA", "GAG","GGT", "GGC", "GGA", "GGG","CAT", "CAC","ATT", "ATC",
-                    "ATA","AAA", "AAG","ATG","CCT", "CCC", "CCA", "CCG","TCT", "TCC", "TCA", "TCG", "AGT",
-                    "AGC","ACT", "ACC", "ACA", "ACG","TGG","TAT", "TAC","GTT", "GTC", "GTA", "GTG"]}
+    genCode = {"F": ["TTT", "TTC"],
+               "L": ["TTA", "TTG", "CTT", "CTC", "CTA", "CTG"],
+               "A": ["GCT", "GCC", "GCA", "GCG"],
+               "R": ["CGT", "CGC", "CGA", "CGG", "AGA", "AGG"],
+               "N": ["AAT", "AAC"],
+               "D": ["GAT", "GAC"],
+               "C": ["TGT", "TGC"],
+               "Q": ["CAA", "CAG"],
+               "E": ["GAA", "GAG"],
+               "G": ["GGT", "GGC", "GGA", "GGG"],
+               "H": ["CAT", "CAC"],
+               "I": ["ATT", "ATC", "ATA"],
+               "K": ["AAA", "AAG"],
+               "M": ["ATG"],
+               "P": ["CCT", "CCC", "CCA", "CCG"],
+               "S": ["TCT", "TCC", "TCA", "TCG", "AGT", "AGC"],
+               "T": ["ACT", "ACC", "ACA", "ACG"],
+               "W": ["TGG"],
+               "Y": ["TAT", "TAC"],
+               "V": ["GTT", "GTC", "GTA", "GTG"],
+               "*": ["TAA", "TGA", "TAG"],
+               "X": ["TTT", "TTC", "TTA", "TTG", "CTT", "CTC", "CTA", "CTG",
+                     "GCT", "GCC", "GCA", "GCG", "CGT", "CGC", "CGA", "CGG",
+                     "AGA", "AGG", "AAT", "AAC", "GAT", "GAC", "TGT", "TGC",
+                     "CAA", "CAG", "GAA", "GAG", "GGT", "GGC", "GGA", "GGG",
+                     "CAT", "CAC", "ATT", "ATC", "ATA", "AAA", "AAG", "ATG",
+                     "CCT", "CCC", "CCA", "CCG", "TCT", "TCC", "TCA", "TCG",
+                     "AGT", "AGC", "ACT", "ACC", "ACA", "ACG", "TGG", "TAT",
+                     "TAC", "GTT", "GTC", "GTA", "GTG"]}
 
     def __init__(self, peptide):
 
@@ -23,10 +43,12 @@ class revTrans(object):
                 self.peptide = peptide
 
             def validStr(self):
-                ctL = 0; ctR = 0
+                ctL = 0
+                ctR = 0
                 left = False
-                allowed = ["A","C","D","E","F","G","H","I","K","L","M","N",
-                "P","Q","R","S","T","V","W","X","Y","*","[","]"]
+                allowed = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L",
+                           "M", "N", "P", "Q", "R", "S", "T", "V", "W", "X",
+                           "Y", "*", "[", "]"]
                 for ch in self.peptide:
                     if ch not in allowed:
                         return False
@@ -46,7 +68,10 @@ class revTrans(object):
                     return True
 
             def crVar(self):
-                variant = []; varLst = []; tmpLst = []; frag = ""
+                variant = []
+                varLst = []
+                tmpLst = []
+                frag = ""
                 multiple = False
                 for ch in self.peptide:
                     if ch == "]":
@@ -77,7 +102,7 @@ class revTrans(object):
         # if seqVar(peptide).crVar() == []:
         #     self.valid = False
         # else:
-        genLst =[]
+        genLst = []
         self.valid = seqVar(peptide).validStr()
         if self.valid:
             for sequence in seqVar(peptide).crVar():
@@ -97,24 +122,29 @@ class revTrans(object):
                         return
                     else:
                         crGen(pep, genLst)
-                        
+
                 if pep == "":
                     self.genLst = genLst
                 else:
                     crGen(pep, genLst)
 
-#main
+# main
+
+
 fusionPeptide = 'GLFGAIAGFI'
 gl = revTrans("GLFGAIAGFI")
 
-def wrfafromls (seqLst):
+
+def wrfafromls(seqLst):
     j = 0
-    filFa = open('seqfile.fa','w')
+    filFa = open('seqfile.fa', 'w')
     for seq in seqLst:
-        j+=1
+        j += 1
         filFa.write('> %d\n' % j)
         filFa.write(seq+'\n')
     filFa.close()
+
+
 if gl.valid:
     wrfafromls(gl.genLst)
 else:

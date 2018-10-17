@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 from glob import glob
-import os
 cleaning = open("cleaning_commands.sh", 'w')
 for r1 in glob("./00-rawdata/*_R1_*.gz"):
     r2 = r1.replace("R1", "R2")

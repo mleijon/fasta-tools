@@ -1,11 +1,14 @@
 class FastaList(object):
     """docstring for fasta."""
 
-    def __init__(self, faFileName):     #Initialized by a filename string
-        seq_list = []; id_list = []; newseq = ''
-        self.gz = False; self.fq = True #File ca be gzipped or fastq as well as fasta
+    def __init__(self, faFileName):     # Initialized by a filename string
+        seq_list = []
+        id_list = []
+        newseq = ''
+        self.gz = False
+        self.fq = True  # File ca be gzipped or fastq as well as fasta
         self.Name = faFileName
-        if self.Name[-2:] in ['gz','GZ']:
+        if self.Name[-2:] in ['gz', 'GZ']:
             self.gz = True
         if '.fq' in self.Name:
             self.fqExt = '.fq'
@@ -36,7 +39,7 @@ class FastaList(object):
                 newseq = line
             else:
                 first = False
-                newseq +=line
+                newseq += line
         seq_list.append(newseq)
         self.faFile.seek(0)
         self.seq_list = seq_list
@@ -46,8 +49,8 @@ class FastaList(object):
     def rdfi(self):
         import gzip
         if self.gz:
-            faFiuz = open(self.Name[:-3],'w')
-            with gzip.open(self.Name,'rt') as f:
+            faFiuz = open(self.Name[:-3], 'w')
+            with gzip.open(self.Name, 'rt') as f:
                 faFiuz.write(f.read())
             faFiuz.close()
             faFiuz = open(self.Name[:-3])
@@ -55,15 +58,17 @@ class FastaList(object):
         else:
             faFi = open(self.Name)
             return faFi
+
     def fq2fa(self):
         if self.gz:
-            outFa = open(self.Name[:self.Name.find(self.fqExt + '.gz')]+'.fa','w')
+            outFa = open(self.Name[:self.Name.find(self.fqExt + '.gz')]+'.fa',
+                         'w')
         else:
-            outFa = open(self.Name[:self.Name.find(self.fqExt)]+'.fa','w')
+            outFa = open(self.Name[:self.Name.find(self.fqExt)]+'.fa', 'w')
         j = 0
         for line in self.rdfi():
             if line[0] == '@' and j % 4 == 0:
-                outFa.write(line.replace('@','>',1))
+                outFa.write(line.replace('@', '>', 1))
             elif j % 4 == 1:
                 outFa.write(line)
             elif line[0] == '+' and j % 4 == 2:
@@ -74,7 +79,7 @@ class FastaList(object):
                 print('Not a fastq-file')
                 return
                 outFa.close()
-            j+=1
+            j += 1
         outFa.close()
         if self.gz:
             outFa = open(self.Name[:self.Name.find(self.fqExt + '.gz')]+'.fa')
@@ -82,7 +87,8 @@ class FastaList(object):
             outFa = open(self.Name[:self.Name.find(self.fqExt)]+'.fa')
         return outFa
 
-    def rev(self,seqLst):
+    def rev(self, seqLst):
         return seqLst[::-1]
-    def revComp(self,seqLst):
+
+    def revComp(self, seqLst):
         pass
