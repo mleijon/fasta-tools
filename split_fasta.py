@@ -137,13 +137,15 @@ def WrFiles():
         fipa.write('No parameters, not contigs fasta file created by spades.')
         fipa.close()
 
-# Main
 
-parser = argparse.ArgumentParser(description='Split input fasta file based on existence of \
-                                                blast hits in input blast table file')
-parser.add_argument('-p',action='store_true',help='switch for parameter file output')
-parser.add_argument('-f',type = str,help='fastafile')
-parser.add_argument('-b',type = str,help='blastfile')
+# Main
+parser = argparse.ArgumentParser(description='Split input fasta file based on\
+                                              existence of blast hits in input\
+                                              blast table file')
+parser.add_argument('-p', action='store_true', help='switch for parameter file\
+                                                     output')
+parser.add_argument('-f', type=str, help='fastafile')
+parser.add_argument('-b', type=str, help='blastfile')
 args = parser.parse_args()
 try:
     binf = open(args.b)
