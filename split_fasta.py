@@ -61,7 +61,7 @@ class spadesFa(FastaList):
 
 
 class blastTbl(object):
-    """Create a class from a blast table from the corrspondin contigs created
+    """Create a class from a blast table from the corrsponding contigs created
        by SPades.
 
        Properties are a lst containing fasta ids for contigs with no blast hits
