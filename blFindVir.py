@@ -62,7 +62,6 @@ def blFindVir(inFileName, eCut):
 
                     lstEntry['e-value'] = ctrle(e, emin)[0]
                     lstEntry['r-e-value'] = round(ctrle(e, emin)[1], 2)
-                    print(lstEntry)
                     hitLst.append(lstEntry)
                     if linecache.getline(inFileName, j+1) != '\n':
                         e = linecache.getline(inFileName, j+1)[67:].split()[1]\
@@ -73,14 +72,17 @@ def blFindVir(inFileName, eCut):
 
     return blVirHit
 
-def crVirLst(blRes):
-        VirSum = dict()
-    for seqid, blhits in blRes.item():
-        for hits in blhits:
-            if hits['Accession'] in Virsum:
-                Virsum[hits['Accession']] += 1
-            else:
-                Virsum[hits['Accession']] = 1
 
-blVirHts = blFindVir('2C.fastq.blast', 0.1)
-crViRLst(blVirHts)
+def crVirLst(blRes):
+    VirSum = dict()
+    for seqid, blhits in blRes.items():
+        print(seqid)
+        for hits in blhits:
+            if hits['Accession'] in VirSum:
+                VirSum[hits['Accession']] += 1
+            else:
+                VirSum[hits['Accession']] = 1
+
+
+blVirHts = blFindVir('pool85.blast', 0.1)
+crVirLst(blVirHts)
