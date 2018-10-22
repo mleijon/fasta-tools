@@ -73,5 +73,14 @@ def blFindVir(inFileName, eCut):
 
     return blVirHit
 
+def crVirLst(blRes):
+        VirSum = dict()
+    for seqid, blhits in blRes.item():
+        for hits in blhits:
+            if hits['Accession'] in Virsum:
+                Virsum[hits['Accession']] += 1
+            else:
+                Virsum[hits['Accession']] = 1
 
-blFindVir('2C.fastq.blast', 0.1)
+blVirHts = blFindVir('2C.fastq.blast', 0.1)
+crViRLst(blVirHts)
