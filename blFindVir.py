@@ -37,7 +37,6 @@ def ctrle(e_in, emin):
 
 def blFindVir(inFileName, eCut):
     anchor = 'Sequences producing significant alignments: '
-    lstEntry = dict()
     blVirHit = dict()
     j = 0
     nrOfRows = countlines(open(inFileName))
@@ -51,6 +50,7 @@ def blFindVir(inFileName, eCut):
             while linecache.getline(inFileName, j)[0] != '>':
                 if (('virus' or 'Virus') in linecache.getline(inFileName, j)
                         and ctrle(e, emin)[1] > 0.1):
+                    lstEntry = dict()
                     acln = len(linecache.getline(inFileName, j).split()[0]) + 1
                     lstEntry['Accession'] = linecache.getline(inFileName, j).\
                         split()[0][5:]
@@ -67,28 +67,22 @@ def blFindVir(inFileName, eCut):
                         e = linecache.getline(inFileName, j+1)[67:].split()[1]\
                          .strip()
                 j += 1
-            blVirHit[query] = hitLst
-            print(query,)
-            print(blVirHit[query])
+            blVirHit.update({query: hitLst})
         j += 1
-    # for x in blVirHit:
-    #     print(x,)
-    #     print(blVirHit[x])
     return blVirHit
 
 
-#def crVirLst(blRes):
-    #print(blRes)
-#    VirSum = dict()
-#    for seqid in blRes:
-        #print(seqid, blRes[seqid])
-        #print('\n')
-        # for hits in blRes[seqid]:
-        #     if hits['Accession'] in VirSum:
-        #         VirSum[hits['Accession']] += 1
-        #     else:
-        #         VirSum[hits['Accession']] = 1
+def crVirLst(blRes):
+    VirSum = dict()
+    for seqid in blRes:
+        print(seqid, blRes[seqid])
+        print('\n')
+        for hits in blRes[seqid]:
+            if hits['Accession'] in VirSum:
+                VirSum[hits['Accession']] += 1
+            else:
+                VirSum[hits['Accession']] = 1
 
 
-blVirHts = blFindVir('pool85.blast', 0.1)
-#crVirLst(blVirHts)
+blVirHts = blFindVir('n.blast', 0.1)
+crVirLst(blVirHts)
