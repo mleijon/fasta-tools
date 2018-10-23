@@ -77,11 +77,11 @@ def crVirLst(blRes):
     for seqid in blRes:
         for hits in blRes[seqid]:
             if hits['Accession'] in VirSum:
-                VirSum[hits['Accession']] += 1
+                VirSum[hits['Accession'] +' | ' +hits['Description']] += 1
             else:
-                VirSum[hits['Accession']] = 1
+                VirSum[hits['Accession']+' | ' +hits['Description']] = 1
     for x in VirSum:
-        print(x, VirSum[x],)
+        print(sorted(VirSum(hit, keys=VirSum.__getitem__))
 
 
 blVirHts = blFindVir('pool85.blast', 0.1)
