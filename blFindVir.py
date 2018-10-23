@@ -80,8 +80,9 @@ def crVirLst(blRes):
                 VirSum[hits['Accession']] += 1
             else:
                 VirSum[hits['Accession']] = 1
-    print(VirSum)
+    for x in VirSum:
+        print(x, VirSum[x],)
 
 
-blVirHts = blFindVir('n.blast', 0.1)
+blVirHts = blFindVir('pool85.blast', 0.1)
 crVirLst(blVirHts)
