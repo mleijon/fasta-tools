@@ -43,6 +43,12 @@ def ctrle(e_in, emin):
 
 
 def blFindVir(inFileName, eCut):
+    """Creates a dict with virus blast hits.
+
+    Blastfile (inFileName) is parsed to extract hits to viruses by
+    recognizing the strings 'Virus' or 'virus' in the  'Description'
+    string. Secondary hits are includeded if the ratio e-value (best hit)/
+    e-value (secondary hit) is larger than eCut"""
     anchor = 'Sequences producing significant alignments: '
     blVirHit = dict()
     j = 0
@@ -51,22 +57,21 @@ def blFindVir(inFileName, eCut):
         if anchor in linecache.getline(inFileName, j):
             query = linecache.getline(inFileName, j-6).strip()[7:]
             e = linecache.getline(inFileName, j+2)[67:].split()[1].strip()
-            emin = e
-            j += 2
+            emin = e  # First hit = best hit
+            j += 2  # Skip empty row
             hitLst = []
-            while linecache.getline(inFileName, j)[0] != '>':
+            offs1 = linecache.getline(inFileName, j).find('||') + 2
+            while linecache.getline(inFileName, j)[0] != '\n':
                 if (('virus' or 'Virus') in linecache.getline(inFileName, j)
-                        and ctrle(e, emin)[1] > 0.1):
+                        and ctrle(e, emin)[1] > eCut):
                     lstEntry = dict()
-                    acln = len(linecache.getline(inFileName, j).split()[0]) + 1
                     lstEntry['Accession'] = linecache.getline(inFileName, j).\
-                        split()[0][4:]
+                        split()[0][offs1:]
+                    offs2 = offs1 + len(lstEntry['Accession'])
                     lstEntry['Description'] = linecache.\
-                        getline(inFileName, j)[acln:67].strip()
-                    lstEntry['Bitscore'] = int(linecache.
-                                               getline(inFileName, j)[67:].
-                                               split()[0].strip())
-
+                        getline(inFileName, j)[offs2:67].strip()
+                    lstEntry['Bitscore'] = int(linecache.getline(inFileName, j)
+                                               [67:].split()[0].strip())
                     lstEntry['e-value'] = ctrle(e, emin)[0]
                     lstEntry['r-e-value'] = round(ctrle(e, emin)[1], 2)
                     hitLst.append(lstEntry)
@@ -84,28 +89,29 @@ def crVirLst_all(blRes):
     """ Create a list of virus hits. Possibly more than 1/read."""
     VirSum = dict()
     for seqid in blRes:
-        for hits in blRes[seqid]:
-            if hits['Accession'] + '\t' + hits['Description'] in VirSum:
-                VirSum[hits['Accession'] + '\t' + hits['Description']] += 1
+        for hit in blRes[seqid]:
+            if hit['Accession'] + '\t' + hit['Description'] in VirSum:
+                VirSum[hit['Accession'] + '\t' + hit['Description']] += 1
             else:
-                VirSum[hits['Accession']+'\t' + hits['Description']] = 1
+                VirSum[hit['Accession']+'\t' + hit['Description']] = 1
+    hit = ''  # Here the hit is converted to a string
     for hit in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
         print(hit, '\t', VirSum[hit],)
 
 
-def crVirLst_one(blRes):
-    """ Create a list of virus hits, 1 virus (top hit)/read."""
+def crVirLst_bst(blRes):
+    """ Create a list of virus hits, 1 virus (the top hit)/read."""
     VirSum = dict()
-    hit = dict()
     for seqid in blRes:
-        hit = blRes[seqid][0]
+        hit = blRes[seqid][0]  # Best virus hit, 1st in dict list
         if hit['Accession'] + '\t' + hit['Description'] in VirSum:
             VirSum[hit['Accession'] + '\t' + hit['Description']] += 1
         else:
             VirSum[hit['Accession']+'\t' + hit['Description']] = 1
-    for x in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
-        print(x, '\t', VirSum[x],)
+    hit = ''  # Here the hit is converted to a string
+    for hit in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
+        print(hit, '\t', VirSum[hit],)
 
 
 blVirHts = blFindVir('pool85.blast', 0.1)
-crVirLst_one(blVirHts)
+crVirLst_bst(blVirHts)
