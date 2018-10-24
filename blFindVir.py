@@ -53,7 +53,7 @@ def blFindVir(inFileName, eCut):
                     lstEntry = dict()
                     acln = len(linecache.getline(inFileName, j).split()[0]) + 1
                     lstEntry['Accession'] = linecache.getline(inFileName, j).\
-                        split()[0][5:]
+                        split()[0][4:]
                     lstEntry['Description'] = linecache.\
                         getline(inFileName, j)[acln:67].strip()
                     lstEntry['Bitscore'] = int(linecache.
@@ -76,13 +76,13 @@ def crVirLst(blRes):
     VirSum = dict()
     for seqid in blRes:
         for hits in blRes[seqid]:
-            if hits['Accession'] + ' | ' + hits['Description'] in VirSum:
-                VirSum[hits['Accession'] + ' | ' + hits['Description']] += 1
+            if hits['Accession'] + '\t' + hits['Description'] in VirSum:
+                VirSum[hits['Accession'] + '\t' + hits['Description']] += 1
             else:
-                VirSum[hits['Accession']+' | ' + hits['Description']] = 1
+                VirSum[hits['Accession']+'\t' + hits['Description']] = 1
     for hit in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
-        print(hit, VirSum[hit],)
+        print(hit, '\t', VirSum[hit],)
 
 
-blVirHts = blFindVir('2C.fastq.blast', 0.1)
+blVirHts = blFindVir('hits_Undetermined.fa.blast', 0.1)
 crVirLst(blVirHts)
