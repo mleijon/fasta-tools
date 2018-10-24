@@ -74,7 +74,8 @@ def blFindVir(inFileName, eCut):
                         e = linecache.getline(inFileName, j+1)[67:].split()[1]\
                          .strip()
                 j += 1
-            blVirHit.update({query: hitLst})
+            if hitLst != []:
+                blVirHit.update({query: hitLst})
         j += 1
     return blVirHit
 
@@ -93,21 +94,18 @@ def crVirLst_all(blRes):
 
 
 def crVirLst_one(blRes):
-    """ Create a list of virus hits, 1/read."""
+    """ Create a list of virus hits, 1 virus (top hit)/read."""
     VirSum = dict()
     hit = dict()
     for seqid in blRes:
-        print(seqid,)
-        print(blRes[seqid],)
-
-        # hit = blRes[seqid][0]
-        # if hit['Accession'] + '\t' + hit['Description'] in VirSum:
-        #     VirSum[hit['Accession'] + '\t' + hit['Description']] += 1
-        # else:
-        #     VirSum[hit['Accession']+'\t' + hit['Description']] = 1
-    for hit in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
-        print(hit, '\t', VirSum[hit],)
+        hit = blRes[seqid][0]
+        if hit['Accession'] + '\t' + hit['Description'] in VirSum:
+            VirSum[hit['Accession'] + '\t' + hit['Description']] += 1
+        else:
+            VirSum[hit['Accession']+'\t' + hit['Description']] = 1
+    for x in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
+        print(x, '\t', VirSum[x],)
 
 
-blVirHts = blFindVir('hits_2C.fa.blast', 0.1)
+blVirHts = blFindVir('pool85.blast', 0.1)
 crVirLst_one(blVirHts)
