@@ -8,6 +8,7 @@ import linecache
 
 # counts the rows in infile
 def countlines(infile):
+    """Returns the line count."""
     with infile as f:
         for count, element in enumerate(f, 1):
             pass
@@ -15,8 +16,14 @@ def countlines(infile):
     return count
 
 
-# Something
+# Catches blast file exceptions
 def ctrle(e_in, emin):
+    """Catches blast file eceptions.
+
+    The blast file of Decypher loses the digit (x) before the 'e' in the
+    e-value (i.e.) xe-yyy when yyy is larger than 099. '1' is added to fix
+    this. Division by zero, if the e-value is zero is also avoided by this
+    function."""
     if e_in[0] == 'e':
         e_out = float('1' + e_in)
         if emin[0] == 'e':
@@ -72,7 +79,8 @@ def blFindVir(inFileName, eCut):
     return blVirHit
 
 
-def crVirLst(blRes):
+def crVirLst_all(blRes):
+    """ Create a list of virus hits. Possibly more than 1/read."""
     VirSum = dict()
     for seqid in blRes:
         for hits in blRes[seqid]:
@@ -84,5 +92,22 @@ def crVirLst(blRes):
         print(hit, '\t', VirSum[hit],)
 
 
-blVirHts = blFindVir('hits_Undetermined.fa.blast', 0.1)
-crVirLst(blVirHts)
+def crVirLst_one(blRes):
+    """ Create a list of virus hits, 1/read."""
+    VirSum = dict()
+    hit = dict()
+    for seqid in blRes:
+        print(seqid,)
+        print(blRes[seqid],)
+
+        # hit = blRes[seqid][0]
+        # if hit['Accession'] + '\t' + hit['Description'] in VirSum:
+        #     VirSum[hit['Accession'] + '\t' + hit['Description']] += 1
+        # else:
+        #     VirSum[hit['Accession']+'\t' + hit['Description']] = 1
+    for hit in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
+        print(hit, '\t', VirSum[hit],)
+
+
+blVirHts = blFindVir('hits_2C.fa.blast', 0.1)
+crVirLst_one(blVirHts)
