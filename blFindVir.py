@@ -96,34 +96,40 @@ def blFindTarget():
 def crVirLst_all(blRes):
     """ Create a list of virus hits. Possibly more than 1/read."""
     VirSum = dict()
+    keyVS = ''
     for seqid in blRes:
         for hit in blRes[seqid]:
-            if hit['Accession'] + '\t' + hit['Description'] in VirSum:
-                VirSum[hit['Accession'] + '\t' + hit['Description']] += 1
+            keyVS = '{:15}'.format(hit['Accession']) + '{:60}'.format(
+             hit['Description'])
+            if keyVS in VirSum:
+                VirSum[keyVS] += 1
             else:
-                VirSum[hit['Accession']+'\t' + hit['Description']] = 1
+                VirSum[keyVS] = 1
     hit = ''  # Hit is converted to a string
-    filename = args.b[:args.b.find('blast'.casefold())]+'_'+args.t + '.all.txt'
+    filename = args.b[:args.b.find('.blast'.casefold())]+'_'+args.t + '.all.txt'
     outfile = open(filename, 'w')
     for hit in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
-        outfile.write(hit + str(VirSum[hit]).rjust(15) + '\n')
+        outfile.write(hit + str(VirSum[hit]) + '\n')
     outfile.close()
 
 
 def crVirLst_bst(blRes):
     """ Create a list of virus hits, 1 virus (the top hit)/read."""
     VirSum = dict()
+    keyVS = ''
     for seqid in blRes:
         hit = blRes[seqid][0]  # Best virus hit, 1st in dict list
-        if hit['Accession'] + '\t' + hit['Description'] in VirSum:
-            VirSum[hit['Accession'] + '\t' + hit['Description']] += 1
+        keyVS = '{:15}'.format(hit['Accession']) + '{:60}'.format(
+         hit['Description'])
+        if keyVS in VirSum:
+            VirSum[keyVS] += 1
         else:
-            VirSum[hit['Accession']+'\t' + hit['Description']] = 1
+            VirSum[keyVS] = 1
     hit = ''  # Hit is converted to a string
-    filename = args.b[:args.b.find('blast'.casefold())]+'_'+args.t + '.bst.txt'
+    filename = args.b[:args.b.find('.blast'.casefold())]+'_'+args.t + '.bst.txt'
     outfile = open(filename, 'w')
     for hit in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
-        outfile.write(hit + str(VirSum[hit]).rjust(15)+'\n')
+        outfile.write(hit + str(VirSum[hit]) + '\n')
     outfile.close()
 
 
