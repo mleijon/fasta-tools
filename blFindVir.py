@@ -42,10 +42,10 @@ def ctrle(e_in, emin):
     return [e_out, r]
 
 
-def blFindTarget(inFileName, eCut, target):
+def blFindTarget(inFiNa, eCut, target):
     """Creates a dict with virus blast hits.
 
-    Blastfile (inFileName) is parsed to extract hits to viruses by
+    Blastfile (inFiNa) is parsed to extract hits to viruses by
     recognizing the strings 'Virus' or 'virus' in the  'Description'
     string. Secondary hits are includeded if the ratio e-value (best hit)/
     e-value (secondary hit) is larger than eCut"""
@@ -53,40 +53,41 @@ def blFindTarget(inFileName, eCut, target):
     blVirHit = dict()
     j = 0
     first = True
-    nrOfRows = countlines(open(inFileName))
+    nrOfRows = countlines(open(inFiNa))
     while j <= nrOfRows:
-        if anchor in linecache.getline(inFileName, j):
-            query = linecache.getline(inFileName, j-6).strip()[7:]
-            e = linecache.getline(inFileName, j+2)[67:].split()[1].strip()
+        if anchor in linecache.getline(inFiNa, j):
+            query = linecache.getline(inFiNa, j-6).strip()[7:]
+            e = linecache.getline(inFiNa, j+2)[67:].split()[1].strip()
             emin = e  # First hit = best hit
             j += 2  # Skip empty row
             hitLst = []
             if first:  # Read this only first time since constant
-                offs1 = linecache.getline(inFileName, j).find('||') + 2
+                offs1 = linecache.getline(inFiNa, j).find('||') + 2
                 first = False
-            while linecache.getline(inFileName, j)[0] != '\n':
-                if (virus in linecache.getline(inFileName, j).casefold()
+            while linecache.getline(inFiNa, j)[0] != '\n':
+                if (target in linecache.getline(inFiNa, j).casefold()
                         and ctrle(e, emin)[1] > eCut):
                     lstEntry = dict()
-                    lstEntry['Accession'] = linecache.getline(inFileName, j).\
+                    lstEntry['Accession'] = linecache.getline(inFiNa, j).\
                         split()[0][offs1:]
                     offs2 = offs1 + len(lstEntry['Accession'])
                     lstEntry['Description'] = linecache.\
-                        getline(inFileName, j)[offs2:67].strip()
-                    lstEntry['Bitscore'] = int(linecache.getline(inFileName, j)
+                        getline(inFiNa, j)[offs2:67].strip()
+                    lstEntry['Bitscore'] = int(linecache.getline(inFiNa, j)
                                                [67:].split()[0].strip())
                     lstEntry['e-value'] = ctrle(e, emin)[0]
                     lstEntry['r-e-value'] = round(ctrle(e, emin)[1], 2)
                     hitLst.append(lstEntry)
-                    if linecache.getline(inFileName, j+1) != '\n':
-                        e = linecache.getline(inFileName, j+1)[67:].split()[1]\
+                    if linecache.getline(inFiNa, j+1) != '\n':
+                        e = linecache.getline(inFiNa, j+1)[67:].split()[1]\
                          .strip()
                 j += 1
             if hitLst != []:
                 blVirHit.update({query: hitLst})
         j += 1
-    return blVirHit # {seqid:[{'Accession':, 'Description':,'Bitscore':,
-                    # 'e-value':, 'r-e-value':},...],...}
+# Returns {seqid:[{'Accession':, 'Description':,'Bitscore':,'e-value':,
+# 'r-e-value':},...],...}
+    return blVirHit
 
 
 def crVirLst_all(blRes):
@@ -117,5 +118,5 @@ def crVirLst_bst(blRes):
         print(hit, '\t', VirSum[hit],)
 
 
-blVirHts = blFindTarget('pool85.blast', 0.1,'virus')
+blVirHts = blFindTarget('DNA7.blast', 0.1, 'virus')
 crVirLst_bst(blVirHts)
