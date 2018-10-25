@@ -55,10 +55,6 @@ def blFindTarget(arg.b, arg.d, arg.t):
     blVirHit = dict()
     j = 0
     first = True
-    try:
-        binf = open(args.b)
-    except IOError:
-        sys.exit('blast input file error')
     nrOfRows = countlines(binf)
     while j <= nrOfRows:
         if anchor in linecache.getline(args.b, j):
@@ -134,9 +130,12 @@ parser.add_argument('-d', type=float, default=0.1, help='sensitivity depth')
 parser-add_argument('t', type=str, default='virus',help='target')
 args = parser.parse_args()
 try:
+    binf = open(args.b)
     finf = open(args.f)
 except IOError:
-    sys.exit('fasta input file error')
-blVirHts = blFindTarget(arg.f, arg.b, arg.d, arg.t)
+    sys.exit('Input file error')
+blVirHts = blFindTarget(arg.b, arg.d, arg.t)
+seqidTgtLst = blFindTarget.keys()
+faLst = FastaList(args.f)
 crVirLst_bst(blVirHts)
 crVirLst_all(blVirHts)
