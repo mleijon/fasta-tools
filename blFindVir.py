@@ -5,6 +5,7 @@
 
 import linecache
 import argparse
+import sys
 from fasta import FastaList
 
 
@@ -44,7 +45,7 @@ def ctrle(e_in, emin):
     return [e_out, r]
 
 
-def blFindTarget(arg.b, arg.d, arg.t):
+def blFindTarget():
     """Creates a dict with virus blast hits.
 
     Blastfile (args.b) is parsed to extract hits to viruses by
@@ -101,9 +102,12 @@ def crVirLst_all(blRes):
                 VirSum[hit['Accession'] + '\t' + hit['Description']] += 1
             else:
                 VirSum[hit['Accession']+'\t' + hit['Description']] = 1
-    hit = ''  # Here hit is converted to a string
+    hit = ''  # Hit is converted to a string
+    filename = args.b[:args.b.find('blast'.casefold())]+'_'+args.t + '.all.txt'
+    outfile = open(filename, 'w')
     for hit in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
-        print(hit, '\t', VirSum[hit],)
+        outfile.write(hit + str(VirSum[hit]).rjust(15) + '\n')
+    outfile.close()
 
 
 def crVirLst_bst(blRes):
@@ -115,27 +119,32 @@ def crVirLst_bst(blRes):
             VirSum[hit['Accession'] + '\t' + hit['Description']] += 1
         else:
             VirSum[hit['Accession']+'\t' + hit['Description']] = 1
-    hit = ''  # Here hit is converted to a string
+    hit = ''  # Hit is converted to a string
+    filename = args.b[:args.b.find('blast'.casefold())]+'_'+args.t + '.bst.txt'
+    outfile = open(filename, 'w')
     for hit in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
-        print(hit, '\t', VirSum[hit],)
+        outfile.write(hit + str(VirSum[hit]).rjust(15)+'\n')
+    outfile.close()
+
 
 def wrTargetFa():
     pass
 
+
 parser = argparse.ArgumentParser(
-description='Export blast hit containing a "target" keyword')
+ description='Export blast hit containing a "target" keyword')
 parser.add_argument('-f', type=str, help='fastafile')
 parser.add_argument('-b', type=str, help='blastfile')
 parser.add_argument('-d', type=float, default=0.1, help='sensitivity depth')
-parser-add_argument('t', type=str, default='virus',help='target')
+parser.add_argument('-t', type=str, default='virus', help='target')
 args = parser.parse_args()
 try:
     binf = open(args.b)
     finf = open(args.f)
 except IOError:
     sys.exit('Input file error')
-blVirHts = blFindTarget(arg.b, arg.d, arg.t)
-seqidTgtLst = blFindTarget.keys()
+blVirHts = blFindTarget()
+seqidTgtLst = blVirHts.keys()
 faLst = FastaList(args.f)
 crVirLst_bst(blVirHts)
 crVirLst_all(blVirHts)

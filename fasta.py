@@ -7,7 +7,7 @@ class FastaList(object):
         newseq = ''
         self.fq = True  # File ca be gzipped or fastq as well as fasta
         self.Name = faFileName
-        self.gz = self.Name[-2:].casefold() == 'gz':
+        self.gz = self.Name[-2:].casefold() == 'gz'
         if '.fq' in self.Name.casefold():
             self.fqExt = '.fq'
         elif '.fastq' in self.Name.casefold():
