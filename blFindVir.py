@@ -42,7 +42,7 @@ def ctrle(e_in, emin):
     return [e_out, r]
 
 
-def blFindVir(inFileName, eCut):
+def blFindTarget(inFileName, eCut, target):
     """Creates a dict with virus blast hits.
 
     Blastfile (inFileName) is parsed to extract hits to viruses by
@@ -52,6 +52,7 @@ def blFindVir(inFileName, eCut):
     anchor = 'Sequences producing significant alignments: '
     blVirHit = dict()
     j = 0
+    first = True
     nrOfRows = countlines(open(inFileName))
     while j <= nrOfRows:
         if anchor in linecache.getline(inFileName, j):
@@ -60,9 +61,11 @@ def blFindVir(inFileName, eCut):
             emin = e  # First hit = best hit
             j += 2  # Skip empty row
             hitLst = []
-            offs1 = linecache.getline(inFileName, j).find('||') + 2
+            if first:  # Read this only first time since constant
+                offs1 = linecache.getline(inFileName, j).find('||') + 2
+                first = False
             while linecache.getline(inFileName, j)[0] != '\n':
-                if (('virus' or 'Virus') in linecache.getline(inFileName, j)
+                if (virus in linecache.getline(inFileName, j).casefold()
                         and ctrle(e, emin)[1] > eCut):
                     lstEntry = dict()
                     lstEntry['Accession'] = linecache.getline(inFileName, j).\
@@ -82,7 +85,8 @@ def blFindVir(inFileName, eCut):
             if hitLst != []:
                 blVirHit.update({query: hitLst})
         j += 1
-    return blVirHit
+    return blVirHit # {seqid:[{'Accession':, 'Description':,'Bitscore':,
+                    # 'e-value':, 'r-e-value':},...],...}
 
 
 def crVirLst_all(blRes):
@@ -94,7 +98,7 @@ def crVirLst_all(blRes):
                 VirSum[hit['Accession'] + '\t' + hit['Description']] += 1
             else:
                 VirSum[hit['Accession']+'\t' + hit['Description']] = 1
-    hit = ''  # Here the hit is converted to a string
+    hit = ''  # Here hit is converted to a string
     for hit in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
         print(hit, '\t', VirSum[hit],)
 
@@ -108,10 +112,10 @@ def crVirLst_bst(blRes):
             VirSum[hit['Accession'] + '\t' + hit['Description']] += 1
         else:
             VirSum[hit['Accession']+'\t' + hit['Description']] = 1
-    hit = ''  # Here the hit is converted to a string
+    hit = ''  # Here hit is converted to a string
     for hit in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
         print(hit, '\t', VirSum[hit],)
 
 
-blVirHts = blFindVir('pool85.blast', 0.1)
+blVirHts = blFindTarget('pool85.blast', 0.1,'virus')
 crVirLst_bst(blVirHts)
