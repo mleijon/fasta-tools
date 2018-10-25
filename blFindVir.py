@@ -69,7 +69,7 @@ def blFindTarget():
                 first = False
             while linecache.getline(args.b, j)[0] != '\n':
                 if (args.t in linecache.getline(args.b, j).casefold()
-                        and ctrle(e, emin)[1] > args.d):
+                        and ctrle(e, emin)[1] >= args.d):
                     lstEntry = dict()
                     lstEntry['Accession'] = linecache.getline(args.b, j).\
                         split()[0][offs1:]
@@ -99,17 +99,18 @@ def crVirLst_all(blRes):
     keyVS = ''
     for seqid in blRes:
         for hit in blRes[seqid]:
-            keyVS = '{:15}'.format(hit['Accession']) + '{:60}'.format(
+            keyVS = '{:12}'.format(hit['Accession']) + '|  ' + '{:55}'.format(
              hit['Description'])
             if keyVS in VirSum:
                 VirSum[keyVS] += 1
             else:
                 VirSum[keyVS] = 1
     hit = ''  # Hit is converted to a string
-    filename = args.b[:args.b.find('.blast'.casefold())]+'_'+args.t + '.all.txt'
+    filename = args.b[:args.b.find('.blast'.casefold())]+'_'+args.t\
+        + '.all.txt'
     outfile = open(filename, 'w')
     for hit in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
-        outfile.write(hit + str(VirSum[hit]) + '\n')
+        outfile.write(hit + '|  ' + str(VirSum[hit]) + '\n')
     outfile.close()
 
 
@@ -119,17 +120,18 @@ def crVirLst_bst(blRes):
     keyVS = ''
     for seqid in blRes:
         hit = blRes[seqid][0]  # Best virus hit, 1st in dict list
-        keyVS = '{:15}'.format(hit['Accession']) + '{:60}'.format(
+        keyVS = '{:12}'.format(hit['Accession']) + '|  ' + '{:55}'.format(
          hit['Description'])
         if keyVS in VirSum:
             VirSum[keyVS] += 1
         else:
             VirSum[keyVS] = 1
     hit = ''  # Hit is converted to a string
-    filename = args.b[:args.b.find('.blast'.casefold())]+'_'+args.t + '.bst.txt'
+    filename = args.b[:args.b.find('.blast'.casefold())]+'_'+args.t\
+        + '.bst.txt'
     outfile = open(filename, 'w')
     for hit in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
-        outfile.write(hit + str(VirSum[hit]) + '\n')
+        outfile.write(hit + '|  ' + str(VirSum[hit]) + '\n')
     outfile.close()
 
 
@@ -141,7 +143,7 @@ parser = argparse.ArgumentParser(
  description='Export blast hit containing a "target" keyword')
 parser.add_argument('-f', type=str, help='fastafile')
 parser.add_argument('-b', type=str, help='blastfile')
-parser.add_argument('-d', type=float, default=0.1, help='sensitivity depth')
+parser.add_argument('-d', type=float, default=1, help='sensitivity depth')
 parser.add_argument('-t', type=str, default='virus', help='target')
 args = parser.parse_args()
 try:
@@ -152,5 +154,6 @@ except IOError:
 blVirHts = blFindTarget()
 seqidTgtLst = blVirHts.keys()
 faLst = FastaList(args.f)
+print(faLst)
 crVirLst_bst(blVirHts)
 crVirLst_all(blVirHts)

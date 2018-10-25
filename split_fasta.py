@@ -90,21 +90,23 @@ class blastTbl(object):
 
 
 def WrFiles():
-    if args.f[-2:] == ('gz' or 'GZ'):
+    if args.f[-2:] in ['gz', 'GZ']:
         fahits = 'hits_'+args.f[:-3]
         fanohits = 'nohits_'+args.f[:-3]
     else:
         fahits = 'hits_'+args.f
         fanohits = 'nohits_'+args.f
-    if fahits[-2:] == ('fq' or 'FQ'):
+    if fahits[-2:] in ['fq', 'FQ', 'fa', 'FA']:
         fahits = fahits[:-3]
         fanohits = fanohits[:-3]
-    elif fahits[-5:] == ('fastq' or 'FASTQ'):
-        fahits = fahits[:-5]
-        fanohits = fanohits[:-5]
+    elif fahits[-5:] in ['fastq', 'FASTQ', 'fasta', 'FASTA']:
+        fahits = fahits[:-6]
+        fanohits = fanohits[:-6]
+    fahits = fahits + '.fa'
+    fanohits = fanohits + '.fa'
     try:
-        FiHit = open(fahits+'fa', 'w')
-        FiNoHit = open(fanohits+'fa', 'w')
+        FiHit = open(fahits, 'w')
+        FiNoHit = open(fanohits, 'w')
     except IOError:
         sys.exit('error writing file')
     j = 0
@@ -117,11 +119,7 @@ def WrFiles():
     FiHit.close()
     FiNoHit.close()
     if args.p and spFaLst.is_spadesFa:
-        if '.' in args.f:
-            name = args.f[:args.f.find('.')]+'.par'
-            fipa = open(name, 'w')
-        else:
-            fipa = open(args.f+'.par', 'w')
+        fipa = open(fahits[5:-2] + 'par', 'w')
         spFaLst.wrPar2File(fipa, args.f)
         fihi = open(fahits)
         faHitLst = spadesFa(fihi)
