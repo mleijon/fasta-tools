@@ -1,31 +1,19 @@
 class FastaList(object):
     """docstring for fasta."""
 
-    def __init__(self, faFileName):     # Initialized by a filename string
+    def __init__(self, faFileName):  # Initialized by a filename string
         seq_list = []
         id_list = []
         newseq = ''
-        self.gz = False
         self.fq = True  # File ca be gzipped or fastq as well as fasta
         self.Name = faFileName
-        if self.Name[-2:] in ['gz', 'GZ']:
-            self.gz = True
-        if '.fq' in self.Name:
+        self.gz = self.Name[-2:].casefold() == 'gz':
+        if '.fq' in self.Name.casefold():
             self.fqExt = '.fq'
-        elif '.FQ' in self.Name:
-            self.fqExt = '.FQ'
-        elif '.fastq' in self.Name:
+        elif '.fastq' in self.Name.casefold():
             self.fqExt = '.fastq'
-        elif '.FASTQ' in self.Name:
-            self.fqExt = '.FASTQ'
         else:
             self.fq = False
-        if '.gz' in self.Name:
-            self.gzExt = 'gz'
-        elif '.GZ' in self.Name:
-            self.gzExt = 'GZ'
-        else:
-            self.gz = False
         if self.fq:
             self.faFile = self.fq2fa()
         else:
@@ -60,11 +48,7 @@ class FastaList(object):
             return faFi
 
     def fq2fa(self):
-        if self.gz:
-            outFa = open(self.Name[:self.Name.find(self.fqExt + '.gz')]+'.fa',
-                         'w')
-        else:
-            outFa = open(self.Name[:self.Name.find(self.fqExt)]+'.fa', 'w')
+        outFa = open(self.Name[:self.Name.find(self.fqExt)]+'.fa', 'w')
         j = 0
         for line in self.rdfi():
             if line[0] == '@' and j % 4 == 0:
@@ -81,10 +65,7 @@ class FastaList(object):
                 outFa.close()
             j += 1
         outFa.close()
-        if self.gz:
-            outFa = open(self.Name[:self.Name.find(self.fqExt + '.gz')]+'.fa')
-        else:
-            outFa = open(self.Name[:self.Name.find(self.fqExt)]+'.fa')
+        outFa = open(self.Name[:self.Name.find(self.fqExt)]+'.fa')
         return outFa
 
     def rev(self, seqLst):

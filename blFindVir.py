@@ -4,6 +4,8 @@
 
 
 import linecache
+import argparse
+from fasta import FastaList
 
 
 # counts the rows in infile
@@ -42,44 +44,48 @@ def ctrle(e_in, emin):
     return [e_out, r]
 
 
-def blFindTarget(inFiNa, eCut, target):
+def blFindTarget(arg.b, arg.d, arg.t):
     """Creates a dict with virus blast hits.
 
-    Blastfile (inFiNa) is parsed to extract hits to viruses by
+    Blastfile (args.b) is parsed to extract hits to viruses by
     recognizing the strings 'Virus' or 'virus' in the  'Description'
     string. Secondary hits are includeded if the ratio e-value (best hit)/
-    e-value (secondary hit) is larger than eCut"""
+    e-value (secondary hit) is larger than args.d"""
     anchor = 'Sequences producing significant alignments: '
     blVirHit = dict()
     j = 0
     first = True
-    nrOfRows = countlines(open(inFiNa))
+    try:
+        binf = open(args.b)
+    except IOError:
+        sys.exit('blast input file error')
+    nrOfRows = countlines(binf)
     while j <= nrOfRows:
-        if anchor in linecache.getline(inFiNa, j):
-            query = linecache.getline(inFiNa, j-6).strip()[7:]
-            e = linecache.getline(inFiNa, j+2)[67:].split()[1].strip()
+        if anchor in linecache.getline(args.b, j):
+            query = linecache.getline(args.b, j-6).strip()[7:]
+            e = linecache.getline(args.b, j+2)[67:].split()[1].strip()
             emin = e  # First hit = best hit
             j += 2  # Skip empty row
             hitLst = []
             if first:  # Read this only first time since constant
-                offs1 = linecache.getline(inFiNa, j).find('||') + 2
+                offs1 = linecache.getline(args.b, j).find('||') + 2
                 first = False
-            while linecache.getline(inFiNa, j)[0] != '\n':
-                if (target in linecache.getline(inFiNa, j).casefold()
-                        and ctrle(e, emin)[1] > eCut):
+            while linecache.getline(args.b, j)[0] != '\n':
+                if (args.t in linecache.getline(args.b, j).casefold()
+                        and ctrle(e, emin)[1] > args.d):
                     lstEntry = dict()
-                    lstEntry['Accession'] = linecache.getline(inFiNa, j).\
+                    lstEntry['Accession'] = linecache.getline(args.b, j).\
                         split()[0][offs1:]
                     offs2 = offs1 + len(lstEntry['Accession'])
                     lstEntry['Description'] = linecache.\
-                        getline(inFiNa, j)[offs2:67].strip()
-                    lstEntry['Bitscore'] = int(linecache.getline(inFiNa, j)
+                        getline(args.b, j)[offs2:67].strip()
+                    lstEntry['Bitscore'] = int(linecache.getline(args.b, j)
                                                [67:].split()[0].strip())
                     lstEntry['e-value'] = ctrle(e, emin)[0]
                     lstEntry['r-e-value'] = round(ctrle(e, emin)[1], 2)
                     hitLst.append(lstEntry)
-                    if linecache.getline(inFiNa, j+1) != '\n':
-                        e = linecache.getline(inFiNa, j+1)[67:].split()[1]\
+                    if linecache.getline(args.b, j+1) != '\n':
+                        e = linecache.getline(args.b, j+1)[67:].split()[1]\
                          .strip()
                 j += 1
             if hitLst != []:
@@ -117,6 +123,20 @@ def crVirLst_bst(blRes):
     for hit in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
         print(hit, '\t', VirSum[hit],)
 
+def wrTargetFa():
+    pass
 
-blVirHts = blFindTarget('DNA7.blast', 0.1, 'virus')
+parser = argparse.ArgumentParser(
+description='Export blast hit containing a "target" keyword')
+parser.add_argument('-f', type=str, help='fastafile')
+parser.add_argument('-b', type=str, help='blastfile')
+parser.add_argument('-d', type=float, default=0.1, help='sensitivity depth')
+parser-add_argument('t', type=str, default='virus',help='target')
+args = parser.parse_args()
+try:
+    finf = open(args.f)
+except IOError:
+    sys.exit('fasta input file error')
+blVirHts = blFindTarget(arg.f, arg.b, arg.d, arg.t)
 crVirLst_bst(blVirHts)
+crVirLst_all(blVirHts)
