@@ -141,8 +141,8 @@ parser = argparse.ArgumentParser(description='Split input fasta file based on\
                                               blast table file')
 parser.add_argument('-p', action='store_true', help='switch for parameter file\
                                                      output')
-parser.add_argument('-f', type=str, help='fastafile')
-parser.add_argument('-b', type=str, help='blastfile')
+parser.add_argument('-f', type=str, help='fastafile', required=True)
+parser.add_argument('-b', type=str, help='blastfile', required=True)
 args = parser.parse_args()
 try:
     binf = open(args.b)

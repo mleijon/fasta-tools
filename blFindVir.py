@@ -137,19 +137,20 @@ def crVirLst_bst(blRes):
 
 def wrTargetFa(seqidTargets):
     try:
-        outfile = open(args.f[:-args.f.find('.')] + args.t + '.fa', 'w')
-    except: IOError
+        outfile = open(args.f[:args.f.find('.')] + '_' + args.t + '.fa', 'w')
+    except IOError:
+        sys.exit('Output file error')
     faLst = FastaList(args.f)
-    for seqid, seq in zip(faLst.seq_id, faLst.seq_list):
+    for seqid, seq in zip(faLst.id_list, faLst.seq_list):
         if seqid in seqidTargets:
-            outfile.write(faLst.seq_list)
+            outfile.write(seq)
     outfile.close()
 
 
 parser = argparse.ArgumentParser(
  description='Export blast hit containing a "target" keyword')
-parser.add_argument('-f', type=str, help='fastafile')
-parser.add_argument('-b', type=str, help='blastfile')
+parser.add_argument('-f', type=str, help='fastafile', required=True)
+parser.add_argument('-b', type=str, help='blastfile', required=True)
 parser.add_argument('-d', type=float, default=1, help='sensitivity depth')
 parser.add_argument('-t', type=str, default='virus', help='target')
 args = parser.parse_args()
