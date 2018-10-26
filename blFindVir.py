@@ -143,7 +143,7 @@ def wrTargetFa(seqidTargets):
     faLst = FastaList(args.f)
     for seqid, seq in zip(faLst.id_list, faLst.seq_list):
         if seqid in seqidTargets:
-            outfile.write(seq)
+            outfile.write(seqid + '\n' + seq)
     outfile.close()
 
 
