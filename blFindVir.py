@@ -135,8 +135,15 @@ def crVirLst_bst(blRes):
     outfile.close()
 
 
-def wrTargetFa():
-    pass
+def wrTargetFa(seqidTargets):
+    try:
+        outfile = open(args.f[:-args.f.find('.')] + args.t + '.fa', 'w')
+    except: IOError
+    faLst = FastaList(args.f)
+    for seqid, seq in zip(faLst.seq_id, faLst.seq_list):
+        if seqid in seqidTargets:
+            outfile.write(faLst.seq_list)
+    outfile.close()
 
 
 parser = argparse.ArgumentParser(
@@ -152,8 +159,6 @@ try:
 except IOError:
     sys.exit('Input file error')
 blVirHts = blFindTarget()
-seqidTgtLst = blVirHts.keys()
-faLst = FastaList(args.f)
-print(faLst)
+wrTargetFa(blVirHts.keys())
 crVirLst_bst(blVirHts)
 crVirLst_all(blVirHts)
