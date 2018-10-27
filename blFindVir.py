@@ -116,15 +116,13 @@ def crVirLst_top(blRes):
     VirSum = dict()
     for seqid in blRes:
         hit = blRes[seqid][0]  # Best virus hit, 1st in dict list
-        keyVS = '{:12}'.format(hit['Accession']) + '|  ' + '{:55}'.format(
-             hit['Description'])
+        keyVS = hit['Accession']
+        VirSum.setdefault(keyVS, {'Description': hit['Description'],
+                                  'emin': 1, 'readSum': 1})
         if keyVS in VirSum.keys():
             VirSum[keyVS]['readSum'] += 1
             if hit['e-value'] < VirSum[keyVS]['emin']:
                 VirSum[keyVS]['emin'] = hit['e-value']
-        else:
-            VirSum.setdefault(keyVS, {'emin': 1, 'readSum': 1})
-    hit = ''  # Hit is converted to a string
     filename = args.b[:args.b.find('.blast'.casefold())]+'_'+args.t\
         + '.top.txt'
     outfile = open(filename, 'w')
