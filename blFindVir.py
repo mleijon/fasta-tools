@@ -3,7 +3,7 @@
 # Something
 
 
-import linecache
+import linecache as lica
 import argparse
 import sys
 from fasta import FastaList
@@ -39,9 +39,9 @@ def ctrle(e_in, emin):
     else:
         e_out = float(e_in)
         if emin[0] == 'e':
-            r = float('1' + emin)/float(e_in)
+            r = float('1' + emin)/e_out
         else:
-            r = float(emin)/float(e_in)
+            r = float(emin)/e_out
     return [e_out, r]
 
 
@@ -58,32 +58,30 @@ def blFindTarget():
     first = True
     nrOfRows = countlines(binf)
     while j <= nrOfRows:
-        if anchor in linecache.getline(args.b, j):
-            query = linecache.getline(args.b, j-6).strip()[7:]
-            e = linecache.getline(args.b, j+2)[67:].split()[1].strip()
-            emin = e  # First hit = best hit
+        if anchor in lica.getline(args.b, j):
+            query = lica.getline(args.b, j-6).strip()[7:]
+            emin = lica.getline(args.b, j+2)[67:].split()[1].strip()
             j += 2  # Skip empty row
             hitLst = []
             if first:  # Read this only first time since constant
-                offs1 = linecache.getline(args.b, j).find('||') + 2
+                offs1 = lica.getline(args.b, j).find('||') + 2
                 first = False
-            while linecache.getline(args.b, j)[0] != '\n':
-                if (args.t in linecache.getline(args.b, j).casefold()
+            while lica.getline(args.b, j)[0] != '\n':
+                e = lica.getline(args.b, j)[67:].split()[1].strip()
+                if (args.t in lica.getline(args.b, j).casefold()
                         and ctrle(e, emin)[1] >= args.d):
                     lstEntry = dict()
-                    lstEntry['Accession'] = linecache.getline(args.b, j).\
+                    lstEntry['Accession'] = lica.getline(args.b, j).\
                         split()[0][offs1:]
                     offs2 = offs1 + len(lstEntry['Accession'])
-                    lstEntry['Description'] = linecache.\
+                    lstEntry['Description'] = lica.\
                         getline(args.b, j)[offs2:67].strip()
-                    lstEntry['Bitscore'] = int(linecache.getline(args.b, j)
+                    lstEntry['Bitscore'] = int(lica.getline(args.b, j)
                                                [67:].split()[0].strip())
                     lstEntry['e-value'] = ctrle(e, emin)[0]
                     lstEntry['r-e-value'] = round(ctrle(e, emin)[1], 2)
+                    print(lstEntry['e-value'], lstEntry['r-e-value'], e, emin)
                     hitLst.append(lstEntry)
-                    if linecache.getline(args.b, j+1) != '\n':
-                        e = linecache.getline(args.b, j+1)[67:].split()[1]\
-                         .strip()
                 j += 1
             if hitLst != []:
                 blVirHit.update({query: hitLst})
@@ -121,7 +119,7 @@ def crVirLst_bst(blRes):
     for seqid in blRes:
         hit = blRes[seqid][0]  # Best virus hit, 1st in dict list
         keyVS = '{:12}'.format(hit['Accession']) + '|  ' + '{:55}'.format(
-         hit['Description'])
+             hit['Description'])
         if keyVS in VirSum:
             VirSum[keyVS] += 1
         else:
@@ -136,14 +134,15 @@ def crVirLst_bst(blRes):
 
 
 def wrTargetFa(seqidTargets):
+    filename = args.b[:args.b.find('.blast'.casefold())]+'_'+args.t + '.fa'
     try:
-        outfile = open(args.f[:args.f.find('.')] + '_' + args.t + '.fa', 'w')
+        outfile = open(filename, 'w')
     except IOError:
         sys.exit('Output file error')
     faLst = FastaList(args.f)
     for seqid, seq in zip(faLst.id_list, faLst.seq_list):
         if seqid in seqidTargets:
-            outfile.write(seqid + '\n' + seq)
+            outfile.write(seq)
     outfile.close()
 
 
@@ -151,7 +150,7 @@ parser = argparse.ArgumentParser(
  description='Export blast hit containing a "target" keyword')
 parser.add_argument('-f', type=str, help='fastafile', required=True)
 parser.add_argument('-b', type=str, help='blastfile', required=True)
-parser.add_argument('-d', type=float, default=1, help='sensitivity depth')
+parser.add_argument('-d', type=float, default=1.0, help='sensitivity depth')
 parser.add_argument('-t', type=str, default='virus', help='target')
 args = parser.parse_args()
 try:
