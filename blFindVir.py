@@ -80,7 +80,6 @@ def blFindTarget():
                                                [67:].split()[0].strip())
                     lstEntry['e-value'] = ctrle(e, emin)[0]
                     lstEntry['r-e-value'] = round(ctrle(e, emin)[1], 2)
-                    print(lstEntry['e-value'], lstEntry['r-e-value'], e, emin)
                     hitLst.append(lstEntry)
                 j += 1
             if hitLst != []:
@@ -91,7 +90,7 @@ def blFindTarget():
     return blVirHit
 
 
-def crVirLst_all(blRes):
+def crVirLst_deep(blRes):
     """ Create a list of virus hits. Possibly more than 1/read."""
     VirSum = dict()
     keyVS = ''
@@ -105,30 +104,32 @@ def crVirLst_all(blRes):
                 VirSum[keyVS] = 1
     hit = ''  # Hit is converted to a string
     filename = args.b[:args.b.find('.blast'.casefold())]+'_'+args.t\
-        + '.all.txt'
+        + '.deep.txt'
     outfile = open(filename, 'w')
     for hit in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
         outfile.write(hit + '|  ' + str(VirSum[hit]) + '\n')
     outfile.close()
 
 
-def crVirLst_bst(blRes):
+def crVirLst_top(blRes):
     """ Create a list of virus hits, 1 virus (the top hit)/read."""
     VirSum = dict()
-    keyVS = ''
     for seqid in blRes:
         hit = blRes[seqid][0]  # Best virus hit, 1st in dict list
         keyVS = '{:12}'.format(hit['Accession']) + '|  ' + '{:55}'.format(
              hit['Description'])
-        if keyVS in VirSum:
-            VirSum[keyVS] += 1
+        if keyVS in VirSum.keys():
+            VirSum[keyVS]['readSum'] += 1
+            if hit['e-value'] < VirSum[keyVS]['emin']:
+                VirSum[keyVS]['emin'] = hit['e-value']
         else:
-            VirSum[keyVS] = 1
+            VirSum.setdefault(keyVS, {'emin': 1, 'readSum': 1})
     hit = ''  # Hit is converted to a string
     filename = args.b[:args.b.find('.blast'.casefold())]+'_'+args.t\
-        + '.bst.txt'
+        + '.top.txt'
     outfile = open(filename, 'w')
-    for hit in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
+    for hit in sorted(VirSum, key=lambda hit: VirSum[hit]['readSum'],
+                      reverse=True):
         outfile.write(hit + '|  ' + str(VirSum[hit]) + '\n')
     outfile.close()
 
@@ -158,7 +159,9 @@ try:
     finf = open(args.f)
 except IOError:
     sys.exit('Input file error')
+print('Parsing...', end='\r', flush=True)
 blVirHts = blFindTarget()
 wrTargetFa(blVirHts.keys())
-crVirLst_bst(blVirHts)
-crVirLst_all(blVirHts)
+crVirLst_top(blVirHts)
+crVirLst_deep(blVirHts)
+print('Done!      ')
