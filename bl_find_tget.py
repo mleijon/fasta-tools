@@ -97,7 +97,7 @@ def crVirLst_deep(blRes):
     for seqid in blRes:
         for hit in blRes[seqid]:
             keyVS = '{:12}'.format(hit['Accession']) + '|  ' + '{:55}'.format(
-             hit['Description'])
+                hit['Description'])
             if keyVS in VirSum:
                 VirSum[keyVS] += 1
             else:
@@ -145,8 +145,8 @@ def wrTargetFa(seqidTargets):
     outfile.close()
 
 
-parser = argparse.ArgumentParser(
- description='Export blast hit containing a "target" keyword')
+parser = argparse.ArgumentParser(description='Export blast hit containing a\
+                                     target keyword')
 parser.add_argument('-f', type=str, help='fastafile', required=True)
 parser.add_argument('-b', type=str, help='blastfile', required=True)
 parser.add_argument('-d', type=float, default=1.0, help='sensitivity depth')
@@ -157,7 +157,7 @@ try:
     finf = open(args.f)
 except IOError:
     sys.exit('Input file error')
-print('Parsing...', end='\r', flush=True)
+print('Parsing...', end='\n', flush=True)
 blVirHts = blFindTarget()
 wrTargetFa(blVirHts.keys())
 crVirLst_top(blVirHts)
