@@ -126,9 +126,15 @@ def wr_top_tar(blRes):
     filename = ARGS.b[:ARGS.b.find('.blast'.casefold())]+'_'+ARGS.t\
         + '.top.txt'
     outfile = open(filename, 'w')
-    for hit in sorted(VirSum, key=lambda hit: VirSum[hit]['readSum'],
-                      reverse=True):
-        outfile.write(hit + '|  ' + str(VirSum[hit]) + '\n')
+    outfile.write('{:15}'.format('Accession') + '{:60}'.format('Description')
+                  + '{:10}'.format('e-min') + '{:5}'.format('Nr-of-reads')
+                  + '\n\n')
+    for hits in sorted(VirSum, key=lambda hits: VirSum[hits]['readSum'],
+                       reverse=True):
+        outfile.write('{:12}'.format(hits) + '|  ' + '{:55}'.format(
+            VirSum[hits]['Description']) + '|  ' + '{:8}'.format(
+                VirSum[hits]['emin']) + '  |  ' + '{:7}'.format(
+                    VirSum[hits]['readSum']) + '\n')
     outfile.close()
 
 
