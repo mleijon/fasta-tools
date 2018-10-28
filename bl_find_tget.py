@@ -1,6 +1,5 @@
 #!/usr/bin/python3
-
-# Something
+"""Something"""
 
 
 import linecache as lica
@@ -10,10 +9,11 @@ from fasta import FastaList
 
 
 # counts the rows in infile
-def countlines(infile):
+def count_li(infile):
     """Returns the line count."""
-    with infile as f:
-        for count, element in enumerate(f, 1):
+    count = 1
+    with infile as file:
+        for count, element in enumerate(file, start=1):
             pass
     infile.close()
     return count
@@ -30,56 +30,56 @@ def ctrle(e_in, emin):
     if e_in[0] == 'e':
         e_out = float('1' + e_in)
         if emin[0] == 'e':
-            r = float('1'+emin)/float(e_out)
+            ratio = float('1'+emin)/float(e_out)
         else:
-            r = float(emin)/float(e_out)
+            ratio = float(emin)/float(e_out)
     elif float(e_in) == 0:
         e_out = 0
-        r = 1
+        ratio = 1
     else:
         e_out = float(e_in)
         if emin[0] == 'e':
-            r = float('1' + emin)/e_out
+            ratio = float('1' + emin)/e_out
         else:
-            r = float(emin)/e_out
-    return [e_out, r]
+            ratio = float(emin)/e_out
+    return [e_out, ratio]
 
 
 def blFindTarget():
     """Creates a dict with virus blast hits.
 
-    Blastfile (args.b) is parsed to extract hits to viruses by
+    Blastfile (ARGS.b) is parsed to extract hits to viruses by
     recognizing the strings 'Virus' or 'virus' in the  'Description'
     string. Secondary hits are includeded if the ratio e-value (best hit)/
-    e-value (secondary hit) is larger than args.d"""
+    e-value (secondary hit) is larger than ARGS.d"""
     anchor = 'Sequences producing significant alignments: '
     blVirHit = dict()
     j = 0
     first = True
-    nrOfRows = countlines(binf)
+    nrOfRows = count_li(BL_IN)
     while j <= nrOfRows:
-        if anchor in lica.getline(args.b, j):
-            query = lica.getline(args.b, j-6).strip()[7:]
-            emin = lica.getline(args.b, j+2)[67:].split()[1].strip()
+        if anchor in lica.getline(ARGS.b, j):
+            query = lica.getline(ARGS.b, j-6).strip()[7:]
+            emin = lica.getline(ARGS.b, j+2)[67:].split()[1].strip()
             j += 2  # Skip empty row
             hitLst = []
             if first:  # Read this only first time since constant
-                offs1 = lica.getline(args.b, j).find('||') + 2
+                offs1 = lica.getline(ARGS.b, j).find('||') + 2
                 first = False
-            while lica.getline(args.b, j)[0] != '\n':
-                e = lica.getline(args.b, j)[67:].split()[1].strip()
-                if (args.t in lica.getline(args.b, j).casefold()
-                        and ctrle(e, emin)[1] >= args.d):
+            while lica.getline(ARGS.b, j)[0] != '\n':
+                e_val = lica.getline(ARGS.b, j)[67:].split()[1].strip()
+                if (ARGS.t in lica.getline(ARGS.b, j).casefold()
+                        and ctrle(e_val, emin)[1] >= ARGS.d):
                     lstEntry = dict()
-                    lstEntry['Accession'] = lica.getline(args.b, j).\
+                    lstEntry['Accession'] = lica.getline(ARGS.b, j).\
                         split()[0][offs1:]
                     offs2 = offs1 + len(lstEntry['Accession'])
                     lstEntry['Description'] = lica.\
-                        getline(args.b, j)[offs2:67].strip()
-                    lstEntry['Bitscore'] = int(lica.getline(args.b, j)
+                        getline(ARGS.b, j)[offs2:67].strip()
+                    lstEntry['Bitscore'] = int(lica.getline(ARGS.b, j)
                                                [67:].split()[0].strip())
-                    lstEntry['e-value'] = ctrle(e, emin)[0]
-                    lstEntry['r-e-value'] = round(ctrle(e, emin)[1], 2)
+                    lstEntry['e-value'] = ctrle(e_val, emin)[0]
+                    lstEntry['r-e-value'] = round(ctrle(e_val, emin)[1], 2)
                     hitLst.append(lstEntry)
                 j += 1
             if hitLst != []:
@@ -90,7 +90,7 @@ def blFindTarget():
     return blVirHit
 
 
-def crVirLst_deep(blRes):
+def wr_deep_tar(blRes):
     """ Create a list of virus hits. Possibly more than 1/read."""
     VirSum = dict()
     keyVS = ''
@@ -103,7 +103,7 @@ def crVirLst_deep(blRes):
             else:
                 VirSum[keyVS] = 1
     hit = ''  # Hit is converted to a string
-    filename = args.b[:args.b.find('.blast'.casefold())]+'_'+args.t\
+    filename = ARGS.b[:ARGS.b.find('.blast'.casefold())]+'_'+ARGS.t\
         + '.deep.txt'
     outfile = open(filename, 'w')
     for hit in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
@@ -111,19 +111,19 @@ def crVirLst_deep(blRes):
     outfile.close()
 
 
-def crVirLst_top(blRes):
+def wr_top_tar(blRes):
     """ Create a list of virus hits, 1 virus (the top hit)/read."""
     VirSum = dict()
     for seqid in blRes:
-        hit = blRes[seqid][0]  # Best virus hit, 1st in dict list
+        hit = blRes[seqid][0]  # Best target hit, 1st in dict list
         keyVS = hit['Accession']
         VirSum.setdefault(keyVS, {'Description': hit['Description'],
-                                  'emin': 1, 'readSum': 1})
+                                  'emin': 1, 'readSum': 0})
         if keyVS in VirSum.keys():
             VirSum[keyVS]['readSum'] += 1
             if hit['e-value'] < VirSum[keyVS]['emin']:
                 VirSum[keyVS]['emin'] = hit['e-value']
-    filename = args.b[:args.b.find('.blast'.casefold())]+'_'+args.t\
+    filename = ARGS.b[:ARGS.b.find('.blast'.casefold())]+'_'+ARGS.t\
         + '.top.txt'
     outfile = open(filename, 'w')
     for hit in sorted(VirSum, key=lambda hit: VirSum[hit]['readSum'],
@@ -132,34 +132,35 @@ def crVirLst_top(blRes):
     outfile.close()
 
 
-def wrTargetFa(seqidTargets):
-    filename = args.b[:args.b.find('.blast'.casefold())]+'_'+args.t + '.fa'
+def wr_fa_tar(seqidTargets):
+    """Writes a fasta file with the target hitting sequences"""
+    filename = ARGS.b[:ARGS.b.find('.blast'.casefold())]+'_'+ARGS.t + '.fa'
     try:
         outfile = open(filename, 'w')
     except IOError:
         sys.exit('Output file error')
-    faLst = FastaList(args.f)
+    faLst = FastaList(ARGS.f)
     for seqid, seq in zip(faLst.id_list, faLst.seq_list):
         if seqid in seqidTargets:
             outfile.write(seq)
     outfile.close()
 
 
-parser = argparse.ArgumentParser(description='Export blast hit containing a\
+PARSER = argparse.ArgumentParser(description='Export blast hit containing a\
                                      target keyword')
-parser.add_argument('-f', type=str, help='fastafile', required=True)
-parser.add_argument('-b', type=str, help='blastfile', required=True)
-parser.add_argument('-d', type=float, default=1.0, help='sensitivity depth')
-parser.add_argument('-t', type=str, default='virus', help='target')
-args = parser.parse_args()
+PARSER.add_argument('-f', type=str, help='fastafile', required=True)
+PARSER.add_argument('-b', type=str, help='blastfile', required=True)
+PARSER.add_argument('-d', type=float, default=1.0, help='sensitivity depth')
+PARSER.add_argument('-t', type=str, default='virus', help='target')
+ARGS = PARSER.parse_args()
 try:
-    binf = open(args.b)
-    finf = open(args.f)
+    BL_IN = open(ARGS.b)
+    FA_IN = open(ARGS.f)
 except IOError:
     sys.exit('Input file error')
-print('Parsing...', end='\n', flush=True)
-blVirHts = blFindTarget()
-wrTargetFa(blVirHts.keys())
-crVirLst_top(blVirHts)
-crVirLst_deep(blVirHts)
+print('Parsing...', end='\r', flush=True)
+TAR_HITS = blFindTarget()
+wr_fa_tar(TAR_HITS.keys())
+wr_top_tar(TAR_HITS)
+wr_deep_tar(TAR_HITS)
 print('Done!      ')
