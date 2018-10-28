@@ -92,49 +92,62 @@ def blFindTarget():
 
 def wr_deep_tar(blRes):
     """ Create a list of virus hits. Possibly more than 1/read."""
-    VirSum = dict()
-    keyVS = ''
+    tar_sum = dict()
+    tar_sum_key = ''
     for seqid in blRes:
         for hit in blRes[seqid]:
-            keyVS = '{:12}'.format(hit['Accession']) + '|  ' + '{:55}'.format(
-                hit['Description'])
-            if keyVS in VirSum:
-                VirSum[keyVS] += 1
-            else:
-                VirSum[keyVS] = 1
-    hit = ''  # Hit is converted to a string
+            tar_sum_key = hit['Accession']
+            tar_sum.setdefault(tar_sum_key, {'Description': hit['Description'],
+                                             'emin': 1, 'readSum': 0})
+            if tar_sum_key in tar_sum.keys():
+                tar_sum[tar_sum_key]['readSum'] += 1
+                if hit['e-value'] < tar_sum[tar_sum_key]['emin']:
+                    tar_sum[tar_sum_key]['emin'] = hit['e-value']
     filename = ARGS.b[:ARGS.b.find('.blast'.casefold())]+'_'+ARGS.t\
         + '.deep.txt'
     outfile = open(filename, 'w')
-    for hit in sorted(VirSum, key=VirSum.__getitem__, reverse=True):
-        outfile.write(hit + '|  ' + str(VirSum[hit]) + '\n')
+    outfile.write('{:15}'.format('Accession') + '{:60}'.format('Description')
+                  + '{:10}'.format('e-min') + '{:5}'.format('Nr-of-reads')
+                  + '\n\n')
+    for hits in sorted(tar_sum, key=lambda hits: tar_sum[hits]['readSum'],
+                       reverse=True):
+        outfile.write('{:12}'.format(hits) + '|  ' + '{:55}'.format(
+            tar_sum[hits]['Description']) + '|  ' + '{:8}'.format(
+                tar_sum[hits]['emin']) + '  |  ' + '{:7}'.format(
+                    tar_sum[hits]['readSum']) + '\n')
     outfile.close()
 
 
 def wr_top_tar(blRes):
-    """ Create a list of virus hits, 1 virus (the top hit)/read."""
-    VirSum = dict()
+    """ Create a list of target hits.
+
+    If depth is set to 1 (default) Only hits where the target are the best
+    are give (i.e. no other organism have a better hit). If the depth i set
+    lower than 1, the best virus hit within the limit of the depth threshold
+    is given.
+    """
+    tar_sum = dict()
     for seqid in blRes:
         hit = blRes[seqid][0]  # Best target hit, 1st in dict list
-        keyVS = hit['Accession']
-        VirSum.setdefault(keyVS, {'Description': hit['Description'],
-                                  'emin': 1, 'readSum': 0})
-        if keyVS in VirSum.keys():
-            VirSum[keyVS]['readSum'] += 1
-            if hit['e-value'] < VirSum[keyVS]['emin']:
-                VirSum[keyVS]['emin'] = hit['e-value']
+        tar_sum_key = hit['Accession']
+        tar_sum.setdefault(tar_sum_key, {'Description': hit['Description'],
+                                         'emin': 1, 'readSum': 0})
+        if tar_sum_key in tar_sum.keys():
+            tar_sum[tar_sum_key]['readSum'] += 1
+            if hit['e-value'] < tar_sum[tar_sum_key]['emin']:
+                tar_sum[tar_sum_key]['emin'] = hit['e-value']
     filename = ARGS.b[:ARGS.b.find('.blast'.casefold())]+'_'+ARGS.t\
         + '.top.txt'
     outfile = open(filename, 'w')
     outfile.write('{:15}'.format('Accession') + '{:60}'.format('Description')
                   + '{:10}'.format('e-min') + '{:5}'.format('Nr-of-reads')
                   + '\n\n')
-    for hits in sorted(VirSum, key=lambda hits: VirSum[hits]['readSum'],
+    for hits in sorted(tar_sum, key=lambda hits: tar_sum[hits]['readSum'],
                        reverse=True):
         outfile.write('{:12}'.format(hits) + '|  ' + '{:55}'.format(
-            VirSum[hits]['Description']) + '|  ' + '{:8}'.format(
-                VirSum[hits]['emin']) + '  |  ' + '{:7}'.format(
-                    VirSum[hits]['readSum']) + '\n')
+            tar_sum[hits]['Description']) + '|  ' + '{:8}'.format(
+                tar_sum[hits]['emin']) + '  |  ' + '{:7}'.format(
+                    tar_sum[hits]['readSum']) + '\n')
     outfile.close()
 
 
