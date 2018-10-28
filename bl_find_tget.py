@@ -48,8 +48,8 @@ def ctrle(e_in, emin):
 def find_targets():
     """Creates a dict with virus blast hits.
 
-    Blastfile (ARGS.b) is parsed to extract hits to viruses by
-    recognizing the strings 'Virus' or 'virus' in the  'Description'
+    Blastfile (ARGS.b) is parsed to extract hits to a target by
+    recognizing the string 'target', independent of case, in the 'Description'
     string. Secondary hits are includeded if the ratio e-value (best hit)/
     e-value (secondary hit) is larger than ARGS.d"""
     anchor = 'Sequences producing significant alignments: '
