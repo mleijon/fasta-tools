@@ -45,7 +45,7 @@ def ctrle(e_in, emin):
     return [e_out, ratio]
 
 
-def blFindTarget():
+def find_targets():
     """Creates a dict with virus blast hits.
 
     Blastfile (ARGS.b) is parsed to extract hits to viruses by
@@ -53,16 +53,16 @@ def blFindTarget():
     string. Secondary hits are includeded if the ratio e-value (best hit)/
     e-value (secondary hit) is larger than ARGS.d"""
     anchor = 'Sequences producing significant alignments: '
-    blVirHit = dict()
+    target_hits = dict()
     j = 0
     first = True
-    nrOfRows = count_li(BL_IN)
-    while j <= nrOfRows:
+    nr_rows = count_li(BL_IN)
+    while j <= nr_rows:
         if anchor in lica.getline(ARGS.b, j):
             query = lica.getline(ARGS.b, j-6).strip()[7:]
             emin = lica.getline(ARGS.b, j+2)[67:].split()[1].strip()
             j += 2  # Skip empty row
-            hitLst = []
+            tar_lst = []
             if first:  # Read this only first time since constant
                 offs1 = lica.getline(ARGS.b, j).find('||') + 2
                 first = False
@@ -70,32 +70,38 @@ def blFindTarget():
                 e_val = lica.getline(ARGS.b, j)[67:].split()[1].strip()
                 if (ARGS.t in lica.getline(ARGS.b, j).casefold()
                         and ctrle(e_val, emin)[1] >= ARGS.d):
-                    lstEntry = dict()
-                    lstEntry['Accession'] = lica.getline(ARGS.b, j).\
+                    tar_hit = dict()
+                    tar_hit['Accession'] = lica.getline(ARGS.b, j).\
                         split()[0][offs1:]
-                    offs2 = offs1 + len(lstEntry['Accession'])
-                    lstEntry['Description'] = lica.\
+                    offs2 = offs1 + len(tar_hit['Accession'])
+                    tar_hit['Description'] = lica.\
                         getline(ARGS.b, j)[offs2:67].strip()
-                    lstEntry['Bitscore'] = int(lica.getline(ARGS.b, j)
-                                               [67:].split()[0].strip())
-                    lstEntry['e-value'] = ctrle(e_val, emin)[0]
-                    lstEntry['r-e-value'] = round(ctrle(e_val, emin)[1], 2)
-                    hitLst.append(lstEntry)
+                    tar_hit['Bitscore'] = int(lica.getline(ARGS.b, j)
+                                              [67:].split()[0].strip())
+                    tar_hit['e-value'] = ctrle(e_val, emin)[0]
+                    tar_hit['r-e-value'] = round(ctrle(e_val, emin)[1], 2)
+                    tar_lst.append(tar_hit)
                 j += 1
-            if hitLst != []:
-                blVirHit.update({query: hitLst})
+            if tar_lst != []:
+                target_hits.update({query: tar_lst})
         j += 1
 # Returns {seqid:[{'Accession':, 'Description':,'Bitscore':,'e-value':,
 # 'r-e-value':},...],...}
-    return blVirHit
+    return target_hits
 
 
-def wr_deep_tar(blRes):
-    """ Create a list of virus hits. Possibly more than 1/read."""
+def wr_deep_tar(bl_result):
+    """ Create a list of target hits.
+
+    If depth is set to 1 (default) All hits where the targets are the best
+    are given (i.e. no other organism have a better hit). If the depth is set
+    lower than 1, all target hits within the limit of the depth threshold
+    are given.
+    """
     tar_sum = dict()
     tar_sum_key = ''
-    for seqid in blRes:
-        for hit in blRes[seqid]:
+    for seqid in bl_result:
+        for hit in bl_result[seqid]:
             tar_sum_key = hit['Accession']
             tar_sum.setdefault(tar_sum_key, {'Description': hit['Description'],
                                              'emin': 1, 'readSum': 0})
@@ -118,17 +124,17 @@ def wr_deep_tar(blRes):
     outfile.close()
 
 
-def wr_top_tar(blRes):
+def wr_top_tar(bl_result):
     """ Create a list of target hits.
 
-    If depth is set to 1 (default) Only hits where the target are the best
-    are give (i.e. no other organism have a better hit). If the depth i set
-    lower than 1, the best virus hit within the limit of the depth threshold
-    is given.
+    If depth is set to 1 (default) Only hits where hits to the target are the
+    best are given (i.e. no other organism have a better hit). If the depth is
+    set lower than 1, the best target hit within the limit of the depth
+    threshold is given.
     """
     tar_sum = dict()
-    for seqid in blRes:
-        hit = blRes[seqid][0]  # Best target hit, 1st in dict list
+    for seqid in bl_result:
+        hit = bl_result[seqid][0]  # Best target hit, 1st in dict list
         tar_sum_key = hit['Accession']
         tar_sum.setdefault(tar_sum_key, {'Description': hit['Description'],
                                          'emin': 1, 'readSum': 0})
@@ -151,16 +157,16 @@ def wr_top_tar(blRes):
     outfile.close()
 
 
-def wr_fa_tar(seqidTargets):
+def wr_fa_tar(seq_ids):
     """Writes a fasta file with the target hitting sequences"""
     filename = ARGS.b[:ARGS.b.find('.blast'.casefold())]+'_'+ARGS.t + '.fa'
     try:
         outfile = open(filename, 'w')
     except IOError:
         sys.exit('Output file error')
-    faLst = FastaList(ARGS.f)
-    for seqid, seq in zip(faLst.id_list, faLst.seq_list):
-        if seqid in seqidTargets:
+    fa_lst = FastaList(ARGS.f)
+    for seqid, seq in zip(fa_lst.id_list, fa_lst.seq_list):
+        if seqid in seq_ids:
             outfile.write(seq)
     outfile.close()
 
@@ -178,7 +184,7 @@ try:
 except IOError:
     sys.exit('Input file error')
 print('Parsing...', end='\r', flush=True)
-TAR_HITS = blFindTarget()
+TAR_HITS = find_targets()
 wr_fa_tar(TAR_HITS.keys())
 wr_top_tar(TAR_HITS)
 wr_deep_tar(TAR_HITS)
