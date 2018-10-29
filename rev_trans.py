@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 """Derive all possible codons for a certain protein sequence."""
+import argparse
 
 
 class RevTrans():
@@ -122,9 +123,13 @@ class RevTrans():
 
 # main
 
-
-FUSIONPEPTIDE = 'GLFGAIAGFI'
-GENE_LST = RevTrans("GLFGAIAGFI")
+PARSER = argparse.ArgumentParser(description='Create the genes for a peptide\
+                                 taking into account degenercy of the genetic\
+                                 code')
+PARSER.add_argument('-p', type=str, help='amino acid sequence in single letter\
+                    format', default='GLFGAIAGFI')  # Default = AIV fusion pep
+ARGS = PARSER.parse_args()
+GENE_LST = RevTrans(ARGS.p)
 
 
 def wr_fasta(seq_lst):
