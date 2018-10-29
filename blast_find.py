@@ -112,12 +112,12 @@ def wr_deep_tar(bl_result):
     filename = ARGS.b[:ARGS.b.find('.blast'.casefold())]+'_'+ARGS.t\
         + '.deep.txt'
     outfile = open(filename, 'w')
-    outfile.write('{:15}'.format('Accession') + '{:60}'.format('Description')
+    outfile.write('{:19}'.format('Accession') + '{:60}'.format('Description')
                   + '{:10}'.format('e-min') + '{:5}'.format('Nr-of-reads')
                   + '\n\n')
     for hits in sorted(tar_sum, key=lambda hits: tar_sum[hits]['readSum'],
                        reverse=True):
-        outfile.write('{:12}'.format(hits) + '|  ' + '{:55}'.format(
+        outfile.write('{:16}'.format(hits) + '|  ' + '{:55}'.format(
             tar_sum[hits]['Description']) + '|  ' + '{:8}'.format(
                 tar_sum[hits]['emin']) + '  |  ' + '{:7}'.format(
                     tar_sum[hits]['readSum']) + '\n')
@@ -145,12 +145,12 @@ def wr_top_tar(bl_result):
     filename = ARGS.b[:ARGS.b.find('.blast'.casefold())]+'_'+ARGS.t\
         + '.top.txt'
     outfile = open(filename, 'w')
-    outfile.write('{:15}'.format('Accession') + '{:60}'.format('Description')
+    outfile.write('{:19}'.format('Accession') + '{:60}'.format('Description')
                   + '{:10}'.format('e-min') + '{:5}'.format('Nr-of-reads')
                   + '\n\n')
     for hits in sorted(tar_sum, key=lambda hits: tar_sum[hits]['readSum'],
                        reverse=True):
-        outfile.write('{:12}'.format(hits) + '|  ' + '{:55}'.format(
+        outfile.write('{:16}'.format(hits) + '|  ' + '{:55}'.format(
             tar_sum[hits]['Description']) + '|  ' + '{:8}'.format(
                 tar_sum[hits]['emin']) + '  |  ' + '{:7}'.format(
                     tar_sum[hits]['readSum']) + '\n')
