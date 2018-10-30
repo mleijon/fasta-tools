@@ -9,13 +9,13 @@ class FastaList():
         seq_list = []
         id_list = []
         newseq = ''
-        is_fastq = True  # File ca be gzipped or fastq as well as fasta
         self.name = fasta_name
-        self.is_gzip = self.name[-2:].casefold() == 'gz'
-        if '.fq' in self.name.casefold():
+        if self.name.endswith(('.gz', '.GZ')):
+            self.is_gzip = True
+            self.name = self.name[:-3]
+        if self.name.endswith(('.fq', '.FQ', '.fastq', '.FASTQ')):
+            is_fastq = True
             self.fq_ext = '.fq'
-        elif '.fastq' in self.name.casefold():
-            self.fq_ext = '.fastq'
         else:
             is_fastq = False
         if is_fastq:

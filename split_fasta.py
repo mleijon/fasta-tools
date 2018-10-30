@@ -136,8 +136,8 @@ def wr_files():
         fipa = open(fa_hits[:-2] + 'par', 'w')
         SPAFA_LST.wr_par(fipa, ARGS.f)
         fihi = open(fa_hits)
-        fa_hits = SpaFaLst(fihi)
-        fa_hits.wr_par(fipa, fa_hits)
+        fa_hit_lst = SpaFaLst(fihi)
+        fa_hit_lst.wr_par(fipa, fa_hits)
         percent_remove = round(100*BL_LST.nr_nohits/len(SPAFA_LST.seq_list), 0)
         fipa.write('%d sequences removed (%g%%)\n' % (BL_LST.nr_nohits,
                                                       percent_remove))
