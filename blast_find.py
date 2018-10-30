@@ -1,5 +1,9 @@
 #!/usr/bin/python3
-"""Something"""
+"""Finds the blast hits containing a target string in the description,
+irrespective case.
+
+Creates three output files.
+"""
 
 
 import linecache as lica

@@ -1,4 +1,9 @@
 #!/usr/bin/python3
+""" Splits a fasta file into two files depending on if the sequences produce
+blast hits or not. Twho input files are required: a fasta file (can be gzipped)
+and a blast table. Optionally a '-p' flag can be used to indicate if a
+parameter file should be created that summarize parameters provided the fasta
+file is produced by spades"""
 
 # Creates a list of dictionaries of the sequence parameters assuming SPADES
 # (http://cab.spbu.ru/software/spades/) contigs. NODE (the sequence number),
@@ -10,7 +15,7 @@ import os
 from fasta import FastaList
 
 
-class spadesFa(FastaList):
+class SpaFaLst(FastaList):
     """Class derived from SPades contig fasta file.
 
        The SPades fasta-file header lines contain information on read coverage
@@ -21,28 +26,28 @@ class spadesFa(FastaList):
        by SPades (http://cab.spbu.ru/software/spades/). The class has a
        function writing the parameters to a file. The class inherits the
        FastaList class and uses the id_list propery of this class in the
-       WrFiles function of the main program."""
+       wr_files function of the main program."""
 
     def __init__(self, spades_file):
-        super(spadesFa, self).__init__(ARGS.f)
+        super(SpaFaLst, self).__init__(ARGS.f)
         sum_cov = 0
         sum_len = 0
         t = []
         seq_par = dict()
         self.seqParLst = []
-        self.is_spadesFa = True
+        self.is_spades = True
         for line in spades_file:
             if line.startswith('>'):
                 line = line.strip()
                 t = line.split('_')
                 if not (t[0][1:] == 'NODE' and t[2] == 'length'
                         and t[4] == 'cov'):
-                    self.is_spadesFa = False
+                    self.is_spades = False
                     break
                 seq_par = {t[0][1:]: int(t[1]), t[2]: int(t[3]), t[4]:
                            float(t[5])}  # parses the id strings of fa-file
                 self.seqParLst.append(seq_par)
-        if self.is_spadesFa:
+        if self.is_spades:
             self.nr_contig = len(self.seqParLst)
             for i in range(len(self.seqParLst)):
                 sum_cov += self.seqParLst[i]['cov']
@@ -52,7 +57,8 @@ class spadesFa(FastaList):
 
 # Writes a parameter file based on the ID-string created by Spades and some
 # other parameters
-    def wrPar2File(self, parfile, inpname):
+    def wr_par(self, parfile, inpname):
+        """Writes parameter file."""
         parfile.write('Parameters for: '+inpname+'\n\n')
         parfile.write('Number of contigs: %d\n' % self.nr_contig)
         parfile.write('Average contig length: %d\n' % self.av_len)
@@ -69,11 +75,12 @@ class blastTbl():
 
     def __init__(self, inFile):
         super(blastTbl, self).__init__()
-        self.noHits = self.noBlastHit(inFile)
-        self.nrNoHits = len(self.noHits)
+        self.no_hits = self.noBlastHit(inFile)
+        self.nrNoHits = len(self.no_hits)
 
 # Creates dictionary of blast *no hits* ids
     def noBlastHit(self, inFile):
+        """Creates a dict of sequence ids with no blast hits"""
         no_hit = '***** No hits found ******'
         no_hits = dict()
         j = 0
@@ -89,50 +96,51 @@ class blastTbl():
 # written using the FastaList class
 
 
-def WrFiles():
+def wr_files():
+    """Writes output files."""
     if ARGS.f[-2:] in ['gz', 'GZ']:
         name_part = ARGS.f[:-3].rpartition('/')
-        fahits = name_part[0] + '/' + 'hits_' + name_part[2]
-        fanohits = fahits.replace('hit', 'nohit')
+        fa_hits = name_part[0] + '/' + 'hits_' + name_part[2]
+        fa_nohits = fa_hits.replace('hit', 'nohit')
     else:
         name_part = ARGS.f.rpartition('/')
-        fahits = name_part[0] + '/' + 'hits_' + name_part[2]
-        fanohits = fahits.replace('hit', 'nohit')
-    if fahits[-2:] in ['fq', 'FQ', 'fa', 'FA']:
-        fahits = fahits[:-3]
-        fanohits = fanohits[:-3]
-    elif fahits[-5:] in ['fastq', 'FASTQ', 'fasta', 'FASTA']:
-        fahits = fahits[:-6]
-        fanohits = fanohits[:-6]
-    fahits = fahits + '.fa'
-    fanohits = fanohits + '.fa'
+        fa_hits = name_part[0] + '/' + 'hits_' + name_part[2]
+        fa_nohits = fa_hits.replace('hit', 'nohit')
+    if fa_hits[-2:] in ['fq', 'FQ', 'fa', 'FA']:
+        fa_hits = fa_hits[:-3]
+        fa_nohits = fa_nohits[:-3]
+    elif fa_hits[-5:] in ['fastq', 'FASTQ', 'fasta', 'FASTA']:
+        fa_hits = fa_hits[:-6]
+        fa_nohits = fa_nohits[:-6]
+    fa_hits = fa_hits + '.fa'
+    fa_nohits = fa_nohits + '.fa'
     try:
-        FiHit = open(fahits, 'w')
-        FiNoHit = open(fanohits, 'w')
+        fi_hi = open(fa_hits, 'w')
+        fi_nohi = open(fa_nohits, 'w')
     except IOError:
         sys.exit('error writing file')
     j = 0
     for ids in SPAFA_LST.id_list:
-        if ids not in blLst.noHits:
-            FiHit.write(SPAFA_LST.seq_list[j])
+        if ids not in BL_LST.no_hits:
+            fi_hi.write(SPAFA_LST.seq_list[j])
         else:
-            FiNoHit.write(SPAFA_LST.seq_list[j])
+            fi_nohi.write(SPAFA_LST.seq_list[j])
         j += 1
-    FiHit.close()
-    FiNoHit.close()
-    if ARGS.p and SPAFA_LST.is_spadesFa:
-        fipa = open(fahits[:-2] + 'par', 'w')
-        SPAFA_LST.wrPar2File(fipa, ARGS.f)
-        fihi = open(fahits)
-        faHitLst = spadesFa(fihi)
-        faHitLst.wrPar2File(fipa, fahits)
-        percent_remove = round(100*blLst.nrNoHits/len(SPAFA_LST.seq_list), 0)
-        fipa.write('%d sequences removed (%g%%)\n' % (blLst.nrNoHits,
+    fi_hi.close()
+    fi_nohi.close()
+    if ARGS.p and SPAFA_LST.is_spades:
+        fipa = open(fa_hits[:-2] + 'par', 'w')
+        SPAFA_LST.wr_par(fipa, ARGS.f)
+        fihi = open(fa_hits)
+        faHitLst = SpaFaLst(fihi)
+        faHitLst.wr_par(fipa, fa_hits)
+        percent_remove = round(100*BL_LST.nrNoHits/len(SPAFA_LST.seq_list), 0)
+        fipa.write('%d sequences removed (%g%%)\n' % (BL_LST.nrNoHits,
                                                       percent_remove))
         fipa.close()
         fihi.close()
     elif ARGS.p:
-        name_par = fahits[:-3].rpartition('/')
+        name_par = fa_hits[:-3].rpartition('/')
         fipa = open(name_par[0] + '/' + 'nopar_' + name_par[2], 'w')
         fipa.write('No parameters, not contigs fasta file created by spades.')
         fipa.close()
@@ -151,11 +159,11 @@ try:
     BL_IN = open(ARGS.b)
 except IOError:
     sys.exit('input file error')
-faLst = FastaList(ARGS.f)
-FA_IN = faLst.fa_file
-SPAFA_LST = spadesFa(FA_IN)
-blLst = blastTbl(BL_IN)
-WrFiles()
+FA_LST = FastaList(ARGS.f)
+FA_IN = FA_LST.fa_file
+SPAFA_LST = SpaFaLst(FA_IN)
+BL_LST = blastTbl(BL_IN)
+wr_files()
 FA_IN.close()
 if ARGS.f[-2:] == 'gz' and os.path.isfile(ARGS.f[:-3]):
     os.remove(ARGS.f[:-3])
