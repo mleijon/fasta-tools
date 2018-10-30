@@ -55,7 +55,8 @@ def find_targets():
     Blastfile (ARGS.b) is parsed to extract hits to a target by
     recognizing the string 'target', independent of case, in the 'Description'
     string. Secondary hits are includeded if the ratio e-value (best hit)/
-    e-value (secondary hit) is larger than ARGS.d"""
+    e-value (secondary hit) is larger than ARGS.d
+    """
     anchor = 'Sequences producing significant alignments: '
     target_hits = dict()
     j = 0
@@ -72,7 +73,7 @@ def find_targets():
                 first = False
             while lica.getline(ARGS.b, j)[0] != '\n':
                 e_val = lica.getline(ARGS.b, j)[67:].split()[1].strip()
-                if (ARGS.t in lica.getline(ARGS.b, j).casefold()
+                if (ARGS.t.casefold() in lica.getline(ARGS.b, j).casefold()
                         and ctrle(e_val, emin)[1] >= ARGS.d):
                     tar_hit = dict()
                     tar_hit['Accession'] = lica.getline(ARGS.b, j).\
