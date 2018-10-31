@@ -118,11 +118,11 @@ def wr_files():
         fa_nohits = fa_nohits[:-6]
     fa_hits = fa_hits + '.fa'
     fa_nohits = fa_nohits + '.fa'
-    try:
-        fi_hi = open(fa_hits, 'w')
-        fi_nohi = open(fa_nohits, 'w')
-    except IOError:
-        sys.exit('error writing file')
+#    try:
+    fi_hi = open(fa_hits, 'w')
+    fi_nohi = open(fa_nohits, 'w')
+#    except IOError:
+#        sys.exit('error writing file')
     j = 0
     for ids in SPAFA_LST.id_list:
         if ids not in BL_LST.no_hits:

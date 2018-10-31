@@ -9,7 +9,6 @@ Creates three output files.
 import linecache as lica
 import argparse
 import sys
-from fasta import FastaList
 
 
 # counts the rows in infile
@@ -163,6 +162,7 @@ def wr_top_tar(bl_result):
 
 
 def wr_fa_tar(seq_ids):
+    from fasta import FastaList
     """Writes a fasta file with the target hitting sequences"""
     filename = ARGS.b[:ARGS.b.find('.blast'.casefold())]+'_'+ARGS.t + '.fa'
     try:

@@ -1,4 +1,5 @@
-"""General purpose module to handle a fasta file object"""
+"""General purpose module to handle a fasta file object. Converst fastq to
+fasta and unzip gzipped files"""
 import sys
 
 
@@ -10,27 +11,20 @@ class FastaList():
         id_list = []
         newseq = ''
         self.name = fasta_name
-        if self.name.endswith(('.gz', '.GZ')):
-            self.is_gzip = True
-            self.name = self.name[:-3]
-        if self.name.endswith(('.fq', '.FQ', '.fastq', '.FASTQ')):
-            is_fastq = True
-            self.fq_ext = '.fq'
-        else:
-            is_fastq = False
-        if is_fastq:
+        self.is_gzip = self.name.endswith(('.gz', '.GZ'))
+        if (self.is_gzip and self.name[:-3].endswith(('.fq', '.FQ', '.fastq',
+                                                      '.FASTQ')) or self.name.
+                endswith(('.fq', '.FQ', '.fastq', '.FASTQ'))):
             self.fa_file = self.fq2fa()
         else:
             self.fa_file = self.rdfi()
-        first = True
         for line in self.fa_file:
             if line.startswith('>'):
-                id_list.append(line[1:].strip())
-                if not first:
+                if id_list != []:
                     seq_list.append(newseq)
+                id_list.append(line[1:].strip())
                 newseq = line
             else:
-                first = False
                 newseq += line
         seq_list.append(newseq)
         self.fa_file.seek(0)
@@ -53,7 +47,10 @@ class FastaList():
 
     def fq2fa(self):
         """ Reads and return a fastq file converted to fasta format"""
-        out_fa = open(self.name[:self.name.find(self.fq_ext)]+'.fa', 'w')
+        outfa_name = self.name.rpartition('/')[2][:self.name.rpartition('/')
+                                                  [2].find('.')] + '.fa'
+        outfa_name = self.name.rpartition('/')[0] + '/' + outfa_name
+        out_fa = open(outfa_name, 'w')
         j = 0
         for line in self.rdfi():
             if line[0] == '@' and j % 4 == 0:
@@ -69,7 +66,7 @@ class FastaList():
                 sys.exit('Not a fastq-file')
             j += 1
         out_fa.close()
-        out_fa = open(self.name[:self.name.find(self.fq_ext)]+'.fa')
+        out_fa = open(outfa_name)
         return out_fa
 
     def rev(self):
