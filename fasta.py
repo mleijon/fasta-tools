@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 """General purpose module to handle a fasta file object. Converst fastq to
 fasta and unzip gzipped files"""
 import sys
