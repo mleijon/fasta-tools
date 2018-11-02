@@ -22,12 +22,12 @@ class FastaList():
         for line in self.fa_file:
             if line.startswith('>'):
                 if id_list != []:
-                    seq_list.append(newseq)
+                    seq_list.append(newseq + '\n')
                 id_list.append(line[1:].strip())
                 newseq = line
             else:
-                newseq += line
-        seq_list.append(newseq)
+                newseq += line.strip()
+        seq_list.append(newseq + '\n')
         self.fa_file.seek(0)
         self.seq_list = seq_list
         self.id_list = id_list
