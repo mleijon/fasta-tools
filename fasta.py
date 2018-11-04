@@ -30,6 +30,7 @@ class FastaList():
         seq_list.append(newseq + '\n')
         self.fa_file.seek(0)
         self.seq_list = seq_list
+        self.seq_lst_rc = []
         self.id_list = id_list
         self.nr_seq = len(id_list)
 
@@ -76,4 +77,31 @@ class FastaList():
 
     def rev_comp(self, seq_lst):
         """Yields the reverse complement of a nucleotide sequence"""
-        pass
+        def comp(nucl):
+            return {
+                'A': 'T',
+                'T': 'A',
+                'G': 'C',
+                'C': 'G',
+                'Y': 'R',
+                'R': 'Y',
+                'K': 'M',
+                'M': 'K',
+                'S': 'S',
+                'W': 'W',
+                'N': 'N',
+                'B': 'V',
+                'V': 'B',
+                'D': 'H',
+                'H': 'D'
+            }[nucl.upper()]
+        for fasta in seq_lst:
+            fasta_id = fasta.split('\n')[0]
+            fasta_seq = fasta.split('\n')[1]
+            fasta_seq_rev = fasta_seq[::-1]
+            new_fasta = fasta_id + '_RC\n'
+            for nucl in fasta_seq_rev:
+                new_fasta += comp(nucl)
+            new_fasta += '\n'
+            self.seq_lst_rc.append(new_fasta)
+        return self.seq_lst_rc

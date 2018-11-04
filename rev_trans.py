@@ -39,14 +39,16 @@ class RevTrans():
     def __init__(self, peptide):
         self.peptide = peptide
         gen_lst = []
+        all_gen_lst = []
         self.valid = self.valid_str()
         if self.valid:
             for sequence in self.create_var():
+                gen_lst = []
                 for codon in self.genCode[sequence[0]]:
                     gen_lst.append(codon)
                 pep = sequence[1:]
 
-                def cr_genes(pep, gen_lst):
+                def cr_genes(pep, gen_lst, all_gen_lst):
                     tmp_lst = gen_lst.copy()
                     gen_lst = []
                     for gene in tmp_lst:
@@ -54,13 +56,12 @@ class RevTrans():
                             gen_lst.append(gene + codon)
                     pep = pep[1:]
                     if pep == "":
-                        self.gen_lst = gen_lst
+                        all_gen_lst += gen_lst
                         return
-                    cr_genes(pep, gen_lst)
-                if pep == "":
-                    self.gen_lst = gen_lst
-                else:
-                    cr_genes(pep, gen_lst)
+                    cr_genes(pep, gen_lst, all_gen_lst)
+                if pep != "":
+                    cr_genes(pep, gen_lst, all_gen_lst)
+            self.gen_lst = all_gen_lst
 
     def valid_str(self):
         """Control the validity of the peptide string."""
@@ -127,7 +128,8 @@ PARSER = argparse.ArgumentParser(description='Create the genes for a peptide\
                                  taking into account degenercy of the genetic\
                                  code')
 PARSER.add_argument('-p', type=str, help='amino acid sequence in single letter\
-                    format', default='GLFGAIAGFI')  # Default = AIV fusion pep
+                    format', default='RX[RK]R')
+# Default = AIV fusion pep
 ARGS = PARSER.parse_args()
 GENE_LST = RevTrans(ARGS.p)
 
@@ -139,7 +141,7 @@ def wr_fasta(seq_lst):
     for seq in seq_lst:
         j += 1
         fa_fi.write('> %d\n' % j)
-        fa_fi.write(seq+'\n')
+        fa_fi.write(seq + '\n')
     fa_fi.close()
 
 
