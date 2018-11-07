@@ -18,11 +18,14 @@ FA_CS = FastaList('aivcs.fa')
 aivcs = []
 for seq in FA_CS.seq_list:
     aivcs.append(seq.split('\n')[1].strip())
-ALL_S = FA_S.seq_list + FA_S.rev_comp(FA_S.seq_list)
+ALL_S = FA_S.seq_list + FA_S.rev_comp()
 FA_T = FastaList(ARGS.t)
 FA_OUT = open('sources.fa', 'w')
 count = len(FA_T.seq_list) // 100
-percent = incr1 = incr2 = seq_found = 0
+percent = 0
+incr1 = 0
+incr2 = 0
+seq_found = 0
 for fasta_t in FA_T.seq_list:
     incr1 += 1
     if incr1 > incr2:

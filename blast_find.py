@@ -24,7 +24,7 @@ def count_li(infile):
 
 # Catches blast file exceptions
 def ctrle(e_in, emin):
-    """Catches blast file eceptions.
+    """Catches blast file exceptions.
 
     The blast file of Decypher loses the digit (x) before the 'e' in the
     e-value (i.e.) xe-yyy when yyy is larger than 099. '1' is added to fix
