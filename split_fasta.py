@@ -85,12 +85,11 @@ class BlastTbl():
 # Creates dictionary of blast *no hits* ids
     def no_bl_hit(self):
         """Creates a dict of sequence ids with no blast hits"""
-        no_hit = '***** No hits found ******'
         no_hits = dict()
         j = 0
         for line in self.bl_file:
             j += 1
-            if line.strip() == no_hit:
+            if line.strip() == '***** No hits found ******':
                 no_hits[linecache.getline(ARGS.b, j-6).strip()[7:]] = j-6
         linecache.clearcache()
         return no_hits
@@ -104,11 +103,11 @@ def wr_files():
     """Writes output files."""
     if ARGS.f[-2:] in ['gz', 'GZ']:
         name_part = ARGS.f[:-3].rpartition('/')
-        fa_hits = name_part[0] + '/' + 'hits_' + name_part[2]
+        fa_hits = name_part[0] + name_part[1] + 'hits_' + name_part[2]
         fa_nohits = fa_hits.replace('hit', 'nohit')
     else:
         name_part = ARGS.f.rpartition('/')
-        fa_hits = name_part[0] + '/' + 'hits_' + name_part[2]
+        fa_hits = name_part[0] + name_part[1] + 'hits_' + name_part[2]
         fa_nohits = fa_hits.replace('hit', 'nohit')
     if fa_hits[-2:] in ['fq', 'FQ', 'fa', 'FA']:
         fa_hits = fa_hits[:-3]
@@ -118,17 +117,17 @@ def wr_files():
         fa_nohits = fa_nohits[:-6]
     fa_hits = fa_hits + '.fa'
     fa_nohits = fa_nohits + '.fa'
-#    try:
-    fi_hi = open(fa_hits, 'w')
-    fi_nohi = open(fa_nohits, 'w')
-#    except IOError:
-#        sys.exit('error writing file')
+    try:
+        fi_hi = open(fa_hits, 'w')
+        fi_nohi = open(fa_nohits, 'w')
+    except IOError:
+        sys.exit('error writing file')
     j = 0
     for ids in SPAFA_LST.id_list:
-        if ids not in BL_LST.no_hits:
-            fi_hi.write(SPAFA_LST.seq_list[j])
-        else:
+        if ids in BL_LST.no_hits:
             fi_nohi.write(SPAFA_LST.seq_list[j])
+        else:
+            fi_hi.write(SPAFA_LST.seq_list[j])
         j += 1
     fi_hi.close()
     fi_nohi.close()
@@ -145,7 +144,7 @@ def wr_files():
         fihi.close()
     elif ARGS.p:
         name_par = fa_hits[:-3].rpartition('/')
-        fipa = open(name_par[0] + '/' + 'nopar_' + name_par[2], 'w')
+        fipa = open(name_par[0] + name_part[1] + 'nopar_' + name_par[2], 'w')
         fipa.write('No parameters, not contigs fasta file created by spades.')
         fipa.close()
 

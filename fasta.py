@@ -5,11 +5,13 @@ import sys
 
 
 class FastaList():
-    """docstring for fasta."""
+    """Creates list with the id:s of the fasta sequences (id_list) and a list
+    of the sequences with the newlines removed (seq_list),
+    suitable for searching. The sequenes list elements are strings with a
+    newline separating the id and the nucleotides sequence."""
 
     def __init__(self, fasta_name):  # Initialized by a filename string
-        seq_list = []
-        id_list = []
+        seq_list = id_list = []
         newseq = ''
         self.name = fasta_name
         self.is_gzip = self.name.endswith(('.gz', '.GZ'))
@@ -75,7 +77,7 @@ class FastaList():
         """Yields the reverse of a nucleotide sequence"""
         return self.seq_list[::-1]
 
-    def rev_comp(self, seq_lst):
+    def rev_comp(self):
         """Yields the reverse complement of a nucleotide sequence"""
         def comp(nucl):
             return {
@@ -95,7 +97,7 @@ class FastaList():
                 'D': 'H',
                 'H': 'D'
             }[nucl.upper()]
-        for fasta in seq_lst:
+        for fasta in self.seq_lst:
             fasta_id = fasta.split('\n')[0]
             fasta_seq = fasta.split('\n')[1]
             fasta_seq_rev = fasta_seq[::-1]
