@@ -11,7 +11,8 @@ class FastaList():
     newline separating the id and the nucleotides sequence."""
 
     def __init__(self, fasta_name):  # Initialized by a filename string
-        seq_list = id_list = []
+        self.seq_list = []
+        self.id_list = []
         newseq = ''
         self.name = fasta_name
         self.is_gzip = self.name.endswith(('.gz', '.GZ'))
@@ -23,18 +24,16 @@ class FastaList():
             self.fa_file = self.rdfi()
         for line in self.fa_file:
             if line.startswith('>'):
-                if id_list != []:
-                    seq_list.append(newseq + '\n')
-                id_list.append(line[1:].strip())
+                if self.id_list != []:
+                    self.seq_list.append(newseq + '\n')
+                self.id_list.append(line[1:].strip())
                 newseq = line
             else:
                 newseq += line.strip()
-        seq_list.append(newseq + '\n')
+        self.seq_list.append(newseq + '\n')
         self.fa_file.seek(0)
-        self.seq_list = seq_list
         self.seq_lst_rc = []
-        self.id_list = id_list
-        self.nr_seq = len(id_list)
+        self.nr_seq = len(self.id_list)
 
     def rdfi(self):
         """ Reads and return a fasta file unzipped if necessary"""
