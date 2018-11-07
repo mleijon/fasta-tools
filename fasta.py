@@ -77,8 +77,10 @@ class FastaList():
         return self.seq_list[::-1]
 
     def rev_comp(self):
-        """Yields the reverse complement of a nucleotide sequence"""
-        seq_lst_rc = []
+        """Creates a list the reverse complement of a nucleotide sequences in
+        the list seq_list"""
+        seq_list_rc = []
+
         def comp(nucl):
             return {
                 'A': 'T',
@@ -97,7 +99,7 @@ class FastaList():
                 'D': 'H',
                 'H': 'D'
             }[nucl.upper()]
-        for fasta in self.seq_lst:
+        for fasta in self.seq_list:
             fasta_id = fasta.split('\n')[0]
             fasta_seq = fasta.split('\n')[1]
             fasta_seq_rev = fasta_seq[::-1]
@@ -105,5 +107,5 @@ class FastaList():
             for nucl in fasta_seq_rev:
                 new_fasta += comp(nucl)
             new_fasta += '\n'
-            seq_lst_rc.append(new_fasta)
-        return seq_lst_rc
+            seq_list_rc.append(new_fasta)
+        return seq_list_rc
