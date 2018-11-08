@@ -5,10 +5,10 @@ import sys
 
 
 class FastaList():
-    """Creates list with the id:s of the fasta sequences (id_list) and a list
-    of the sequences with the newlines removed (seq_list),
-    suitable for searching. The sequenes list elements are strings with a
-    newline separating the id and the nucleotides sequence."""
+    """From a fasta text file Creates a list with the id:s of the fasta
+    sequences (id_list) and a list of the sequences with the newlines removed
+    (seq_list), suitable for searching. The sequenes list elements are strings
+    with a newline separating the id and the nucleotides sequence."""
 
     def __init__(self, fasta_name):  # Initialized by a filename string
         self.seq_list = []
