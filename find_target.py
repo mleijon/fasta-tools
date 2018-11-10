@@ -14,13 +14,14 @@ PARSER.add_argument('-l', type=str, help='the length of the extracted seq',
                     default=150)
 ARGS = PARSER.parse_args()
 FA_S = FastaList(ARGS.s)
+ALL_S = FA_S.seq_list + FA_S.rev_comp()
+FA_T = FastaList(ARGS.t)
 FA_CS = FastaList('aivcs.fa')
 aivcs = []
 for seq in FA_CS.seq_list:
     aivcs.append(seq.split('\n')[1].strip())
-ALL_S = FA_S.seq_list + FA_S.rev_comp()
-FA_T = FastaList(ARGS.t)
 FA_OUT = open('sources.fa', 'w')
+# Count - the number of processed target sequences representing 1% run time.
 count = len(FA_T.seq_list) // 100
 percent = 0
 incr1 = 0

@@ -32,7 +32,6 @@ class FastaList():
                 newseq += line.strip()
         self.seq_list.append(newseq + '\n')
         self.fa_file.seek(0)
-        self.seq_lst_rc = []
         self.nr_seq = len(self.id_list)
 
     def rdfi(self):
@@ -109,3 +108,14 @@ class FastaList():
             new_fasta += '\n'
             seq_list_rc.append(new_fasta)
         return seq_list_rc
+
+    def divide(self, divisor):
+        tmp_list = self.seq_list.copy()
+        seq_list_div = []
+        item_per_lst = self.nr_seq//divisor + (self.nr_seq % divisor) //\
+            divisor
+        for i in range(divisor - 1):
+            seq_list_div.append(tmp_list[0:item_per_lst])
+            del tmp_list[0:item_per_lst]
+        seq_list_div.append(tmp_list)
+        return seq_list_div
