@@ -54,10 +54,8 @@ for i in range(ARGS.p):
     thread = threading.Thread(target=thread_work, args=(fa_t_div[i], res_lst))
     event = threading.Event()
     threads.append(thread)
-    print('Thread: ', i)
     thread.start()
 event.wait()
-print(len(res_lst))
 for sequence in res_lst:
     FA_OUT.write(sequence)
 FA_OUT.close()
