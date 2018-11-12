@@ -3,18 +3,12 @@
 
 
 import argparse
-from multiprocessing import Pool
-from functools import reduce
+from multiprocessing import Process, Manager
 from fasta import FastaList
 
 
-def process_work(fasta_div):
-    tmp_lst = []
-    i = 0
-    nr_elem = len(fasta_div)
+def process_work(res_lst, fasta_div):
     for fasta_t in fasta_div:
-        print(round(100 * i/nr_elem), end='\r', flush=True)
-        i += 1
         fasta_t_seq = fasta_t.split('\n')[1]
         for fasta_s in ALL_S:
             fasta_s_id = fasta_s.split('\n')[0]
@@ -30,8 +24,7 @@ def process_work(fasta_div):
                     patho_lbl = '_LP'
                 out_seq = fasta_s_id + patho_lbl + '\n' + fasta_s_seq[
                     out_start:out_end] + '\n'
-                tmp_lst.append(out_seq)
-    return tmp_lst
+                res_lst.append(out_seq)
 
 
 if __name__ == "__main__":
@@ -50,13 +43,18 @@ if __name__ == "__main__":
     FA_CS = FastaList('aivcs.fa')
     fa_t_div = FA_T.divide(ARGS.p)
     aivcs = []
-    re_lst = []
     for seq in FA_CS.seq_list:
         aivcs.append(seq.split('\n')[1].strip())
     FA_OUT = open('sources.fa', 'w')
+    manager = Manager()  # Multiprocessing manager
+    res_lst = manager.list()
     processes = []
-    with Pool(ARGS.p) as p:
-        re_lst = reduce(lambda x, y: x + y, p.map(process_work, fa_t_div))
-    for sequence in re_lst:
+    for i in range(ARGS.p):
+        p = Process(target=process_work, args=(res_lst, fa_t_div[i]))
+        processes.append(p)
+        p.start()
+    for p in processes:
+        p.join()
+    for sequence in res_lst:
         FA_OUT.write(sequence)
     FA_OUT.close()
