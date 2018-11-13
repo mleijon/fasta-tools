@@ -9,12 +9,9 @@ from fasta import FastaList
 
 
 def process_work(fasta_div):
+    """Creates AIV HA gene fragments around the CS"""
     tmp_lst = []
-    i = 0
-    nr_elem = len(fasta_div)
     for fasta_t in fasta_div:
-        print(round(100 * i/nr_elem), end='\r', flush=True)
-        i += 1
         fasta_t_seq = fasta_t.split('\n')[1]
         for fasta_s in ALL_S:
             fasta_s_id = fasta_s.split('\n')[0]
@@ -54,8 +51,7 @@ if __name__ == "__main__":
     for seq in FA_CS.seq_list:
         aivcs.append(seq.split('\n')[1].strip())
     FA_OUT = open('sources.fa', 'w')
-    processes = []
-    with Pool(ARGS.p) as p:
+    with Pool(processes=ARGS.p) as p:
         re_lst = reduce(lambda x, y: x + y, p.map(process_work, fa_t_div))
     for sequence in re_lst:
         FA_OUT.write(sequence)
