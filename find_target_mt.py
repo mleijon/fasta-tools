@@ -3,12 +3,12 @@
 
 
 import argparse
-from multiprocessing import Pool
+from multiprocessing import Pool, Manager
 from functools import reduce
 from fasta import FastaList
 
 
-def process_work(fasta_div):
+def process_work(fasta_div, ALL_S):
     """Creates AIV HA gene fragments around the CS"""
     tmp_lst = []
     for fasta_t in fasta_div:
@@ -28,6 +28,7 @@ def process_work(fasta_div):
                 out_seq = fasta_s_id + patho_lbl + '\n' + fasta_s_seq[
                     out_start:out_end] + '\n'
                 tmp_lst.append(out_seq)
+                ALL_S.remove(fasta_s)
     return tmp_lst
 
 
@@ -43,16 +44,19 @@ if __name__ == "__main__":
     ARGS = PARSER.parse_args()
     FA_S = FastaList(ARGS.s)
     ALL_S = FA_S.seq_list + FA_S.rev_comp()
+    nr_init_seq = len(ALL_S)
+    print('searching ', nr_init_seq, 'sequences...')
     FA_T = FastaList(ARGS.t)
     FA_CS = FastaList('aivcs.fa')
     fa_t_div = FA_T.divide(ARGS.p)
+    argument = [(x, y) for x in fa_t_div for y in [ALL_S]]
     aivcs = []
     re_lst = []
     for seq in FA_CS.seq_list:
         aivcs.append(seq.split('\n')[1].strip())
     FA_OUT = open('sources.fa', 'w')
     with Pool(processes=ARGS.p) as p:
-        re_lst = reduce(lambda x, y: x + y, p.map(process_work, fa_t_div))
+        re_lst = reduce(lambda x, y: x + y, p.starmap(process_work, argument))
     for sequence in re_lst:
         FA_OUT.write(sequence)
     FA_OUT.close()
