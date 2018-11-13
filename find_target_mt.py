@@ -3,7 +3,7 @@
 
 
 import argparse
-from multiprocessing import Pool, Manager
+from multiprocessing import Pool
 from functools import reduce
 from fasta import FastaList
 
