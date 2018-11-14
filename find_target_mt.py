@@ -34,7 +34,8 @@ def process_work(fasta_div, ALL_S):
                 tmp_lst.append(out_seq)
                 found.add(fasta_s)
         counter += 1
-        print('{:d}'.format(int((100*counter/len(fasta_div)))), end='\r', flush=True)
+        print('{:03} % completed'.format(int((100*counter/len(fasta_div)))),
+              end='\r', flush=True)
     return tmp_lst
 
 
@@ -49,14 +50,15 @@ if __name__ == "__main__":
                         default=150)
     ARGS = PARSER.parse_args()
     FA_S = FastaList(ARGS.s)
-    manager = Manager()
-    ALL_S = manager.list()
-    ALL_S = FA_S.seq_list + FA_S.rev_comp()
-    nr_init_seq = len(ALL_S)
-    print('searching ', nr_init_seq, 'sequences...')
     FA_T = FastaList(ARGS.t)
     FA_CS = FastaList('aivcs.fa')
     fa_t_div = FA_T.divide(ARGS.p)
+    manager = Manager()
+    ALL_S = manager.list()
+    ALL_S = FA_S.seq_list + FA_S.rev_comp()
+    nr_s_seq = len(ALL_S)
+    nr_t_seq = len(FA_T.seq_list)
+    print('searching {} subsequences in {} sequences'.format(nr_t_seq, nr_s_seq))
     argument = [(x, y) for x in fa_t_div for y in [ALL_S]]
     aivcs = []
     re_lst = []
@@ -65,8 +67,8 @@ if __name__ == "__main__":
     FA_OUT = open('sources.fa', 'w')
     with Pool(processes=ARGS.p) as p:
         re_lst = reduce(lambda x, y: x + y, p.starmap(process_work, argument))
-    print('\n', len(re_lst), ' sequences found')
-    print(len(FA_S.seq_list) - len(re_lst), ' sequences not found')
+    print('\n\n\n{:5} sequence(s) found'.format(len(re_lst)))
+    print('{:5} sequence(s) not found'.format(len(FA_S.seq_list) - len(re_lst)))
     for sequence in re_lst:
         FA_OUT.write(sequence)
     FA_OUT.close()
