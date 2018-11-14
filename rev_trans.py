@@ -128,8 +128,8 @@ PARSER = argparse.ArgumentParser(description='Create the genes for a peptide\
                                  taking into account degenercy of the genetic\
                                  code')
 PARSER.add_argument('-p', type=str, help='amino acid sequence in single letter\
-                    format', default='G[IL][FL]GA[ILK][AS]GF[IL]')
-# Default = AIV fusion pep
+                    format', default='GLFGA')
+# Default = AIV fusion pep (G[IL][FL]GA[ILK][AS]GF[IL])
 ARGS = PARSER.parse_args()
 GENE_LST = RevTrans(ARGS.p)
 
