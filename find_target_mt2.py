@@ -4,12 +4,12 @@
 
 import argparse
 import json
-Import multiprocessing as mp
+from multiprocessing import Pool, Manager
 from functools import reduce
 from fasta import FastaList
 
 
-def process_work(fasta_div, lock):
+def process_work(fasta_div):
     """Creates AIV HA gene fragments around the CS"""
     global ALL_S
     tmp_lst = []
@@ -17,9 +17,7 @@ def process_work(fasta_div, lock):
     found = set()
     for fasta_t in fasta_div:
         fasta_t_seq = fasta_t.split('\n')[1]
-        lock.acquire()
         ALL_S = [seq for seq in ALL_S if seq not in found]
-        lock.release()
         found.clear()
         for fasta_s in ALL_S:
             if fasta_s[1].find(fasta_t_seq) != -1:
@@ -52,8 +50,7 @@ if __name__ == "__main__":
                         default=150)
     ARGS = PARSER.parse_args()
     FA_S = FastaList(ARGS.s)
-    manager = mp.Manager()
-    lock = manager.lock()
+    manager = Manager()
     ALL_S = manager.list([(fasta_s.split('\n')[0], fasta_s.split('\n')[1])
                           for fasta_s in FA_S.seq_list])
     FA_T = FastaList(ARGS.t)
@@ -75,9 +72,9 @@ if __name__ == "__main__":
         with open('cs.js', 'w') as cs_file:
             json.dump(aivcs, cs_file, indent=4)
     FA_OUT = open('sources.fa', 'w')
-    for i in range/ARGS.p):
-        p = mp.Process(process_work, args=(fa_t_div, lock))
-        p.start()
+    with Pool(processes=ARGS.p) as p:
+        re_lst = reduce(lambda x, y: x + y, p.map(process_work, fa_t_div))
+    p.close()
     print('\n\n\n{:5} sequence(s) found'.format(len(re_lst)))
     print('{:5} sequence(s) not found'.format(
      len(FA_S.seq_list) - len(re_lst)))
