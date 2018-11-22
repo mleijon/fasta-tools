@@ -9,17 +9,16 @@ from functools import reduce
 from fasta import FastaList
 
 
-def process_work(fasta_div):
+def process_work(fasta_div, fasta_source):
     """Creates AIV HA gene fragments around the CS"""
-    global ALL_S
     tmp_lst = []
     counter = 0
     found = set()
     for fasta_t in fasta_div:
         fasta_t_seq = fasta_t.split('\n')[1]
-        ALL_S = [seq for seq in ALL_S if seq not in found]
+        fasta_source = [seq for seq in fasta_source if seq not in found]
         found.clear()
-        for fasta_s in ALL_S:
+        for fasta_s in fasta_source:
             if fasta_s[1].find(fasta_t_seq) != -1:
                 out_start = int(fasta_s[1].find(fasta_t_seq) - (ARGS.l - len(
                     fasta_t_seq))/2)
@@ -73,7 +72,7 @@ if __name__ == "__main__":
             json.dump(aivcs, cs_file, indent=4)
     FA_OUT = open('sources.fa', 'w')
     with Pool(processes=ARGS.p) as p:
-        re_lst = reduce(lambda x, y: x + y, p.map(process_work, fa_t_div))
+        re_lst = reduce(lambda x, y: x + y, p.starmap(process_work, argument))
     p.close()
     print('\n\n\n{:5} sequence(s) found'.format(len(re_lst)))
     print('{:5} sequence(s) not found'.format(
