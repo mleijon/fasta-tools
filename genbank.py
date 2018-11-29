@@ -3,13 +3,16 @@
 
 class GbParse(object):
     """docstring for genbank_record."""
-    # The following currently not used
-    # mol_types = ['Genomic DNA', 'Genomic RNA', 'Precursor RNA', 'mRNA, cDNA',
-    #              'Ribosomal RNA', 'Transfer RNA', 'Other-Genetic', 'cRNA',
-    #              'Transcribed RNA', 'Transfer-messenger RNA', 'ncRNA']
-    # div_types = ['PRI', 'ROD', 'MAM', 'VRT', 'INV', 'PLN', 'BCT', 'VRL',
-    #              'PHG', 'SYN', 'UNA', 'EST', 'PAT', 'STS', 'GSS', 'HTG',
-    #              'HTC', 'ENV']
+
+    mol_types1 = ['DNA', 'RNA', 'mRNA', 'cDNA', 'Other-Genetic', 'cRNA',
+                  'ncRNA', 'ss-RNA', 'ds-RNA', 'ss-DNA', 'ds-DNA',
+                  'tRNA', 'ds-cRNA', 'ms-DNA']
+    mol_types2 = ['Genomic DNA', 'Genomic RNA', 'Precursor RNA',
+                  'Ribosomal RNA', 'Transfer RNA', 'Transcribed RNA',
+                  'Transfer-messenger RNA']
+    div_types = ['PRI', 'ROD', 'MAM', 'VRT', 'INV', 'PLN', 'BCT', 'VRL',
+                 'PHG', 'SYN', 'UNA', 'EST', 'PAT', 'STS', 'GSS', 'HTG',
+                 'HTC', 'ENV']
     fasta_width = 70
 
     def __init__(self, record):
@@ -20,21 +23,27 @@ class GbParse(object):
             u_index = str_org.find(str_2)
             return str_org[l_index:u_index]
 
-        self.LOCUS = extract(record, 'LOCUS', 'DEFINITION')
-        locus_lst = list(filter(lambda x: x != '', self.LOCUS.split('  ')))
+        self.LOCUS = self.del_exblanks(extract(record, 'LOCUS', 'DEFINITION'))
+        locus_lst = list(filter(lambda x: x != '', self.LOCUS.split(' ')))
+        #print(locus_lst)
         self.name = locus_lst[0].strip()
-        self.seq_len = locus_lst[1].strip()
-        self.mol_type = locus_lst[2].strip()
-        self.topology = locus_lst[3].strip()
-        self.gb_div = locus_lst[4].split(' ')[0].strip()
-        self.date = locus_lst[4].split(' ')[1].strip()
+        self.seq_len = locus_lst[1].strip() + ' ' + locus_lst[2].strip()
+        if locus_lst[3].strip() in self.mol_types1:
+            self.mol_type = locus_lst[3].strip()
+            j = 0
+        else:
+            self.mol_type = locus_lst[3].strip() + locus_lst[4].strip()
+            j = 1
+        self.topology = locus_lst[4 + j].strip()
+        self.gb_div = locus_lst[5 + j].strip()
+        self.date = locus_lst[6 + j].strip()
         self.DEFINITION = extract(record, 'DEFINITION', 'ACCESSION').strip()
         self.DEFINITION = self.DEFINITION.replace('\n', '')
         self.DEFINITION = self.del_exblanks(self.DEFINITION)[:-1]
         self.VERSION = extract(record, 'VERSION', 'KEYWORD').strip()
         self.SEQUENCE = ''
         counter = 0
-        sequence = extract(record, 'ORIGIN', '//')
+        sequence = extract(record, 'ORIGIN', '//\n')
         for char in sequence:
             if not (char.isnumeric() or char.isspace()):
                 self.SEQUENCE += char.upper()
