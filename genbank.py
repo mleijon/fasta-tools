@@ -40,10 +40,13 @@ class GbParse(object):
         self.DEFINITION = extract(record, 'DEFINITION', 'ACCESSION').strip()
         self.DEFINITION = self.DEFINITION.replace('\n', '')
         self.DEFINITION = self.del_exblanks(self.DEFINITION)[:-1]
-        self.VERSION = extract(record, 'VERSION', 'KEYWORD').strip()
+        if 'DBLINK' in extract(record, 'VERSION', 'KEYWORDS'):
+            self.VERSION = extract(record, 'VERSION', 'DBLINK').strip()
+        else:
+            self.VERSION = extract(record, 'VERSION', 'KEYWORDS').strip()
         self.SEQUENCE = ''
         counter = 0
-        sequence = extract(record, 'ORIGIN', '//\n')
+        sequence = extract(record, 'ORIGIN', '//\n').split('\n', 1)[1]
         for char in sequence:
             if not (char.isnumeric() or char.isspace()):
                 self.SEQUENCE += char.upper()
