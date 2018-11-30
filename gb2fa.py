@@ -17,7 +17,7 @@ def rdfi(in_fi):
     else:
         out_fi = open(in_fi)
     for keyword in ['LOCUS', 'DEFINITION', 'ACCESSION', 'VERSION', 'KEYWORDS',
-                    'SOURCE', 'ORIGIN']:
+                    'SOURCE']:
         out_fi.seek(0)
         if keyword not in out_fi.read()[:10000]:
             raise Exception('Not a Genbank File')
