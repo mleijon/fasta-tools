@@ -16,6 +16,11 @@ def rdfi(in_fi):
         out_fi = open(in_fi[:-3])
     else:
         out_fi = open(in_fi)
+    for keyword in ['LOCUS', 'DEFINITION', 'ACCESSION', 'VERSION', 'KEYWORDS',
+                    'SOURCE', 'ORIGIN']:
+        if keyword not in out_fi.read():
+            sys.exit('Not a genbank file. Exits.')
+    out_fi.seek(0)
     return out_fi
 
 
@@ -30,7 +35,7 @@ ARGS = PARSER.parse_args()
 if ARGS.d:
     with os.scandir(ARGS.gb) as dir:
         for entry in dir:
-            if entry.name.endswith('.gz') and entry.is_file():
+            if entry.is_file():
                 try:
                     GB_IN = rdfi(ARGS.gb + entry.name)
                     print('Processing ' + entry.name + '...', end='\r',
