@@ -2,6 +2,9 @@
 
 import argparse
 
+gb_div = ['bct', 'con', 'env', 'est', 'gss', 'htc', 'htg', 'inv', 'mam', 'pat',
+          'phg', 'pln', 'pri', 'rod', 'rod', 'set', 'sts', 'syn', 'tsa', 'una',
+          'vrl', 'vrt']
 PARSER = argparse.ArgumentParser(description='output filename')
 PARSER.add_argument('-f', type=str, help='output filename', required=True)
 PARSER.add_argument('-c', type=int, help='nr of files', required=True)
