@@ -24,11 +24,11 @@ def count_li(infile):
 
 # Catches blast file exceptions
 def ctrle(e_in, emin):
-    """Catches blast file exceptions.
+    """Catches blast file exceptions and cakculated e-value ratios.
 
-    The blast file of Decypher loses the digit (x) before the 'e' in the
+    1) The blast file of Decypher loses the digit (x) before the 'e' in the
     e-value (i.e.) xe-yyy when yyy is larger than 099. '1' is added to fix
-    this. Division by zero, if the e-value is zero is also avoided by this
+    this. 2) Division by zero, if the e-value is zero is also handeled by this
     function."""
     if e_in[0] == 'e':
         e_out = float('1' + e_in)
