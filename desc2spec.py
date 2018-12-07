@@ -10,6 +10,9 @@ PARSER.add_argument('-n', type=str, help='taxid name file', required=True)
 PARSER.add_argument('-a', type=str, help='acc. to taxid file', required=True)
 ARGS = PARSER.parse_args()
 
+agents = {}
+list_of_agents = []
+
 fn = open(ARGS.n, 'r+b')
 mn = mmap.mmap(fn.fileno(), 0)
 fa = open(ARGS.a, 'r+b')
@@ -28,6 +31,11 @@ for line in in_file:
     taxid = ma.readline().decode('UTF-8').strip().split('\t')[2]
     mn.seek(mn.find(taxid.encode('UTF-8')))
     species = mn.readline().decode('UTF-8').strip().split('|')[1]
+    if species in agents:
+        species['nr_of_reads'] += nr_of_reads
+    else:
+        agents['accesssion'] = acc
+
     out_file.write(species + '\t' + nr_of_reads + '\n')
     print(species + '\t' + nr_of_reads + '\n')
     ma.seek(0)
