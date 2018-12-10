@@ -16,7 +16,7 @@ mn = mmap.mmap(fn.fileno(), 0)
 fa = open(ARGS.a, 'r+b')
 ma = mmap.mmap(fa.fileno(), 0)
 in_file = open(ARGS.b)
-agents = dict()
+agent = dict()
 accessions = dict()
 
 # Assumes reading 'top-files' from blast_find.py
@@ -27,13 +27,20 @@ in_file.readline()
 for line in in_file:
     acc = line.split('|')[0].strip()
     nr_of_reads = line.split('|')[3].strip()
-    agents[acc]['nr_of_reads'] = nr_of_reads
-
+    agent = {acc: nr_of_reads}
+    sum_of_reads = 0
+    accessions[acc]['agents'] = []
     out_file.write(acc)
 # Don't consider the version of accession.
     if ma.find(acc.split('.')[0].encode('UTF-8')) == -1:  # Acc. not found.
-        out_file.write(' not found!\n')
+        out_file.write('accession not found!\n')
         print(acc + ' not found!\n')
+        if sum_of_reads == 0:
+            accessions[acc]['species'] = 'Not found!'
+            accessions[acc]['sum_of_reads'] = nr_of_reads
+            accessions[acc]['agents'].append(agent)
+        else:
+
     else:
         ma.seek(ma.find(acc.split('.')[0].encode('UTF-8')))
         taxid = ma.readline().decode('UTF-8').strip().split('\t')[2]
