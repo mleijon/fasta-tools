@@ -22,33 +22,35 @@ out_file = open(ARGS.b.replace('top', 'species'), 'w')
 in_file.readline()
 in_file.readline()
 species_set = set()
+microorg = []
+agent = {}
 for line in in_file:
     acc = line.split('|')[0].strip()
     nor = line.split('|')[3].strip()
     out_file.write(acc)
 # Don't consider the version of accession.
     if ma.find(acc.split('.')[0].encode('UTF-8')) == -1:  # Acc. not found.
-        try:
-            not_found.append((acc, nor))
-        except NameError:
-            not_found = []
-            not_found.append((acc, nor))
+        if 'not_found' not in species_set:
             species_set.add('not_found')
+            microorg += {'not_found': (acc, nor)}
+        else:
+            microorg['not_found'].append((acc, nor))
     else:
         ma.seek(ma.find(acc.split('.')[0].encode('UTF-8')))
         taxid = ma.readline().decode('UTF-8').strip().split('\t')[2]
         mn.seek(mn.find(taxid.encode('UTF-8')))
         species = mn.readline().decode('UTF-8').split('|')[1].strip()
-        if species in species_set:
-            species + '_'.append((acc, nor))
-        else:
-            species = []
-            species_.append((acc, nor))
+        if species not in species_set:
             species_set.add(species)
+            microorg.append({species: [(acc, nor)]})
+        else:
+            for item in microorg:
+                if species in item:
+                    item[species].append((acc, nor))
     ma.seek(0)
     mn.seek(0)
+print(microorg[24])
 fn.close()
 fa.close()
 in_file.close()
 out_file.close()
-print(species_set)
