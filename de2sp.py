@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
-"""Replace descriptions with species."""
+"""Replace descriptions with species. Reads the top-file produced by
+blast-find.py"""
 
 import argparse
 import mmap
@@ -16,42 +17,29 @@ mn = mmap.mmap(fn.fileno(), 0)
 fa = open(ARGS.a, 'r+b')
 ma = mmap.mmap(fa.fileno(), 0)
 in_file = open(ARGS.b)
-agent = dict()
-accessions = dict()
-
+microorg = dict()
 # Assumes reading 'top-files' from blast_find.py
 out_file = open(ARGS.b.replace('top', 'species'), 'w')
-out_file.write('accession\tspecies\tnr-of-reads\n')
 in_file.readline()
 in_file.readline()
+sum_of_reads = 0
 for line in in_file:
     acc = line.split('|')[0].strip()
-    nr_of_reads = line.split('|')[3].strip()
+    nor = line.split('|')[3].strip()
     agent = {acc: nr_of_reads}
-    sum_of_reads = 0
     accessions[acc]['agents'] = []
     out_file.write(acc)
 # Don't consider the version of accession.
     if ma.find(acc.split('.')[0].encode('UTF-8')) == -1:  # Acc. not found.
-        out_file.write('accession not found!\n')
-        print(acc + ' not found!\n')
-        if sum_of_reads == 0:
-            accessions[acc]['species'] = 'Not found!'
-            accessions[acc]['sum_of_reads'] = nr_of_reads
-            accessions[acc]['agents'].append(agent)
-        else:
-
+        microorg['not_found'].update(['acc'].append(acc), ['nor'].append(nor))
+        else
     else:
         ma.seek(ma.find(acc.split('.')[0].encode('UTF-8')))
         taxid = ma.readline().decode('UTF-8').strip().split('\t')[2]
-        if mn.find(taxid.encode('UTF-8')) == -1:
-            out_file.write('taxid: ' + taxid + ' not found!\n')
-            print('taxid: ' + taxid + ' not found!\n')
-        else:
-            mn.seek(mn.find(taxid.encode('UTF-8')))
-            species = mn.readline().decode('UTF-8').strip().split('|')[1]
-            out_file.write(species + '\t' + nr_of_reads + '\n')
-            print(species + '\t' + nr_of_reads + '\n')
+        mn.seek(mn.find(taxid.encode('UTF-8')))
+        species = mn.readline().decode('UTF-8').strip().split('|')[1]
+        microorg[species]['acc'].append(acc)
+        microorg[species]['nor'].append(nr_of_reads)
     ma.seek(0)
     mn.seek(0)
 fn.close()
