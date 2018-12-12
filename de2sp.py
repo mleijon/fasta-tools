@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
-"""Replace descriptions with species."""
+"""Replace descriptions with species. Reads the top-file produced by
+blast-find.py"""
 
 import argparse
 import mmap
@@ -16,9 +17,7 @@ mn = mmap.mmap(fn.fileno(), 0)
 fa = open(ARGS.a, 'r+b')
 ma = mmap.mmap(fa.fileno(), 0)
 in_file = open(ARGS.b)
-agent = dict()
-accessions = dict()
-species_set = set()
+microorg = dict()
 # Assumes reading 'top-files' from blast_find.py
 out_file = open(ARGS.b.replace('top', 'species'), 'w')
 in_file.readline()
@@ -32,17 +31,9 @@ for line in in_file:
     out_file.write(acc)
 # Don't consider the version of accession.
     if ma.find(acc.split('.')[0].encode('UTF-8')) == -1:  # Acc. not found.
-        if 'Not found!' not in species_set:
-            species_set += 'Not found!'
-            accessions[acc]['species'] = 'Not found!'
-            accessions[acc]['sum_of_reads'] = nr_of_reads
-            accessions[acc]['agents'].append(agent)
-            acc_max = acc
-        else:
-            sum_of_reads += nr_of_reads
-            accessions[acc_max]['species'] = 'Not found!'
-            accessions[acc_max]['sum_of_reads'] = sum_of_reads
-            accessions[acc_max]['agents'].append(agent)
+        microorg['not_found']['acc'].append(acc)
+        microorg['not_found']['nor'].append(nr_of_reads)
+        else
     else:
         ma.seek(ma.find(acc.split('.')[0].encode('UTF-8')))
         taxid = ma.readline().decode('UTF-8').strip().split('\t')[2]
