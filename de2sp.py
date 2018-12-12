@@ -17,32 +17,38 @@ mn = mmap.mmap(fn.fileno(), 0)
 fa = open(ARGS.a, 'r+b')
 ma = mmap.mmap(fa.fileno(), 0)
 in_file = open(ARGS.b)
-microorg = dict()
 # Assumes reading 'top-files' from blast_find.py
 out_file = open(ARGS.b.replace('top', 'species'), 'w')
 in_file.readline()
 in_file.readline()
-sum_of_reads = 0
+species_set = set()
 for line in in_file:
     acc = line.split('|')[0].strip()
     nor = line.split('|')[3].strip()
-    agent = {acc: nr_of_reads}
-    accessions[acc]['agents'] = []
     out_file.write(acc)
 # Don't consider the version of accession.
     if ma.find(acc.split('.')[0].encode('UTF-8')) == -1:  # Acc. not found.
-        microorg['not_found'].update(['acc'].append(acc), ['nor'].append(nor))
-        else
+        try:
+            not_found.append((acc, nor))
+        except NameError:
+            not_found = []
+            not_found.append((acc, nor))
+            species_set.add('not_found')
     else:
         ma.seek(ma.find(acc.split('.')[0].encode('UTF-8')))
         taxid = ma.readline().decode('UTF-8').strip().split('\t')[2]
         mn.seek(mn.find(taxid.encode('UTF-8')))
-        species = mn.readline().decode('UTF-8').strip().split('|')[1]
-        microorg[species]['acc'].append(acc)
-        microorg[species]['nor'].append(nr_of_reads)
+        species = mn.readline().decode('UTF-8').split('|')[1].strip()
+        if species in species_set:
+            species + '_'.append((acc, nor))
+        else:
+            species = []
+            species_.append((acc, nor))
+            species_set.add(species)
     ma.seek(0)
     mn.seek(0)
 fn.close()
 fa.close()
 in_file.close()
 out_file.close()
+print(species_set)
