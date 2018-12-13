@@ -60,6 +60,7 @@ def find_targets():
     target_hits = dict()
     j = 0
     first = True
+    offs1 = 0
     nr_rows = count_li(BL_IN)
     while j <= nr_rows:
         if anchor in lica.getline(ARGS.b, j):
@@ -76,7 +77,7 @@ def find_targets():
                         and ctrle(e_val, emin)[1] >= ARGS.d):
                     tar_hit = dict()
                     tar_hit['Accession'] = lica.getline(ARGS.b, j).\
-                        split()[0][offs1:]
+                        split()[0][offs1:] # Accounts for variation in the division (e.g. vrl, nt, etc) string lenghth
                     offs2 = offs1 + len(tar_hit['Accession'])
                     tar_hit['Description'] = lica.\
                         getline(ARGS.b, j)[offs2:67].strip()
