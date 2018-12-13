@@ -32,9 +32,11 @@ for line in in_file:
     if ma.find(acc.split('.')[0].encode('UTF-8')) == -1:  # Acc. not found.
         if 'not_found' not in species_set:
             species_set.add('not_found')
-            microorg += {'not_found': (acc, nor)}
+            microorg.append({'not_found': [(acc, nor)]})
         else:
-            microorg['not_found'].append((acc, nor))
+            for item in microorg:
+                if 'not_found' in item:
+                    item['not_found'].append((acc, nor))
     else:
         ma.seek(ma.find(acc.split('.')[0].encode('UTF-8')))
         taxid = ma.readline().decode('UTF-8').strip().split('\t')[2]
