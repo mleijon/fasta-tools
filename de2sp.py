@@ -30,25 +30,19 @@ for line in in_file:
     out_file.write(acc)
 # Don't consider the version of accession.
     if ma.find(acc.split('.')[0].encode('UTF-8')) == -1:  # Acc. not found.
-        if 'not_found' not in species_set:
-            species_set.add('not_found')
-            microorg.append({'not_found': [(acc, nor)]})
-        else:
-            for item in microorg:
-                if 'not_found' in item:
-                    item['not_found'].append((acc, nor))
-    else:
+        species = 'not_found'
+    else
         ma.seek(ma.find(acc.split('.')[0].encode('UTF-8')))
         taxid = ma.readline().decode('UTF-8').strip().split('\t')[2]
         mn.seek(mn.find(taxid.encode('UTF-8')))
         species = mn.readline().decode('UTF-8').split('|')[1].strip()
-        if species not in species_set:
-            species_set.add(species)
-            microorg.append({species: [(acc, nor)]})
-        else:
-            for item in microorg:
-                if species in item:
-                    item[species].append((acc, nor))
+    if species not in species_set:
+        species_set.add(species)
+        microorg.append({species: [(acc, nor)]})
+    else:
+        for item in microorg:
+            if species in item:
+                item[species].append((acc, nor))
     ma.seek(0)
     mn.seek(0)
 print(microorg[24])
