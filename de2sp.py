@@ -23,7 +23,6 @@ in_file.readline()
 in_file.readline()
 species_set = set()
 microorg = []
-agent = {}
 for line in in_file:
     acc = line.split('|')[0].strip()
     nor = line.split('|')[3].strip()
@@ -31,7 +30,7 @@ for line in in_file:
 # Don't consider the version of accession.
     if ma.find(acc.split('.')[0].encode('UTF-8')) == -1:  # Acc. not found.
         species = 'not_found'
-    else
+    else:
         ma.seek(ma.find(acc.split('.')[0].encode('UTF-8')))
         taxid = ma.readline().decode('UTF-8').strip().split('\t')[2]
         mn.seek(mn.find(taxid.encode('UTF-8')))
@@ -45,7 +44,6 @@ for line in in_file:
                 item[species].append((acc, nor))
     ma.seek(0)
     mn.seek(0)
-print(microorg[24])
 fn.close()
 fa.close()
 in_file.close()

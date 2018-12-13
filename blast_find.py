@@ -86,7 +86,7 @@ def find_targets():
                     tar_hit['r-e-value'] = round(ctrle(e_val, emin)[1], 2)
                     tar_lst.append(tar_hit)
                 j += 1
-            if tar_lst != []:
+            if tar_lst:
                 target_hits.update({query: tar_lst})
         j += 1
 # Returns {seqid:[{'Accession':, 'Description':,'Bitscore':,'e-value':,
@@ -103,7 +103,6 @@ def wr_deep_tar(bl_result):
     are given.
     """
     tar_sum = dict()
-    tar_sum_key = ''
     for seqid in bl_result:
         for hit in bl_result[seqid]:
             tar_sum_key = hit['Accession']
@@ -162,8 +161,9 @@ def wr_top_tar(bl_result):
 
 
 def wr_fa_tar(seq_ids):
+    """Writes fasta-file with sequences that matches the target"""
+
     from fasta import FastaList
-    """Writes a fasta file with the target hitting sequences"""
     filename = ARGS.b[:ARGS.b.find('.blast'.casefold())]+'_'+ARGS.t + '.fa'
     try:
         outfile = open(filename, 'w')
