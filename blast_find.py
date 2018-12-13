@@ -24,7 +24,7 @@ def count_li(infile):
 
 # Catches blast file exceptions
 def ctrle(e_in, emin):
-    """Catches blast file exceptions and cakculated e-value ratios.
+    """Catches blast file exceptions and return e-value ratios (lowest/current).
 
     1) The blast file of Decypher loses the digit (x) before the 'e' in the
     e-value (i.e.) xe-yyy when yyy is larger than 099. '1' is added to fix
@@ -64,11 +64,14 @@ def find_targets():
     nr_rows = count_li(BL_IN)
     while j <= nr_rows:
         if anchor in lica.getline(ARGS.b, j):
+            # The query string is the seqid
             query = lica.getline(ARGS.b, j-6).strip()[7:]
+            # The minimum e-value is 1st in the list
             emin = lica.getline(ARGS.b, j+2)[67:].split()[1].strip()
             j += 2  # Skip empty row
             tar_lst = []
             if first:  # Read this only first time since constant
+                # offs1 Accounts for variation in the division string lenghth (e.g. vrl, nt, etc)
                 offs1 = lica.getline(ARGS.b, j).find('||') + 2
                 first = False
             while lica.getline(ARGS.b, j)[0] != '\n':
@@ -77,7 +80,7 @@ def find_targets():
                         and ctrle(e_val, emin)[1] >= ARGS.d):
                     tar_hit = dict()
                     tar_hit['Accession'] = lica.getline(ARGS.b, j).\
-                        split()[0][offs1:] # Accounts for variation in the division (e.g. vrl, nt, etc) string lenghth
+                        split()[0][offs1:]
                     offs2 = offs1 + len(tar_hit['Accession'])
                     tar_hit['Description'] = lica.\
                         getline(ARGS.b, j)[offs2:67].strip()
