@@ -7,7 +7,7 @@ import argparse
 import mmap
 
 PARSER = argparse.ArgumentParser(description='TBD')
-PARSER.add_argument('-b', type=str, help='Fasta summary table', required=True)
+PARSER.add_argument('-b', type=str, help='Blast hit summary table', required=True)
 PARSER.add_argument('-n', type=str, help='taxid name file', required=True)
 PARSER.add_argument('-a', type=str, help='acc. to taxid file', required=True)
 ARGS = PARSER.parse_args()
