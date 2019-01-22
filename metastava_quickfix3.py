@@ -42,13 +42,14 @@ def process_work():
     return result
 
 
-ordered_result = collections.OrderedDict(sorted(result.items()))
-for seq, spec in ordered_result.items():
-    outf.write('%s\t%s\n' % (seq, spec))
-namesf.close()
-taxidf.close()
-bl_inf.close()
-outf.close()
+if __name__ == '__main__':
+    ordered_result = collections.OrderedDict(sorted(result.items()))
+    for seq, spec in ordered_result.items():
+        outf.write('%s\t%s\n' % (seq, spec))
+    namesf.close()
+    taxidf.close()
+    bl_inf.close()
+    outf.close()
 
 
 
