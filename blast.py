@@ -62,10 +62,6 @@ class BlastFile:
         return bl_files
 
 
-test = BlastFile('test.blast')
-test.print_par()
-test.split_blastfi(10)
-
 
 
 
