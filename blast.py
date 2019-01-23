@@ -26,12 +26,12 @@ class BlastFile:
             self.hit_percent = round(100*(self.nr_queries - no_hit_cnt)/self.nr_queries, 1)
         read_pars(self.blfi)
 
-    @staticmethod
-    def print_par():
-        print('Nr of queries: {}\nHit percentage: {} %'.format(test.nr_queries, test.hit_percent))
-        print('Database: {}\nBlast version: {}'.format(test.db, test.blast_ver))
+    def print_par(self):
+        print(self.nr_queries)
+        print('Nr of queries: {}\nHit percentage: {} %'.format(self.nr_queries, self.hit_percent))
+        print('Database: {}\nBlast version: {}'.format(self.db, self.blast_ver))
 
-    def split_blastfi(self, n):
+    def split(self, n):
         self.blfi.seek(0)
         bl_files = []
         if '.' in self.name:
@@ -41,10 +41,11 @@ class BlastFile:
         for count in range(n):
             bl_files.append(open(basename + '_' + str(count) + '.blast', 'w'))
         file_nr = 0
-        query_counter = 0
+        query_counter = 1
+        res_counter = self.nr_queries%n
         for line in self.blfi:
             try:
-                if query_counter <= (self.nr_queries//n + 1):
+                if query_counter <= (self.nr_queries//n + (res_counter > 0)):
                     bl_files[file_nr].write(line)
                     if 'Query=' in line:
                         query_counter += 1
@@ -52,7 +53,8 @@ class BlastFile:
                     bl_files[file_nr].write(line)
                 else:
                     file_nr += 1
-                    query_counter = 0
+                    query_counter = 1
+                    res_counter -= 1
                     bl_files[file_nr].write(line)
             except EOFError:
                 for count in range(n):
