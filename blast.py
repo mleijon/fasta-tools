@@ -34,6 +34,7 @@ class BlastFile:
     def split(self, n):
         self.blfi.seek(0)
         bl_files = []
+        bl_file_names = []
         if '.' in self.name:
             basename = self.name.split('.')[0]
         else:
@@ -60,8 +61,9 @@ class BlastFile:
                 for count in range(n):
                     bl_files[n].close()
         for count in range(n):
-            bl_files.append(open(basename + '_' + str(count) + '.blast'))
-        return bl_files
+            bl_file_names.append((basename + '_' + str(count) + '.blast',))
+        return bl_file_names
+
 
 
 
