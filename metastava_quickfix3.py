@@ -2,10 +2,13 @@
 """Metastava quickfix2 - will create a two column file with sequence name and species assignment"""
 
 import linecache as lc
+from multiprocessing import Pool, Manager
+from functools import reduce
 import argparse
 import collections
 import json
 import blast
+
 
 PARSER = argparse.ArgumentParser(description='TBD')
 PARSER.add_argument('-b', type=str, help='Blast hit summary table', default='test2.blast')
@@ -23,36 +26,21 @@ acc2names = dict()
 blfi_list = []
 
 
-# def process_work():
-#     for count, line in enumerate(bl_inf):
-#         if line[0:6] == 'Query=':
-#             seq_name = line.split(' ')[1].strip()
-#             if 'No hits found' in lc.getline(ARGS.b, count + 7):
-#                 result[seq_name] = 'NOT FOUND'
-#             else:
-#                 acc = lc.getline(ARGS.b, count+9).split(' ')[0].strip()[4:]
-#                 acc_pointer = mtaxidf.find(acc.encode('UTF-8'))
-#                 if acc_pointer == -1:
-#                     result[seq_name] = 'NOT FOUND'
-#                 else:
-#                     mtaxidf.seek(acc_pointer)
-#                     tax_id = mtaxidf.readline().decode('UTF-8').split('\t')[1].strip()
-#                     mnamesf.seek(mnamesf.find(tax_id.encode('UTF-8')))
-#                     result[seq_name] = mnamesf.readline().decode('UTF-8').split('|')[1].strip()
-#         mnamesf.seek(0)
-#         mtaxidf.seek(0)
-#     return result
-
+def process_work(bl_inf):
+    for count, line in enumerate(bl_inf):
+        if line[0:6] == 'Query=':
+            seq_name = line.split(' ')[1].strip()
+            if 'No hits found' in lc.getline(ARGS.b, count + 7):
+                result[seq_name] = 'No hits found'
+            else:
+                acc = lc.getline(ARGS.b, count+9).split(' ')[0].strip()[4:]
+                try:
+                    result[seq_name] = acc2names_db[acc]
+                except KeyError:
+                    result[seq_name] = 'Accession not found'
+    return result
 
 if __name__ == '__main__':
-    blfi = blast.BlastFile(ARGS.b)
-    blfi.print_par()
-    print('****')
-    blfi_list = blfi.split(6)
-    blfi_list[5].close()
-    blfi = blast.BlastFile(blfi_list[5].name)
-    blfi.print_par()
-    exit(0)
     try:
         with open ('acc2name.js') as fi:
             acc2names = json.load(fi)
@@ -71,11 +59,17 @@ if __name__ == '__main__':
                 pass
         with open ('acc2name.js', 'w') as fi:
             json.dump(acc2names, fi, indent=4)
-    ordered_result = collections.OrderedDict(sorted(result.items()))
+        del taxid2name
+        del acc2taxid
+    blfi = blast.BlastFile(ARGS.b)
+    blfi_list = blfi.split(ARGS.s)
+    manager = Manager()
+    acc2names_db = manager.dict(acc2names)
+    with Pool(processes=ARGS.s) as p:
+        all_results = reduce(lambda x,y: x + y, p.starmap(process_work, blfi_list))
+    ordered_result = collections.OrderedDict(sorted(all_results.items()))
     for seq, spec in ordered_result.items():
         outf.write('%s\t%s\n' % (seq, spec))
-    namesf.close()
-    taxidf.close()
     bl_inf.close()
     outf.close()
 
