@@ -21,10 +21,10 @@ ARGS = PARSER.parse_args()
 bl_inf = open(ARGS.b)
 outf = open(ARGS.o, 'w')
 result = dict()
-acc2taxid = dict()
-taxid2name = dict()
+acc2taxid = dict()  # {'accession':'taxid',...}
+taxid2name = dict() # {'taxid':'scientific names',...}
 manager = Manager()
-acc2names = manager.dict()
+acc2names = manager.dict() # {'accession':'scientific names':
 blfi_list = []
 
 
@@ -75,6 +75,7 @@ if __name__ == '__main__':
         del acc2taxid
     print('Done loading json\n')
     blfi = blast.BlastFile(ARGS.b)
+    # Split the blast file into ARGS.s smaller files and returns a list of the file names
     blfi_list = blfi.split(ARGS.s)
     with Pool(processes=ARGS.s) as p:
         all_results = reduce(lambda x,y: merge_two_dicts(x, y), p.starmap(process_work, blfi_list))
