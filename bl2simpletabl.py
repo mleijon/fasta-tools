@@ -1,5 +1,6 @@
 #!/usr/bin/python
-"""Metastava quickfix2 - will create a two column file with sequence name and species assignment"""
+"""Metastava quickfix2 - will create a two column file with sequence name and
+species assignment"""
 
 import linecache as lc
 import multiprocessing
@@ -12,19 +13,22 @@ import blast
 
 
 PARSER = argparse.ArgumentParser(description='TBD')
-PARSER.add_argument('-b', type=str, help='Blast hit summary table', default='test.blast')
-PARSER.add_argument('-s', type=int, help='Divide blastfile into this number of smaller files', default=5)
+PARSER.add_argument('-b', type=str, help='Blast hit summary table',
+                    default='test.blast')
+PARSER.add_argument('-s', type=int, help='Divide blastfile into this number of '
+                                         'smaller files', default=5)
 PARSER.add_argument('-n', type=str, help='taxid name file', default='names.dmp')
-PARSER.add_argument('-a', type=str, help='acc. to taxid file', default='acc2taxid.dmp')
+PARSER.add_argument('-a', type=str, help='acc. to taxid file',
+                    default='acc2taxid.dmp')
 PARSER.add_argument('-o', type=str, help='Output file', default='nonsal.txt')
 ARGS = PARSER.parse_args()
 bl_inf = open(ARGS.b)
 outf = open(ARGS.o, 'w')
 result = dict()
 acc2taxid = dict()  # {'accession':'taxid',...}
-taxid2name = dict() # {'taxid':'scientific names',...}
+taxid2name = dict()  # {'taxid':'scientific names',...}
 manager = Manager()
-acc2names = manager.dict() # {'accession':'scientific names':
+acc2names = manager.dict()  # {'accession':'scientific names':
 blfi_list = []
 
 
@@ -37,7 +41,8 @@ def process_work(file_name):
                 if 'No hits found' in lc.getline(file_name, count + 7):
                     bl_result[seq_name] = 'No hits found'
                 else:
-                    acc = lc.getline(file_name, count+9).split(' ')[0].strip()[4:]
+                    acc = lc.getline(file_name, count+9).\
+                              split(' ')[0].strip()[4:]
                     try:
                         bl_result[seq_name] = acc2names[acc]
                     except KeyError:
@@ -54,7 +59,7 @@ def merge_two_dicts(x, y):
 
 if __name__ == '__main__':
     try:
-        with open ('acc2name.js') as fi:
+        with open('acc2name.js') as fi:
             acc2names = json.load(fi)
     except FileNotFoundError:
         with open(ARGS.a) as fi:
@@ -63,7 +68,8 @@ if __name__ == '__main__':
         with open(ARGS.n) as fi:
             for line in fi:
                 if line.split('|')[3].strip() == 'scientific name':
-                    taxid2name[line.split('|')[0].strip()] = line.split('|')[1].strip()
+                    taxid2name[line.split('|')[0].strip()] = \
+                        line.split('|')[1].strip()
         for key in acc2taxid:
             try:
                 acc2names[key] = taxid2name[acc2taxid[key]]
@@ -75,10 +81,12 @@ if __name__ == '__main__':
         del acc2taxid
     print('Done loading json\n')
     blfi = blast.BlastFile(ARGS.b)
-    # Split the blast file into ARGS.s smaller files and returns a list of the file names
+    # Split the blast file into ARGS.s smaller files and returns a list of the
+    # file names
     blfi_list = blfi.split(ARGS.s)
     with Pool(processes=ARGS.s) as p:
-        all_results = reduce(lambda x,y: merge_two_dicts(x, y), p.starmap(process_work, blfi_list))
+        all_results = reduce(lambda x, y: merge_two_dicts(x, y),
+                             p.starmap(process_work, blfi_list))
     ordered_result = collections.OrderedDict(sorted(all_results.items()))
     for seq, spec in ordered_result.items():
         outf.write('%s\t%s\n' % (seq, spec))
