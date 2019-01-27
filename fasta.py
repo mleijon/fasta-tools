@@ -2,19 +2,22 @@
 """General purpose module to handle a fasta file object. Converts fastq to
 fasta and unzip gzipped files"""
 import sys
+import os
 
 
 class FastaList:
     """From a fasta text file (fastq or fasta) Creates a list with the id:s of
     the fasta sequences (id_list) and a list of the sequences with the newlines
     removed (seq_list), suitable for searching. The sequenes list elements are
-    strings with a newline separating the id and the nucleotides sequence."""
+    strings with a newline separating the id and the nucleotides sequence.
+    id_list elements will end without \n while seq_list elements ends with \n.
+    """
 
     def __init__(self, fasta_name):  # Initialized by a filename string
         self.seq_list = []
         self.id_list = []
         newseq = ''
-        self.name = fasta_name
+        self.name = str(os.path.abspath(fasta_name))
         self.is_gzip = self.name.endswith(('.gz', '.GZ'))
         if (self.is_gzip and self.name[:-3].endswith(('.fq', '.FQ', '.fastq',
                                                       '.FASTQ')) or self.name.
@@ -49,11 +52,7 @@ class FastaList:
 
     def fq2fa(self):
         """ Reads and return a fastq file converted to fasta format"""
-        # Handles input with full path
-        basename = self.name.rpartition('/')[2]
-        outfa_name = basename[:basename.find('.')] + '.fa'
-        outfa_name = self.name.rpartition('/')[0] + '/' + outfa_name
-        out_fa = open(outfa_name, 'w')
+        out_fa = open(self.name[:self.name.find('.')] + '.fa', 'w')
         for line in enumerate(self.rdfi()):
             if line[1][0] == '@' and line[0] % 4 == 0:
                 out_fa.write(line[1].replace('@', '>', 1))  # seqid line
@@ -67,12 +66,17 @@ class FastaList:
                 out_fa.close()
                 sys.exit('Not a fastq-file')
         out_fa.close()
-        out_fa = open(outfa_name)
+        out_fa = open(out_fa.name)
         return out_fa
 
-    def rev(self):
+    def seq_list_rev(self):
         """Returns the reverse of a nucleotide sequence"""
-        return self.seq_list[::-1]
+        rev_seq_list = []
+        for item in self.seq_list:
+            seqid = item.split('\n')[0] + '_rev\n'
+            seq = item.split('\n')[1][::-1] + '\n'
+            rev_seq_list.append(seqid + seq)
+        return rev_seq_list
 
     def rev_comp(self):
         """Creates a list the reverse complement of a nucleotide sequences in
@@ -118,3 +122,11 @@ class FastaList:
             del tmp_list[0:item_per_lst]
         seq_list_div.append(tmp_list)
         return seq_list_div
+
+
+if __name__ == "__main__":
+    testfi = FastaList('ml.fa')
+    for j in range(1):
+        print(testfi.seq_list[j])
+    for j in range(1):
+        print(testfi.seq_list_rev()[j])
