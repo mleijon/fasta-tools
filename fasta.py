@@ -125,10 +125,10 @@ class FastaList:
 
 
 if __name__ == "__main__":
-    testfi = FastaList('ml.fa')
-    for j in range(1):
+    testfi = FastaList('2C.fastq.gz')
+    for j in range(3):
         print(testfi.seq_list[j])
-    for j in range(1):
+    for j in range(3):
         print(testfi.seq_list_rev()[j])
-    for j in range(1):
+    for j in range(3):
         print(testfi.seq_list_revc()[j])
