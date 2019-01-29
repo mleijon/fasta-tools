@@ -22,7 +22,7 @@ def split(infi, sep, nr_of_splits):
         nr_1_extra = nr_of_elem % nr_of_splits
     for count in range(nr_of_splits):
         tmp_file_list.append(tf.TemporaryFile('w+t'))
-    file_count = -1
+    file_count = 0
     elem_count = 0
     infi.seek(0)
     for line in infi:
@@ -30,21 +30,24 @@ def split(infi, sep, nr_of_splits):
             elem_count += 1
         if elem_count % (nr_of_elem_per_split + (nr_1_extra > 0)) == 0 and\
                 sep in line:
+            print(nr_of_elem_per_split + (nr_1_extra > 0))
             nr_1_extra -= 1
-            file_count += 1
             tmp_file_list[file_count].write(line)
+            file_count += 1
         else:
             tmp_file_list[file_count].write(line)
     for count in range(nr_of_splits):
         tmp_file_list[count].seek(0)
 
 
-in_fi = open('test.fa')
+in_fi = open('DNA-VIR_S2.fa')
 split(in_fi, '>', 12)
-print(len(tmp_file_list))
-for i in range(12):
-    print('i: {}'.format(i))
-    print(tmp_file_list[i].read())
+for i in range(len(tmp_file_list)):
+    filename = 'DNA-VIR_S2' + '_' + str(i) + '.fa'
+    fi = open(filename, 'w')
+    fi.write(tmp_file_list[i].read())
+    fi.close()
+
 
 
 
