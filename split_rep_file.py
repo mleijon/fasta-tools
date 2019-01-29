@@ -28,10 +28,11 @@ def split(infi, sep, nr_of_splits):
     for line in infi:
         if sep in line:
             elem_count += 1
-        if elem_count % (nr_of_elem_per_split + (nr_1_extra > 0)) == 0 and\
+        if elem_count % (nr_of_elem_per_split + (nr_1_extra > 0) + 1) == 0 and\
                 sep in line:
+            print(nr_of_elem_per_split + (nr_1_extra > 0) + 1)
             nr_1_extra -= 1
-            file_count += (file_count < nr_of_splits - 1)
+            file_count += (file_count < (nr_of_splits - 1))
             tmp_file_list[file_count].write(line)
         else:
             tmp_file_list[file_count].write(line)
@@ -46,6 +47,11 @@ for i in range(len(tmp_file_list)):
     fi = open(filename, 'w')
     fi.write(tmp_file_list[i].read())
     fi.close()
+print('*******')
+for item in tmp_file_list:
+    item.seek(0)
+    content = item.read()
+    print(content.count('>'))
 
 
 
