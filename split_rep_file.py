@@ -30,10 +30,9 @@ def split(infi, sep, nr_of_splits):
             elem_count += 1
         if elem_count % (nr_of_elem_per_split + (nr_1_extra > 0)) == 0 and\
                 sep in line:
-            print(nr_of_elem_per_split + (nr_1_extra > 0))
             nr_1_extra -= 1
+            file_count += (file_count < nr_of_splits - 1)
             tmp_file_list[file_count].write(line)
-            file_count += 1
         else:
             tmp_file_list[file_count].write(line)
     for count in range(nr_of_splits):
