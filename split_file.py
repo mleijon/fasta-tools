@@ -4,11 +4,12 @@
 The parameters of the function is the input file object 'infi', the separator
 string 'sep' and the number of splits (files) 'n' created. The file must contain
 repeating occurences of a separator sequence, for instance ,the '>' of a
-fasta-file. In addition the first line of the file must contain the separator.
-The splitted files will all start with a line containing the separator. The
-lines from one separator up to but not including the next line with a separator
-is an element. The number of elements in the file is 'nr_of_elem'. The number of
-elements per files after splitting is 'nr_of_elem_per_split'. if the nr_of_elem
+fasta-file. The splitted files will all start with a line containing the
+separator, except the first file that may start with lines without the
+separator. The lines from one separator up to but not including the next line
+ with a separatoris an element (again with the first element as a possible
+exception. The number of elements in the file is 'nr_of_elem'. The number of
+elements per files after splitting is 'nr_of_elem_per_split'. If the nr_of_elem
 are not divisible by n (number of splits) the 'nr_1_extra' first files will
 contain one element more than the remaining files"""
 
@@ -46,6 +47,15 @@ def split(infi, sep, nr_of_splits):
     for count in range(nr_of_splits):
         tmp_file_list[count].seek(0)
     return tmp_file_list  # Return a list of n temporary file objects
+
+if __name__ == "__main__":
+infi = open('test2.fa')
+split(infi, '>', 5)
+for i in range(5):
+    outfi = open(infi.name.partition('.')[0] + '_' + str(i) +
+                 infi.name.partition('.')[1] + infi.name.partition('.')[2], 'w')
+    outfi.write(tmp_file_list[i].read())
+    outfi.close()
 
 
 
