@@ -23,12 +23,14 @@ class BlastFile:
                     self.nr_queries += 1
                 if lines.strip() == '***** No hits found ******':
                     no_hit_cnt += 1
-            self.hit_percent = round(100*(self.nr_queries - no_hit_cnt)/self.nr_queries, 1)
+            self.hit_percent = round(100*(self.nr_queries - no_hit_cnt)
+                                     / self.nr_queries, 1)
         read_pars(self.blfi)
 
     def print_par(self):
         print(self.nr_queries)
-        print('Nr of queries: {}\nHit percentage: {} %'.format(self.nr_queries, self.hit_percent))
+        print('Nr of queries: {}\nHit percentage: {} %'.format(
+            self.nr_queries, self.hit_percent))
         print('Database: {}\nBlast version: {}'.format(self.db, self.blast_ver))
 
     def split(self, n):
@@ -43,7 +45,7 @@ class BlastFile:
             bl_files.append(open(basename + '_' + str(count) + '.blast', 'w'))
         file_nr = 0
         query_counter = 1
-        res_counter = self.nr_queries%n
+        res_counter = self.nr_queries % n
         for line in self.blfi:
             try:
                 if query_counter <= (self.nr_queries//n + (res_counter > 0)):
