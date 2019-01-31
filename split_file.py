@@ -22,7 +22,7 @@ def split(infi, sep, nr_of_splits):
     for line in infi:
         if sep in line:
             nr_of_elem += 1
-    if nr_of_elem == 0:
+    if nr_of_elem == 0 or nr_of_elem == 1:
         return tmp_file_list  # Return empty list if separator not present
     nr_of_elem_per_split = nr_of_elem // nr_of_splits
     if nr_of_elem_per_split == 0:  # Handles nr_of_splits > nr_pf_elem
@@ -61,23 +61,24 @@ if __name__ == "__main__":
     try:
         filename = os.path.abspath(ARGS.f)
         in_file = open(filename)
+        filelist = split(in_file, ARGS.s, ARGS.n)
+        if not filelist:
+            print('Zero or one separator. No splitting done.')
+            exit(0)
+        for fi_count in range(len(filelist)):
+            basename_old = os.path.basename(filename)
+            if '.' in basename_old:
+                basename = basename_old.replace('.', '_' + str(fi_count) + '.')
+            else:
+                basename = basename_old + '_' + str(fi_count)
+            outname = filename.replace(basename_old, basename)
+            out_file = open(outname, 'w')
+            out_file.write(filelist[fi_count].read())
+            out_file.close()
     except FileNotFoundError:
         print('File not found. Exits.')
         exit(0)
-    filelist = split(in_file, ARGS.s, ARGS.n)
-    if not filelist:
-        print('Separator not found. No splitting done.')
-        exit(0)
-    for fi_count in range(ARGS.n):
-        basename_old = os.path.basename(filename)
-        if '.' in basename_old:
-            basename = basename_old.replace('.', '_' + str(fi_count) + '.')
-        else:
-            basename = basename_old + '_' + str(fi_count)
-        outname = filename.replace(basename_old, basename)
-        out_file = open(outname, 'w')
-        out_file.write(filelist[fi_count].read())
-        out_file.close()
+
 
 
 
