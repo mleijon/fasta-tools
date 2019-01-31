@@ -48,14 +48,26 @@ def split(infi, sep, nr_of_splits):
         tmp_file_list[count].seek(0)
     return tmp_file_list  # Return a list of n temporary file objects
 
+
 if __name__ == "__main__":
-infi = open('test2.fa')
-split(infi, '>', 5)
-for i in range(5):
-    outfi = open(infi.name.partition('.')[0] + '_' + str(i) +
-                 infi.name.partition('.')[1] + infi.name.partition('.')[2], 'w')
-    outfi.write(tmp_file_list[i].read())
-    outfi.close()
+    import argparse as ap
+    PARSER = ap.ArgumentParser(description='Splits file in smaller based\
+    on a separator string')
+    PARSER.add_argument('-f', type=str, help='target file', required=True)
+    PARSER.add_argument('-s', type=str, help='separatr string', required=True)
+    PARSER.add_argument('-n', type=int, help='nr of splits', required=True)
+    ARGS = PARSER.parse_args()
+    try:
+        infi = open(ARGS.f)
+    except FileNotFoundError:
+        print('File not found. Exits.')
+        exit(0)
+    split(infi, ARGS.s, ARGS.n)
+    for i in range(ARGS.n):
+        outfi = open(infi.name.partition('.')[0] + '_' + str(i) +
+                     infi.name.partition('.')[1] + infi.name.partition('.')[2], 'w')
+        outfi.write(tmp_file_list[i].read())
+        outfi.close()
 
 
 
