@@ -51,6 +51,7 @@ def split(infi, sep, nr_of_splits):
 
 if __name__ == "__main__":
     import argparse as ap
+    import os
     PARSER = ap.ArgumentParser(description='Splits file in smaller based\
     on a separator string')
     PARSER.add_argument('-f', type=str, help='target file', required=True)
@@ -58,16 +59,25 @@ if __name__ == "__main__":
     PARSER.add_argument('-n', type=int, help='nr of splits', required=True)
     ARGS = PARSER.parse_args()
     try:
-        infi = open(ARGS.f)
+        filename = os.path.abspath(ARGS.f)
+        in_file = open(filename)
     except FileNotFoundError:
         print('File not found. Exits.')
         exit(0)
-    split(infi, ARGS.s, ARGS.n)
-    for i in range(ARGS.n):
-        outfi = open(infi.name.partition('.')[0] + '_' + str(i) +
-                     infi.name.partition('.')[1] + infi.name.partition('.')[2], 'w')
-        outfi.write(tmp_file_list[i].read())
-        outfi.close()
+    filelist = split(in_file, ARGS.s, ARGS.n)
+    if not filelist:
+        print('Separator not found. No splitting done.')
+        exit(0)
+    for fi_count in range(ARGS.n):
+        basename_old = os.path.basename(filename)
+        if '.' in basename_old:
+            basename = basename_old.replace('.', '_' + str(fi_count) + '.')
+        else:
+            basename = basename_old + '_' + str(fi_count)
+        outname = filename.replace(basename_old, basename)
+        out_file = open(outname, 'w')
+        out_file.write(filelist[fi_count].read())
+        out_file.close()
 
 
 
