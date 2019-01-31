@@ -23,7 +23,8 @@ def split(infi, sep, nr_of_splits):
         if sep in line:
             nr_of_elem += 1
     if nr_of_elem == 0 or nr_of_elem == 1:
-        return tmp_file_list  # Return empty list if separator not present
+        # Return empty list if only 0-1 separator is present
+        return tmp_file_list
     nr_of_elem_per_split = nr_of_elem // nr_of_splits
     if nr_of_elem_per_split == 0:  # Handles nr_of_splits > nr_pf_elem
         nr_of_elem_per_split = 1
