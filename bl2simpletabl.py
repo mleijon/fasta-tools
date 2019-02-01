@@ -35,9 +35,9 @@ blfi_list = []
 def process_work(file_name):
     bl_result = dict()
     with open(file_name) as bl_fi:
-        for count, line in enumerate(bl_fi):
-            if line[0:6] == 'Query=':
-                seq_name = line.split(' ')[1].strip()
+        for count, row in enumerate(bl_fi):
+            if row[0:6] == 'Query=':
+                seq_name = row.split(' ')[1].strip()
                 if 'No hits found' in lc.getline(file_name, count + 7):
                     bl_result[seq_name] = 'No hits found'
                 else:
@@ -83,7 +83,9 @@ if __name__ == '__main__':
     blfi = blast.BlastFile(ARGS.b)
     # Split the blast file into ARGS.s smaller files and returns a list of the
     # file names
-    blfi_list = blfi.split(ARGS.s)
+    bl_tmp_list = blast.BlastFile.split(blfi, ARGS.s)
+    for item in bl_tmp_list:
+        blfi_list.append(item.name)
     with Pool(processes=ARGS.s) as p:
         all_results = reduce(lambda x, y: merge_two_dicts(x, y),
                              p.starmap(process_work, blfi_list))

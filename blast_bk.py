@@ -1,6 +1,5 @@
 #!/usr/bin/python
 """General purpose module ta handle blast file objects."""
-import split_file as sp
 
 
 class BlastFile:
@@ -34,10 +33,38 @@ class BlastFile:
             self.nr_queries, self.hit_percent))
         print('Database: {}\nBlast version: {}'.format(self.db, self.blast_ver))
 
-    def split(self, nr_splits):
+    def split(self, n):
         self.blfi.seek(0)
-        sep = 'BLAST'
-        return sp.split(self.blfi, sep, nr_splits)
+        bl_files = []
+        bl_file_names = []
+        if '.' in self.name:
+            basename = self.name.split('.')[0]
+        else:
+            basename = self.name
+        for count in range(n):
+            bl_files.append(open(basename + '_' + str(count) + '.blast', 'w'))
+        file_nr = 0
+        query_counter = 1
+        res_counter = self.nr_queries % n
+        for line in self.blfi:
+            try:
+                if query_counter <= (self.nr_queries//n + (res_counter > 0)):
+                    bl_files[file_nr].write(line)
+                    if 'Query=' in line:
+                        query_counter += 1
+                elif self.blast_ver not in line:
+                    bl_files[file_nr].write(line)
+                else:
+                    file_nr += 1
+                    query_counter = 1
+                    res_counter -= 1
+                    bl_files[file_nr].write(line)
+            except EOFError:
+                for count in range(n):
+                    bl_files[n].close()
+        for count in range(n):
+            bl_file_names.append((basename + '_' + str(count) + '.blast',))
+        return bl_file_names
 
 
 
