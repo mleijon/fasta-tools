@@ -1,6 +1,7 @@
 #!/usr/bin/python
-"""Metastava quickfix2 - will create a two column file with sequence name and
-species assignment"""
+"""Creates a two column table from blast table results linking read ids to
+species assignment via use of ncbi nucl_gb.accession2taxid and names.dmp files
+"""
 
 import linecache as lc
 import multiprocessing
@@ -13,14 +14,13 @@ import blast
 
 
 PARSER = argparse.ArgumentParser(description='TBD')
-PARSER.add_argument('-b', type=str, help='Blast hit summary table',
-                    default='test.blast')
+PARSER.add_argument('-b', type=str, help='Blast hit summary table',)
 PARSER.add_argument('-s', type=int, help='Divide blastfile into this number of '
                                          'smaller files', default=5)
 PARSER.add_argument('-n', type=str, help='taxid name file', default='names.dmp')
 PARSER.add_argument('-a', type=str, help='acc. to taxid file',
                     default='acc2taxid.dmp')
-PARSER.add_argument('-o', type=str, help='Output file', default='nonsal.txt')
+PARSER.add_argument('-o', type=str, help='Output file')
 ARGS = PARSER.parse_args()
 bl_inf = open(ARGS.b)
 outf = open(ARGS.o, 'w')
@@ -85,7 +85,7 @@ if __name__ == '__main__':
     # file names
     bl_tmp_list = blast.BlastFile.split(blfi, ARGS.s)
     for item in bl_tmp_list:
-        blfi_list.append(item.name)
+        blfi_list.append((item.name, ))
     with Pool(processes=ARGS.s) as p:
         all_results = reduce(lambda x, y: merge_two_dicts(x, y),
                              p.starmap(process_work, blfi_list))

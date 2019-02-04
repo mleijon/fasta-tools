@@ -12,11 +12,11 @@ import blast
 
 
 PARSER = argparse.ArgumentParser(description='TBD')
-PARSER.add_argument('-b', type=str, help='Blast hit summary table', default='test.blast')
+PARSER.add_argument('-b', type=str, help='Blast hit summary table', default='results_0.blast')
 PARSER.add_argument('-s', type=int, help='Divide blastfile into this number of smaller files', default=5)
 PARSER.add_argument('-n', type=str, help='taxid name file', default='names.dmp')
 PARSER.add_argument('-a', type=str, help='acc. to taxid file', default='acc2taxid.dmp')
-PARSER.add_argument('-o', type=str, help='Output file', default='nonsal.txt')
+PARSER.add_argument('-o', type=str, help='Output file', default='results_0.txt')
 ARGS = PARSER.parse_args()
 bl_inf = open(ARGS.b)
 outf = open(ARGS.o, 'w')
@@ -77,8 +77,12 @@ if __name__ == '__main__':
     blfi = blast.BlastFile(ARGS.b)
     # Split the blast file into ARGS.s smaller files and returns a list of the file names
     blfi_list = blfi.split(ARGS.s)
+    blfi_name_list = []
+    for item in blfi_list:
+        blfi_name_list.append((item.name,))
+    print(blfi_name_list)
     with Pool(processes=ARGS.s) as p:
-        all_results = reduce(lambda x,y: merge_two_dicts(x, y), p.starmap(process_work, blfi_list))
+        all_results = reduce(lambda x,y: merge_two_dicts(x, y), p.starmap(process_work, blfi_name_list))
     ordered_result = collections.OrderedDict(sorted(all_results.items()))
     for seq, spec in ordered_result.items():
         outf.write('%s\t%s\n' % (seq, spec))

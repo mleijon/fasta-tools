@@ -33,7 +33,7 @@ def split(infi, sep, nr_of_splits):
     else:
         nr_1_extra = nr_of_elem % nr_of_splits
     for count in range(nr_of_splits):
-        tmp_file_list.append(tf.TemporaryFile('w+t'))
+        tmp_file_list.append(tf.NamedTemporaryFile('w+t'))
     file_count = 0
     elem_count = 0
     infi.seek(0)
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     PARSER = ap.ArgumentParser(description='Splits file in smaller based\
     on a separator string')
     PARSER.add_argument('-f', type=str, help='target file', required=True)
-    PARSER.add_argument('-s', type=str, help='separatr string', required=True)
+    PARSER.add_argument('-s', type=str, help='separator string', required=True)
     PARSER.add_argument('-n', type=int, help='nr of splits', required=True)
     ARGS = PARSER.parse_args()
     try:
