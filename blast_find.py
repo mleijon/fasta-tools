@@ -84,8 +84,8 @@ def find_targets():
                     offs2 = offs1 + len(tar_hit['Accession'])
                     tar_hit['Description'] = lica.\
                         getline(ARGS.b, j)[offs2:67].strip()
-                    tar_hit['Bitscore'] = int(lica.getline(ARGS.b, j)
-                                              [67:].split()[0].strip())
+                    tar_hit['Bitscore'] = int(float((lica.getline(ARGS.b, j)
+                                              [67:].split()[0].strip())))
                     tar_hit['e-value'] = ctrle(e_val, emin)[0]
                     tar_hit['r-e-value'] = round(ctrle(e_val, emin)[1], 2)
                     tar_lst.append(tar_hit)
