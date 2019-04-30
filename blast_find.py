@@ -1,6 +1,6 @@
-#!/usr/bin/python3
-"""Finds the blast hits containing a target string in the description,
-irrespective case.
+#!/usr/local/bin/python3
+"""Finds the blast hits containing a case insensitive target string in the fasta
+description line.
 
 Creates three output files.
 """
@@ -71,7 +71,8 @@ def find_targets():
             j += 2  # Skip empty row
             tar_lst = []
             if first:  # Read this only first time since constant
-                # offs1 Accounts for variation in the division string lenghth (e.g. vrl, nt, etc)
+                # offs1 Accounts for variation in the division string lenghth\
+                # (e.g. vrl, nt, etc)
                 offs1 = lica.getline(ARGS.b, j).find('||') + 2
                 first = False
             while lica.getline(ARGS.b, j)[0] != '\n':
