@@ -125,10 +125,14 @@ class FastaList:
 
 
 if __name__ == "__main__":
-    testfi = FastaList('2C.fastq.gz')
-    for j in range(3):
-        print(testfi.seq_list[j])
-    for j in range(3):
-        print(testfi.seq_list_rev()[j])
-    for j in range(3):
-        print(testfi.seq_list_revc()[j])
+    import argparse
+
+    PARSER = argparse.ArgumentParser(description='Convert fastq to fasta. '
+                                                 'Assumes file extension'
+                                                 ' "fastq"')
+    PARSER.add_argument('-f', type=str, help='fastq filename', required=True)
+    ARGS = PARSER.parse_args()
+    fqfi = FastaList(ARGS.f)
+    fqfi.fq2fa()
+
+
