@@ -79,16 +79,3 @@ if __name__ == "__main__":
     except FileNotFoundError:
         print('File not found. Exits.')
         exit(0)
-
-
-
-
-
-
-
-
-
-
-
-
-
