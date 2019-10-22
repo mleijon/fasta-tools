@@ -14,9 +14,6 @@ class FastaList:
     """
 
     def __init__(self, fasta_name):  # Initialized by a filename string
-        self.seq_list = []
-        self.id_list = []
-        newseq = ''
         self.name = str(os.path.abspath(fasta_name))
         if self.name.upper().endswith('.GZ'):
             import gzip
@@ -28,11 +25,12 @@ class FastaList:
         if self.name.upper().endswith(('.FQ', '.FASTQ')):
             self.fa_file = self.fq2fa()  # Handle file as fastq
         elif self.name.upper().endswith(('.FA', '.FASTA', 'FNA')):
-            # print(self.name.upper())
-            # sys.exit('test')
             self.fa_file = self.rdfi()  # Handle file as fasta
         else:
             sys.exit('Not a fastq or fasta file')
+        self.seq_list = []
+        self.id_list = []
+        newseq = ''
         for line in self.fa_file:
             if line.startswith('>'):
                 if self.id_list:
@@ -81,7 +79,6 @@ class FastaList:
     def seq_list_revc(self):
         """Creates a list the reverse complement of a nucleotide sequences in
         the list seq_list"""
-        seq_list_rc = []
 
         def comp(nt):
             return {
@@ -101,15 +98,13 @@ class FastaList:
                 'D': 'H',
                 'H': 'D'
             }[nt.upper()]
-        for fasta in self.seq_list:
-            seqid = fasta.split('\n')[0] + '_rc\n'
-            seq = fasta.split('\n')[1]
-            seq_rc = ''
-            seq_rev = seq[::-1]
-            for nucl in seq_rev:
-                seq_rc += comp(nucl)
-            seq_rc += '\n'
-            seq_list_rc.append(seqid + seq_rc)
+        seq_list_rc = []
+        for item in self.seq_list:
+            seqid = item.split('\n')[0] + '_rev\n'
+            seq = ''
+            for nt in item.split('\n')[1][::-1]:
+                seq += comp(nt)
+            seq_list_rc.append(seqid + seq)
         return seq_list_rc
 
     def divide(self, divisor):
@@ -133,6 +128,5 @@ if __name__ == "__main__":
     PARSER.add_argument('-f', type=str, help='fastq filename', required=True)
     ARGS = PARSER.parse_args()
     fqfi = FastaList(ARGS.f)
-    fqfi.fq2fa()
-
-
+    if ('.FQ' or '.FASTQ') in ARGS.f.upper():
+        fqfi.fq2fa()
