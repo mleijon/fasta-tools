@@ -18,12 +18,19 @@ class FastaList:
         self.id_list = []
         newseq = ''
         self.name = str(os.path.abspath(fasta_name))
-        self.is_gzip = self.name.upper().endswith('.GZ')
-        if (self.is_gzip and self.name[:-3].upper().endswith(('.FQ', '.FASTQ'))
-                or self.name.upper().endswith(('.FQ', '.FASTQ'))):
+        if self.name.upper().endswith('.GZ'):
+            import gzip
+            fa_file = open(self.name[:-3], 'w')
+            with gzip.open(self.name, 'rt') as in_fi:
+                fa_file.write(in_fi.read())
+            fa_file.close()
+            self.fa_file = open(self.name[:-3])
+        if self.name[:-3].upper().endswith(('.FQ', '.FASTQ')):
             self.fa_file = self.fq2fa()  # Handle file as fastq
-        else:
+        elif self.name[:-3].upper().endswith(('.FA', '.FASTA', 'FNA')):
             self.fa_file = self.rdfi()  # Handle file as fasta
+        else:
+            sys.exit('Not a fastq or fasta file')
         for line in self.fa_file:
             if line.startswith('>'):
                 if self.id_list:
@@ -37,17 +44,9 @@ class FastaList:
         self.nr_seq = len(self.id_list)
 
     def rdfi(self):
-        """ Reads and return a fasta file object unzipped if necessary"""
-        import gzip
-        if self.is_gzip:
-            fa_fiuz = open(self.name[:-3], 'w')
-            with gzip.open(self.name, 'rt') as in_fi:
-                fa_fiuz.write(in_fi.read())
-            fa_fiuz.close()
-            fa_fiuz = open(self.name[:-3])
-            return fa_fiuz
-        fa_fi = open(self.name)
-        return fa_fi
+        """ Return a fasta file object"""
+        self.fa_file = open(self.name[:-3])
+        return self.fa_file
 
     def fq2fa(self):
         """ Reads and return a fastq file converted to fasta format"""
