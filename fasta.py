@@ -24,10 +24,12 @@ class FastaList:
             with gzip.open(self.name, 'rt') as in_fi:
                 fa_file.write(in_fi.read())
             fa_file.close()
-            self.fa_file = open(self.name[:-3])
-        if self.name[:-3].upper().endswith(('.FQ', '.FASTQ')):
+            self.name = self.name[:-3]
+        if self.name.upper().endswith(('.FQ', '.FASTQ')):
             self.fa_file = self.fq2fa()  # Handle file as fastq
-        elif self.name[:-3].upper().endswith(('.FA', '.FASTA', 'FNA')):
+        elif self.name.upper().endswith(('.FA', '.FASTA', 'FNA')):
+            # print(self.name.upper())
+            # sys.exit('test')
             self.fa_file = self.rdfi()  # Handle file as fasta
         else:
             sys.exit('Not a fastq or fasta file')
@@ -45,7 +47,7 @@ class FastaList:
 
     def rdfi(self):
         """ Return a fasta file object"""
-        self.fa_file = open(self.name[:-3])
+        self.fa_file = open(self.name)
         return self.fa_file
 
     def fq2fa(self):
