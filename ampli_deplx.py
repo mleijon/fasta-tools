@@ -3,6 +3,40 @@
 """
 from fasta import FastaList
 
+
+def reduce_fa(fl):
+    """removes duplicate reads and adds '_nr_of _reads to the id of the
+    reduced FastaList"""
+    import copy
+    reddic = dict()
+    reddic_new = dict()
+    dnaseqs = []
+    for item in fl.seq_list:
+        if len(item) >= 0:
+            dnaseqs.append(item.split('\n')[1])
+    for item in dnaseqs:
+        reddic = copy.deepcopy(reddic_new)
+        if len(reddic) == 0:
+            reddic_new[item] = 1
+            reddic[item] = 1
+        else:
+            count = 0
+            for key in reddic:
+                count += 1
+                if str(item) in str(key):
+                    reddic_new[key] += 1
+                elif str(key) in str(item):
+                    reddic_new[item] = reddic_new[key] + 1
+                    del reddic_new[key]
+                elif count == len(reddic):
+                    reddic_new[item] = 1
+            reddic = reddic_new
+    for key in reddic:
+        print('seq: {}, nr: {}'. format(key, reddic[key]))
+        pass
+    return fl
+
+
 if __name__ == "__main__":
     import argparse
     import shutil
@@ -31,9 +65,9 @@ if __name__ == "__main__":
         str(datetime.datetime.now()).split('.')[0], getpass.getuser()))
     logfile.write('Minimum sequence length = {}\n'.format(ARGS.m))
     for seqfile in os.listdir(ARGS.sd):
-        seq_fa = FastaList(ARGS.sd + seqfile)
-        if os.path.isdir(ARGS.sd + seqfile.split('.')[0]):
-            shutil.rmtree(ARGS.sd + seqfile.split('.')[0])
+        seq_fa = reduce_fa(FastaList(ARGS.sd + seqfile))
+        # if os.path.isdir(ARGS.sd + seqfile.split('.')[0]):
+        #     shutil.rmtree(ARGS.sd + seqfile.split('.')[0])
         os.mkdir(ARGS.sd + seqfile.split('.')[0])
         os.chdir(ARGS.sd + seqfile.split('.')[0])
         nr_seq_demult = 0
