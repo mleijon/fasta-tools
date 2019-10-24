@@ -12,7 +12,7 @@ def reduce_fa(fl):
     reddic_new = dict()
     dnaseqs = []
     for item in fl.seq_list:
-        if len(item) >= 0:
+        if len(item) >= ARGS.m:
             dnaseqs.append(item.split('\n')[1])
     for item in dnaseqs:
         reddic = copy.deepcopy(reddic_new)
@@ -23,17 +23,25 @@ def reduce_fa(fl):
             count = 0
             for key in reddic:
                 count += 1
-                if str(item) in str(key):
+                if item in key:
                     reddic_new[key] += 1
-                elif str(key) in str(item):
+                    break
+                elif key in item:
                     reddic_new[item] = reddic_new[key] + 1
                     del reddic_new[key]
+                    break
                 elif count == len(reddic):
                     reddic_new[item] = 1
-            reddic = reddic_new
-    for key in reddic:
-        print('seq: {}, nr: {}'. format(key, reddic[key]))
-        pass
+    reduced_sorted = sorted(reddic_new.items(), key=lambda t: t[1], reverse=True)
+    nr_red_seqs = 0
+    for item in reduced_sorted:
+        nr_red_seqs += item[1]
+    fi = open('result.txt', 'w')
+    for item in reduced_sorted:
+        if item[1]/reduced_sorted[0][1] < ARGS.f:
+            break
+        fi.write('seq: {}, count: {}\n'. format(item[0], item[1]))
+    exit(0)
     return fl
 
 
@@ -56,7 +64,10 @@ if __name__ == "__main__":
     PARSER.add_argument('-t', type=str, help='tag sequence-list fasta filename',
                         required=True)
     PARSER.add_argument('-m', type=int, help='minimum sequence length',
-                        default=0, required=True)
+                        default=0, required=False)
+    PARSER.add_argument('-f', type=float, help='minimum fraction of total nr of'
+                                               'seqs', default=0,
+                        required=False)
     ARGS = PARSER.parse_args()
     tag_fa = FastaList(ARGS.t)
     logfile = open('demultiplex.log', 'w')
