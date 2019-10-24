@@ -33,15 +33,16 @@ def reduce_fa(fl):
                 elif count == len(reddic):
                     reddic_new[item] = 1
     reduced_sorted = sorted(reddic_new.items(), key=lambda t: t[1], reverse=True)
-    nr_red_seqs = 0
+    fl.seq_list = []
+    fl.id_list = []
+    count = 0
     for item in reduced_sorted:
-        nr_red_seqs += item[1]
-    fi = open('result.txt', 'w')
-    for item in reduced_sorted:
-        if item[1]/reduced_sorted[0][1] < ARGS.f:
+        if item[1] < ARGS.f:
             break
-        fi.write('seq: {}, count: {}\n'. format(item[0], item[1]))
-    exit(0)
+        count += 1
+        fl.id_list.append('{:08d}_count:{}'.format(count, item[1]))
+        fl.seq_list.append(('{}\n{}\n'.format(fl.id_list[count-1], item[0])))
+        fl.nr_seq = len(fl.seq_list)
     return fl
 
 
@@ -65,8 +66,7 @@ if __name__ == "__main__":
                         required=True)
     PARSER.add_argument('-m', type=int, help='minimum sequence length',
                         default=0, required=False)
-    PARSER.add_argument('-f', type=float, help='minimum fraction of total nr of'
-                                               'seqs', default=0,
+    PARSER.add_argument('-f', type=int, help='minimum nr of seqs', default=0,
                         required=False)
     ARGS = PARSER.parse_args()
     tag_fa = FastaList(ARGS.t)
@@ -95,8 +95,7 @@ if __name__ == "__main__":
                 if test_tag in seq_fa.seq_list[seq].split('\n')[1]:
                     with open(tag_fa.id_list[tag] + '.fa', 'a') as fi:
                         if len(seq_fa.seq_list[seq]) >= ARGS.m:
-                            fi.write('>' + seq_fa.id_list[seq] +
-                                     seq_fa.seq_list[seq])
+                            fi.write('>' + seq_fa.seq_list[seq])
                             nr_seq_demult += 1
         logfile.write(("{}: {} % of {} sequences demultiplexed\n".format(
             os.path.basename(ARGS.sd + seqfile),
