@@ -116,23 +116,34 @@ if __name__ == "__main__":
     os.mkdir(ARGS.od)
     tag_fa = FastaList(ARGS.t)
     logfile = open(ARGS.od + 'demultiplex.log', 'w')
-    logfile.write('Log for ampdemult.py at {}\nUser: {}\n'.format(
+    logfile.write('Log for ampdemult.py at {}\nUser: {}\n\n'.format(
         str(datetime.datetime.now()).split('.')[0], getpass.getuser()))
     logfile.write('Minimum sequence length = {}\n'.format(ARGS.m))
     logfile.write('Minimum nr of sequences = {}\n'.format(ARGS.c))
+    logfile.write('Minimum fraction of most abundant sequence = {}\n\n'.format(
+        ARGS.f))
     nr_of_files = len([name for name in os.listdir(ARGS.id) if
                        os.path.isfile(ARGS.id + name)])
     file_nr = 1
     for seqfile in os.listdir(ARGS.id):
         print('\rprocessing file {}/{}'.format(file_nr, nr_of_files), end=" ")
-        seq_fa = reduce_fa(FastaList(ARGS.id + seqfile))
+        inp_seq = FastaList(ARGS.id + seqfile)
+        init_seq = inp_seq.nr_seq
+        seq_fa = reduce_fa(inp_seq)
+        logfile.write('{}: {} sequences reduced to {}: '.format(
+            os.path.basename(ARGS.id + seqfile),
+            init_seq, seq_fa.nr_seq))
         nr_seq_demult = 0
         taglist = tag_fa.seq_list
         taglist_rc = tag_fa.seq_list_revc()
         tag_maxcount = dict()
-        for item in tag_fa.id_list[::2]:
-            tag_maxcount[item[:-3]] = 0
+        if ARGS.f > 0:
+            for item in tag_fa.id_list[::2]:
+                tag_maxcount[item[:-3]] = 0
         for seq in range(seq_fa.nr_seq):
+            seqname = seq_fa.seq_list[seq].split('\n')[0]
+            seqcount = int(seqname.split(':')[1].split('_')[0])
+            seqseq = seq_fa.seq_list[seq].split('\n')[1]
             for tag in range(0, tag_fa.nr_seq, 2):
                 test_tags1 = [taglist[tag+1].split('\n')[1],
                               taglist_rc[tag].split('\n')[1]]
@@ -140,21 +151,27 @@ if __name__ == "__main__":
                               taglist_rc[tag + 1].split('\n')[1]]
                 if all(x in seq_fa.seq_list[seq] for x in test_tags1) or\
                         all(x in seq_fa.seq_list[seq] for x in test_tags2):
-                    # if tag-count-max = 0 set tag-count-max = seq_fa
+                    if ARGS.f > 0:
+                        if tag_maxcount[taglist[tag].split('\n')[0][1:-3]] == 0:
+                            tag_maxcount[taglist[tag].split('\n')[0][1:-3]] =\
+                                seqcount
+                        fraction = seqcount / tag_maxcount[
+                            taglist[tag].split('\n')[0][1:-3]]
+                        if fraction < ARGS.f:
+                            break
                     with open(ARGS.od + tag_fa.id_list[tag][:-3] + '.fa', 'a')\
                             as fi:
-                        # if ARGS.f > 0
-                        #seqname = seq_fa.seq_list[seq].split(\n)[0]
-                        #seqcount = seqname.split(':')[1].split('_')[0]
-                        #seqseq = seq_fa.seq_list[seq].split(\n)[1]
-                        #newseq = '{}+_fraction:{}\n{}\n'.format(seqname, seqcount, seqseq)
-                        #else:
-                        fi.write('>' + seq_fa.seq_list[seq])
-                        nr_seq_demult += 1
+                        if ARGS.f > 0:
+                            newseq = '{}_fraction:{}\n{}\n'.format(
+                                seqname, round(fraction, 3), seqseq)
+                            fi.write(newseq)
+                            nr_seq_demult += 1
+                        else:
+                            fi.write('>' + seq_fa.seq_list[seq])
+                            nr_seq_demult += 1
         if seq_fa.nr_seq == 0:
             seq_fa.nr_seq = 1
-        logfile.write(("{}: {} % of {} sequences demultiplexed\n".format(
-            os.path.basename(ARGS.id + seqfile),
+        logfile.write(("{} % of {} sequences demultiplexed\n".format(
             round(100 * nr_seq_demult / seq_fa.nr_seq), seq_fa.nr_seq)))
         file_nr += 1
 
