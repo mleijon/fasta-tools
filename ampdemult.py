@@ -14,6 +14,21 @@ def sep(opsys):
 def reduce_fa(fl):
     """removes duplicate reads and adds '_nr_of _reads to the id of the
     reduced FastaList"""
+    def rc(sequence):
+        sequence = sequence[::-1]
+        rc_sequence = ''
+        for char in sequence:
+            if char.capitalize() == 'A':
+                rc_sequence += 'T'
+            elif char.capitalize() == 'T':
+                rc_sequence += 'A'
+            elif char.capitalize() == 'G':
+                rc_sequence += 'C'
+            elif char.capitalize() == 'C':
+                rc_sequence += 'G'
+            else:
+                sys.exit('Non-standard charachter in sequence. Exits')
+        return rc_sequence
     import copy
     reddic_new = dict()
     dnaseqs = []
@@ -22,10 +37,15 @@ def reduce_fa(fl):
             tlst = tag_fa.seq_list
             tlst_rc = tag_fa.seq_list_revc()
             for tagitem in range(0, tag_fa.nr_seq, 2):
-                testt = [tlst[tagitem + 1].split('\n')[1],
-                         tlst_rc[tagitem].split('\n')[1]]
-                if all(x in item for x in testt):
+                testt1 = [tlst[tagitem + 1].split('\n')[1],
+                          tlst_rc[tagitem].split('\n')[1]]
+                testt2 = [tlst[tagitem].split('\n')[1],
+                          tlst_rc[tagitem + 1].split('\n')[1]]
+                if all(x in item for x in testt1):
                     dnaseqs.append(item.split('\n')[1])
+                    break
+                elif all(x in item for x in testt2):
+                    dnaseqs.append(rc(item.split('\n')[1]))
                     break
     for item in dnaseqs:
         reddic = copy.deepcopy(reddic_new)
@@ -45,12 +65,13 @@ def reduce_fa(fl):
                     break
                 elif count == len(reddic):
                     reddic_new[item] = 1
-    reduced_sorted = sorted(reddic_new.items(), key=lambda t: t[1], reverse=True)
+    reduced_sorted = sorted(reddic_new.items(), key=lambda t: t[1],
+                            reverse=True)
     fl.seq_list = []
     fl.id_list = []
     count = 0
     for item in reduced_sorted:
-        if item[1] < ARGS.f:
+        if item[1] < ARGS.c:
             break
         count += 1
         fl.id_list.append('{}_{:08d}_count:{}_length:{}'.format(fl.name[fl.name.rfind(
@@ -61,12 +82,7 @@ def reduce_fa(fl):
 
 
 if __name__ == "__main__":
-    import argparse
-    import shutil
-    import datetime
-    import getpass
-    import os
-    import sys
+    import argparse, shutil, datetime, getpass, os, sys
 
     PARSER = argparse.ArgumentParser(description='Demultiplex amplicon sequen-'
                                                  'cing NGS-data (-s) based on '
@@ -82,7 +98,9 @@ if __name__ == "__main__":
                         required=True)
     PARSER.add_argument('-m', type=int, help='minimum sequence length',
                         default=0, required=False)
-    PARSER.add_argument('-f', type=int, help='minimum nr of seqs', default=0,
+    PARSER.add_argument('-c', type=int, help='minimum nr of seqs', default=0,
+                        required=False)
+    PARSER.add_argument('-f', type=float, help='minimum nr of seqs', default=0,
                         required=False)
     ARGS = PARSER.parse_args()
     if not os.path.isfile(ARGS.t):
@@ -101,29 +119,42 @@ if __name__ == "__main__":
     logfile.write('Log for ampdemult.py at {}\nUser: {}\n'.format(
         str(datetime.datetime.now()).split('.')[0], getpass.getuser()))
     logfile.write('Minimum sequence length = {}\n'.format(ARGS.m))
-    logfile.write('Minimum nr of sequences = {}\n'.format(ARGS.f))
+    logfile.write('Minimum nr of sequences = {}\n'.format(ARGS.c))
     nr_of_files = len([name for name in os.listdir(ARGS.id) if
                        os.path.isfile(ARGS.id + name)])
     file_nr = 1
     for seqfile in os.listdir(ARGS.id):
-        print('processing file {}/{}'.format(file_nr, nr_of_files))
+        print('\rprocessing file {}/{}'.format(file_nr, nr_of_files), end=" ")
         seq_fa = reduce_fa(FastaList(ARGS.id + seqfile))
         nr_seq_demult = 0
         taglist = tag_fa.seq_list
         taglist_rc = tag_fa.seq_list_revc()
+        tag_maxcount = dict()
+        for item in tag_fa.id_list[::2]:
+            tag_maxcount[item[:-3]] = 0
         for seq in range(seq_fa.nr_seq):
             for tag in range(0, tag_fa.nr_seq, 2):
-                test_tags = [taglist[tag+1].split('\n')[1],
-                             taglist_rc[tag].split('\n')[1]]
-                if all(x in seq_fa.seq_list[seq] for x in test_tags):
+                test_tags1 = [taglist[tag+1].split('\n')[1],
+                              taglist_rc[tag].split('\n')[1]]
+                test_tags2 = [taglist[tag].split('\n')[1],
+                              taglist_rc[tag + 1].split('\n')[1]]
+                if all(x in seq_fa.seq_list[seq] for x in test_tags1) or\
+                        all(x in seq_fa.seq_list[seq] for x in test_tags2):
+                    # if tag-count-max = 0 set tag-count-max = seq_fa
                     with open(ARGS.od + tag_fa.id_list[tag][:-3] + '.fa', 'a')\
                             as fi:
-                        if len(seq_fa.seq_list[seq]) >= ARGS.m:
-                            fi.write('>' + seq_fa.seq_list[seq])
-                            nr_seq_demult += 1
+                        # if ARGS.f > 0
+                        #seqname = seq_fa.seq_list[seq].split(\n)[0]
+                        #seqcount = seqname.split(':')[1].split('_')[0]
+                        #seqseq = seq_fa.seq_list[seq].split(\n)[1]
+                        #newseq = '{}+_fraction:{}\n{}\n'.format(seqname, seqcount, seqseq)
+                        #else:
+                        fi.write('>' + seq_fa.seq_list[seq])
+                        nr_seq_demult += 1
         if seq_fa.nr_seq == 0:
             seq_fa.nr_seq = 1
         logfile.write(("{}: {} % of {} sequences demultiplexed\n".format(
             os.path.basename(ARGS.id + seqfile),
             round(100 * nr_seq_demult / seq_fa.nr_seq), seq_fa.nr_seq)))
         file_nr += 1
+
