@@ -4,6 +4,7 @@
 from fasta import FastaList
 
 
+
 def sep(opsys):
     if opsys == 'nt':
         return '\\'
@@ -162,7 +163,7 @@ if __name__ == "__main__":
                     with open(ARGS.od + tag_fa.id_list[tag][:-3] + '.fa', 'a')\
                             as fi:
                         if ARGS.f > 0:
-                            newseq = '{}_fraction:{}\n{}\n'.format(
+                            newseq = '>{}_fraction:{}\n{}\n'.format(
                                 seqname, round(fraction, 3), seqseq)
                             fi.write(newseq)
                             nr_seq_demult += 1
