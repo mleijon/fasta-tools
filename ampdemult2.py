@@ -14,7 +14,7 @@ def sep(opsys):
 if __name__ == "__main__":
     import copy
     import collections
-    import argparse, shutil, datetime, getpass, os, sys
+    import argparse, shutil, os, sys
 
     PARSER = argparse.ArgumentParser(description='Removes redundat sequences'
                                                  'after manual trimming of '
@@ -50,7 +50,7 @@ if __name__ == "__main__":
                 for key2 in sample_reduced[sample[key1][0]]:
                     if sample[key1][1] ==\
                             sample_reduced[sample[key1][0]][key2][1]:
-                        sample_reduced[sample[key1][0]][key2][2] += \
+                        sample_reduced[sample[key1][0]][key2][2] +=\
                             sample[key1][2]
                         break
                     else:
@@ -58,10 +58,10 @@ if __name__ == "__main__":
                         break
             else:
                 sample_reduced[sample[key1][0]] = {key1: sample[key1]}
-        sample_tmp = dict ()
+        sample_tmp = dict()
         for key in sample_reduced:
             n = key.split('_')
-            name = n[0] + '_' + n[1].zfill(2) + '_' + n[2]. \
+            name = n[0] + '_' + n[1].zfill(2) + '_' + n[2].\
                 zfill(2) + '_' + n[3].zfill(2)
             sample_tmp[name] = sample_reduced[key]
         sample_reduced = copy.deepcopy(sample_tmp)
@@ -71,12 +71,12 @@ if __name__ == "__main__":
             for key1 in samples_red_ord:
                 for key2 in samples_red_ord[key1]:
                     n = key2.split('_')
-                    name = n[0] + '_' + n[1].zfill(2) + '_' + n[2].\
-                        zfill(2) + '_' + n[3].zfill(2) + '_' + n[4]
+                    name = n[0] + '.' + n[1].zfill(2) + '.' + n[2].\
+                        zfill(2) + '.' + n[3].zfill(2) + '_' + n[4][n[4].rfind('0') + 1:]
                     dna_seq = samples_red_ord[key1][key2][1]
                     seq_count = samples_red_ord[key1][key2][2]
-                    fi.write('>{}_count:{}_length:{}\n{}\n'.
-                             format(name, seq_count, len(dna_seq), dna_seq))
+                    fi.write('>{}_c:{}\n{}\n'.
+                             format(name, seq_count, dna_seq))
 
 
 
