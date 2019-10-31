@@ -37,9 +37,9 @@ if __name__ == "__main__":
                        os.path.isfile(ARGS.id + name)])
     file_nr = 1
     sample = dict()
-    sample_reduced = dict()
+    sample_reduced = dict(dict())
     for seqfile in os.listdir(ARGS.id):
-        print('\rprocessing file {}/{}'.format(file_nr, nr_of_files), end=" ")
+        #print('\rprocessing file {}/{}'.format(file_nr, nr_of_files), end=" ")
         inp_seqs = FastaList(ARGS.id + seqfile)
         for seq in inp_seqs.seq_list:
             seq_name = seq.split('_count:')[0][1:]
@@ -47,7 +47,23 @@ if __name__ == "__main__":
             seq_length = int(seq.split(':')[2].split('_')[0])
             dna_seq = seq.split('\n')[1]
             sample_name = seq_name.rsplit('_', 1)[0]
-            sample[seq_name] = (sample_name, dna_seq, seq_count, seq_length)
+            sample[seq_name] = [sample_name, dna_seq, seq_count, seq_length]
         file_nr += 1
+        for key1 in sample:
+            if sample[key1][0] in sample_reduced.keys():
+                for key2 in sample_reduced[sample[key1][0]]:
+                    if sample[key1][1] ==\
+                            sample_reduced[sample[key1][0]][key2][1]:
+                        sample_reduced[sample[key1][0]][key2][2] += \
+                            sample[key1][2]
+                        break
+                    else:
+                        sample_reduced[sample[key1][0]][key1] = sample[key1]
+                        break
+            else:
+                sample_reduced[sample[key1][0]] = {key1: sample[key1]}
+
+
+
 
 
