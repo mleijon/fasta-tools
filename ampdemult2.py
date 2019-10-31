@@ -12,6 +12,8 @@ def sep(opsys):
 
 
 if __name__ == "__main__":
+    import copy
+    import collections
     import argparse, shutil, datetime, getpass, os, sys
 
     PARSER = argparse.ArgumentParser(description='Removes redundat sequences'
@@ -56,14 +58,23 @@ if __name__ == "__main__":
                         break
             else:
                 sample_reduced[sample[key1][0]] = {key1: sample[key1]}
+        sample_tmp = dict ()
+        for key in sample_reduced:
+            n = key.split('_')
+            name = n[0] + '_' + n[1].zfill(2) + '_' + n[2]. \
+                zfill(2) + '_' + n[3].zfill(2)
+            sample_tmp[name] = sample_reduced[key]
+        sample_reduced = copy.deepcopy(sample_tmp)
+        samples_red_ord = collections.OrderedDict(sorted(
+            sample_reduced.items()))
         with open(ARGS.od + seqfile, 'w') as fi:
-            for key1 in sample_reduced:
-                for key2 in sample_reduced[key1]:
+            for key1 in samples_red_ord:
+                for key2 in samples_red_ord[key1]:
                     n = key2.split('_')
                     name = n[0] + '_' + n[1].zfill(2) + '_' + n[2].\
                         zfill(2) + '_' + n[3].zfill(2) + '_' + n[4]
-                    dna_seq = sample_reduced[key1][key2][1]
-                    seq_count = sample_reduced[key1][key2][2]
+                    dna_seq = samples_red_ord[key1][key2][1]
+                    seq_count = samples_red_ord[key1][key2][2]
                     fi.write('>{}_count:{}_length:{}\n{}\n'.
                              format(name, seq_count, len(dna_seq), dna_seq))
 
