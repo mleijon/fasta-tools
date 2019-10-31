@@ -46,16 +46,16 @@ if __name__ == "__main__":
             sample_name = seq_name.rsplit('_', 1)[0]
             sample[seq_name] = [sample_name, dna_seq, seq_count]
         for key1 in sample:
+            found = False
             if sample[key1][0] in sample_reduced.keys():
                 for key2 in sample_reduced[sample[key1][0]]:
                     if sample[key1][1] ==\
                             sample_reduced[sample[key1][0]][key2][1]:
                         sample_reduced[sample[key1][0]][key2][2] +=\
                             sample[key1][2]
-                        break
-                    else:
-                        sample_reduced[sample[key1][0]][key1] = sample[key1]
-                        break
+                        found = True
+                if not found:
+                    sample_reduced[sample[key1][0]][key1] = sample[key1]
             else:
                 sample_reduced[sample[key1][0]] = {key1: sample[key1]}
         sample_tmp = dict()
