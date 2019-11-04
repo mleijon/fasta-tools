@@ -18,14 +18,15 @@ if __name__ == "__main__":
 
     PARSER = argparse.ArgumentParser(description='Removes redundat sequences'
                                                  'after manual trimming of '
-                                                 'the result of ampdemult.py')
+                                                 'the result of ampdemult.py'
+                                                 'and updates count.')
     PARSER.add_argument('-id', type=str, help='Directory for input data',
                         required=True)
     PARSER.add_argument('-od', type=str, help='Directory for output data',
                         required=True)
 
     ARGS = PARSER.parse_args()
-
+    # Some controls of input data
     if not ((ARGS.id.endswith(sep(os.name)) and
              ARGS.od.endswith(sep(os.name)))):
         sys.exit('Invalid directory name. Exits.')
