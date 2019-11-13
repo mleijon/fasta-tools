@@ -36,15 +36,31 @@ if __name__ == "__main__":
     if os.path.isdir(ARGS.od):
         shutil.rmtree(ARGS.od)
     os.mkdir(ARGS.od)
+    # loop over files produced by ampdemult.py and with manually removed indels
+    # and cropped to identical length
     for seqfile in os.listdir(ARGS.id):
+
+        # Dict with sequence_names (sequences names are sample names with a
+        # variant incremental number (#i) attached (Sample_name_#i)) as keys and
+        # a list [sample_name, sequence, sequnce count] as values.
         sample = dict()
+
+        # Dict with sample_names as keys containg  sample (dict()) items (i.e.
+        # sequence variants)
         sample_reduced = dict(dict())
+
         inp_seqs = FastaList(ARGS.id + seqfile)
         for seq in inp_seqs.seq_list:
+
+            # Name with incremental number (_#i)
             seq_name = seq.split('_count:')[0][1:]
+
             seq_count = int(seq.split('_count:')[1].split('_')[0])
             dna_seq = seq.split('\n')[1]
+
+            # Name without incremental number
             sample_name = seq_name.rsplit('_', 1)[0]
+
             sample[seq_name] = [sample_name, dna_seq, seq_count]
         for key1 in sample:
             found = False
