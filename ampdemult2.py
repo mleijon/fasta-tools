@@ -42,7 +42,8 @@ if __name__ == "__main__":
 
         # Dict with sequence_names (sequences names are sample names with a
         # variant incremental number (#i) attached (Sample_name_#i)) as keys and
-        # a list [sample_name, sequence, sequnce count] as values.
+        # a list [sample_name, sequence, sequnce count] as values. These are
+        # read from the fasta files produced by ampdemult.py
         sample = dict()
 
         # Dict with sample_names as keys containg  sample (dict()) items (i.e.
@@ -62,19 +63,25 @@ if __name__ == "__main__":
             sample_name = seq_name.rsplit('_', 1)[0]
 
             sample[seq_name] = [sample_name, dna_seq, seq_count]
-        for key1 in sample:
+
+        # Loop over all sequences of the input fasta file
+        for seqname in sample:
+            current_sample = sample[seqname][0]
             found = False
-            if sample[key1][0] in sample_reduced.keys():
-                for key2 in sample_reduced[sample[key1][0]]:
-                    if sample[key1][1] ==\
-                            sample_reduced[sample[key1][0]][key2][1]:
-                        sample_reduced[sample[key1][0]][key2][2] +=\
-                            sample[key1][2]
+            if current_sample in sample_reduced.keys():
+
+                #  Loop over all sequences collected for a sample (key2) in
+                #  Dict sample_reduced
+                for samplename in sample_reduced[current_sample]:
+                    if sample[seqname][1] ==\
+                            sample_reduced[current_sample][key2][1]:
+                        sample_reduced[current_sample][key2][2] +=\
+                            sample[seqname][2]
                         found = True
                 if not found:
-                    sample_reduced[sample[key1][0]][key1] = sample[key1]
+                    sample_reduced[current_sample][seqname] = sample[seqname]
             else:
-                sample_reduced[sample[key1][0]] = {key1: sample[key1]}
+                sample_reduced[current_sample] = {seqname: sample[seqname]}
         sample_tmp = dict()
         for key in sample_reduced:
             n = key.split('_')
