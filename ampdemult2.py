@@ -15,6 +15,7 @@ if __name__ == "__main__":
     import copy
     import collections
     import argparse, shutil, os, sys
+    import operator
 
     PARSER = argparse.ArgumentParser(description='Removes redundat sequences'
                                                  'after manual trimming of '
@@ -70,12 +71,13 @@ if __name__ == "__main__":
             found = False
             if current_sample in sample_reduced.keys():
 
-                #  Loop over all sequences collected for a sample (key2) in
-                #  Dict sample_reduced
-                for samplename in sample_reduced[current_sample]:
+                # Loop over all sequences collected for a sample (samplename)
+                # in Dict sample_reduced if the sequence exist add the counts
+                # if the sequence is new add it to the dictionary
+                for seq_variant in sample_reduced[current_sample]:
                     if sample[seqname][1] ==\
-                            sample_reduced[current_sample][key2][1]:
-                        sample_reduced[current_sample][key2][2] +=\
+                            sample_reduced[current_sample][seq_variant][1]:
+                        sample_reduced[current_sample][seq_variant][2] +=\
                             sample[seqname][2]
                         found = True
                 if not found:
@@ -91,16 +93,41 @@ if __name__ == "__main__":
         sample_reduced = copy.deepcopy(sample_tmp)
         samples_red_ord = collections.OrderedDict(sorted(
             sample_reduced.items()))
+        result = []
+        result_all = []
+        for item in samples_red_ord:
+            count_sum = 0
+            for var in samples_red_ord[item]:
+                count_sum += samples_red_ord[item][var][2]
+                result.append([var, samples_red_ord[item][var][1],
+                               samples_red_ord[item][var][2]])
+                result.sort(key=operator.itemgetter(2), reverse=True)
+            new_result = []
+            variant_count = 0
+            for variant in result:
+                variant.append(count_sum)
+                if len(result) > 1:
+                    variant_count += 1
+                    variant[0] = variant[0].rsplit('_', 1)[0] + '_V' + str(
+                        variant_count)
+                else:
+                    variant[0] = variant[0].rsplit('_', 1)[0]
+                new_result.append(variant)
+            result_all.append(new_result)
+            result = []
         with open(ARGS.od + seqfile, 'w') as fi:
-            for key1 in samples_red_ord:
-                for key2 in samples_red_ord[key1]:
-                    n = key2.split('_')
+            for item1 in result_all:
+                for item2 in item1:
+                    n = item2[0].split('_')
                     name = n[0] + '.' + n[1].zfill(2) + '.' + n[2].\
-                        zfill(2) + '.' + n[3].zfill(2) + '_' + n[4][n[4].rfind('0') + 1:]
-                    dna_seq = samples_red_ord[key1][key2][1]
-                    seq_count = samples_red_ord[key1][key2][2]
-                    fi.write('>{}_c:{}\n{}\n'.
-                             format(name, seq_count, dna_seq))
+                        zfill(2) + '.' + n[3].zfill(2)
+                    if len(n) > 4:
+                        name += '_' + n[4]
+                    dna_seq = item2[1]
+                    seq_count = item2[2]
+                    seq_count_sum = item2[3]
+                    fi.write('>{}_f:{}%\n{}\n'.
+                             format(name, round(100*(seq_count/seq_count_sum)), dna_seq))
 
 
 
