@@ -25,6 +25,8 @@ if __name__ == "__main__":
                         required=True)
     PARSER.add_argument('-od', type=str, help='Directory for output data',
                         required=True)
+    PARSER.add_argument('-c', action='store_true',
+                        help='if set counts will be shown', default=False)
 
     ARGS = PARSER.parse_args()
     # Some controls of input data
@@ -108,13 +110,14 @@ if __name__ == "__main__":
                 variant.append(count_sum)
                 if len(result) > 1:
                     variant_count += 1
-                    variant[0] = variant[0].rsplit('_', 1)[0] + '_V' + str(
+                    variant[0] = variant[0].rsplit('_', 1)[0] + '_v' + str(
                         variant_count)
                 else:
                     variant[0] = variant[0].rsplit('_', 1)[0]
                 new_result.append(variant)
             result_all.append(new_result)
             result = []
+        print(result_all)
         with open(ARGS.od + seqfile, 'w') as fi:
             for item1 in result_all:
                 for item2 in item1:
@@ -126,8 +129,12 @@ if __name__ == "__main__":
                     dna_seq = item2[1]
                     seq_count = item2[2]
                     seq_count_sum = item2[3]
-                    fi.write('>{}_f:{}%\n{}\n'.
-                             format(name, round(100*(seq_count/seq_count_sum)), dna_seq))
+                    if ARGS.c:
+                        fi.write('>{}_f:{}%_c:{}\n{}\n'.format(name, round(100*(
+                                seq_count/seq_count_sum)), seq_count, dna_seq))
+                    else:
+                        fi.write('>{}_f:{}%\n{}\n'.format(name, round(100*(
+                                seq_count/seq_count_sum)), dna_seq))
 
 
 
