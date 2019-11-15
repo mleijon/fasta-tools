@@ -27,6 +27,10 @@ if __name__ == "__main__":
                         required=True)
     PARSER.add_argument('-c', action='store_true',
                         help='if set counts will be shown', default=False)
+    PARSER.add_argument('-t', type=float, help='threshold for fraction of the'
+                                               'total amounts of reads for a'
+                                               'sample',
+                        default=0)
 
     ARGS = PARSER.parse_args()
     # Some controls of input data
@@ -49,7 +53,7 @@ if __name__ == "__main__":
         # read from the fasta files produced by ampdemult.py
         sample = dict()
 
-        # Dict with sample_names as keys containg  sample (dict()) items (i.e.
+        # Dict with sample_names as keys containg  {sample (dict()) items} (i.e.
         # sequence variants)
         sample_reduced = dict(dict())
 
@@ -86,6 +90,10 @@ if __name__ == "__main__":
                     sample_reduced[current_sample][seqname] = sample[seqname]
             else:
                 sample_reduced[current_sample] = {seqname: sample[seqname]}
+
+        # Rename the sample_names (keys of sample_reduced) to makwe sure sorting
+        # will work. Sort make a sorted version of sample_reduced:
+        # samples_red_ord
         sample_tmp = dict()
         for key in sample_reduced:
             n = key.split('_')
@@ -95,15 +103,40 @@ if __name__ == "__main__":
         sample_reduced = copy.deepcopy(sample_tmp)
         samples_red_ord = collections.OrderedDict(sorted(
             sample_reduced.items()))
+
+        # Carries the variants of sample_name in a nested list with the members:
+        # [variant_name, variant_sequence, variant_count]. The list is sorted in
+        # reverse (highest first) by the variant_count.
         result = []
+        tmp_result = []
+
+        # Ordered (by sample_name) triple netsted list with all results:
+        # [[[variant1], [variant2],...], [[variant1], [variant2]]]. The variants
+        # for each sample are ordered by count
         result_all = []
+
+        # Create a new nested list 'new_result' from 'result' that adds the
+        # total count_sum for the variants to the variants listed in new_result:
+        # [variant_name, variant_sequence, variant_count, count_sum] and
+        # modifies the variants name by removing the incremental number and add
+        # a _v#, where # is a version number for the variant. the nested lists
+        # of 'new_result' are appended to the final result list: 'result_all'
         for item in samples_red_ord:
             count_sum = 0
             for var in samples_red_ord[item]:
                 count_sum += samples_red_ord[item][var][2]
-                result.append([var, samples_red_ord[item][var][1],
-                               samples_red_ord[item][var][2]])
-                result.sort(key=operator.itemgetter(2), reverse=True)
+                tmp_result.append([var, samples_red_ord[item][var][1],
+                                   samples_red_ord[item][var][2]])
+                tmp_result.sort(key=operator.itemgetter(2), reverse=True)
+
+            # Exclude variant below the threshold set by -t (default =0). Adjust
+            # the count_sum accordingly.
+            for var in tmp_result:
+                if (var[2]/count_sum) < ARGS.t:
+                    count_sum -= var[2]
+                else:
+                    result.append(var)
+
             new_result = []
             variant_count = 0
             for variant in result:
@@ -117,14 +150,15 @@ if __name__ == "__main__":
                 new_result.append(variant)
             result_all.append(new_result)
             result = []
-        print(result_all)
+            tmp_result = []
+
         with open(ARGS.od + seqfile, 'w') as fi:
             for item1 in result_all:
                 for item2 in item1:
                     n = item2[0].split('_')
                     name = n[0] + '.' + n[1].zfill(2) + '.' + n[2].\
                         zfill(2) + '.' + n[3].zfill(2)
-                    if len(n) > 4:
+                    if len(n) > 4:  # variants exit
                         name += '_' + n[4]
                     dna_seq = item2[1]
                     seq_count = item2[2]
