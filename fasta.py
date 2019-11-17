@@ -96,7 +96,8 @@ class FastaList:
                 'B': 'V',
                 'V': 'B',
                 'D': 'H',
-                'H': 'D'
+                'H': 'D',
+                '-': '-'
             }[nt.upper()]
         seq_list_rc = []
         for item in self.seq_list:
