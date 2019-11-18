@@ -12,6 +12,7 @@ class FastaList:
     strings with a newline separating the id and the nucleotides sequence and
     ends with /n. id_list strings end without \n.
     """
+    # TODO: try to make the class iterable
 
     def __init__(self, fasta_name):  # Initialized by a filename string
         self.name = str(os.path.abspath(fasta_name))
@@ -118,6 +119,31 @@ class FastaList:
             del tmp_list[0:item_per_lst]
         seq_list_div.append(tmp_list)
         return seq_list_div
+
+    def rmprimers(self, primer_file_name):
+        # min_primer_ln = 0.75 - Not implemented
+        seqs_noprimers = []
+        primers = FastaList(primer_file_name).seq_list
+        primers_rc = FastaList(primer_file_name).seq_list_revc()
+        primers_all = primers + primers_rc
+        primerlst = []
+        for item in primers_all:
+            primerlst.append(item.split('\n')[1])
+        for seq in self.seq_list:
+            seqid = seq.split('\n')[0]
+            seqseq = seq.split('\n')[1]
+            found_primers = 0
+            for primer in primerlst:
+                if found_primers == 2:
+                    seqs_noprimers.append(seqid + '\n' + seqseq + '\n')
+                    break
+                if primer in seqseq:
+                    if seq.find(primer) < (len(seqseq) - seq.find(primer)):
+                        seqseq = seqseq[(seq.find(primer) + len(primer)):]
+                    else:
+                        seqseq = seqseq[:seq.find(primer)]
+                    found_primers += 1
+        return seqs_noprimers
 
 
 if __name__ == "__main__":

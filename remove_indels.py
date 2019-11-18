@@ -45,5 +45,11 @@ if __name__ == "__main__":
     for seqfile in os.listdir(ARGS.id):
         infa = FastaList(ARGS.id + seqfile)
         ref = infa.seq_list[0]
-        print(ref)
-        exit()
+        refid = infa.seq_list[0].split('\n')[0]
+        refseq = infa.seq_list[0].split('\n')[1]
+        for seq in infa.seq_list[1:2]:
+            seqid = seq.split('\n')[0]
+            seqseq = seq.split('\n')[1]
+            for nt in range(0, len(seqseq)):
+                if refseq[nt] != seqseq[nt]:
+                    print(seqseq[nt])
