@@ -138,10 +138,10 @@ class FastaList:
                     seqs_noprimers.append(seqid + '\n' + seqseq + '\n')
                     break
                 if primer in seqseq:
-                    if seq.find(primer) < (len(seqseq) - seq.find(primer)):
-                        seqseq = seqseq[(seq.find(primer) + len(primer)):]
+                    if seqseq.find(primer) < (len(seqseq) - seqseq.find(primer)):
+                        seqseq = seqseq[(seqseq.find(primer) + len(primer)):]
                     else:
-                        seqseq = seqseq[:seq.find(primer)]
+                        seqseq = seqseq[:seqseq.find(primer)]
                     found_primers += 1
         return seqs_noprimers
 

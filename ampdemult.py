@@ -206,6 +206,7 @@ if __name__ == "__main__":
                         else:
                             fi.write('>' + seq_fa.seq_list[seq])
                             nr_seq_demult += 1
+                    fi.close()
         if seq_fa.nr_seq == 0:
             seq_fa.nr_seq = 1
         logfile.write("Reduced to {} sequences.\n".format(nr_seq_demult))
