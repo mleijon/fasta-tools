@@ -14,7 +14,10 @@ def sep(opsys):
 if __name__ == "__main__":
     import copy
     import collections
-    import argparse, shutil, os, sys
+    import argparse
+    import shutil
+    import os
+    import sys
     import operator
 
     PARSER = argparse.ArgumentParser(description='Removes redundat sequences'
@@ -91,7 +94,7 @@ if __name__ == "__main__":
             else:
                 sample_reduced[current_sample] = {seqname: sample[seqname]}
 
-        # Rename the sample_names (keys of sample_reduced) to makwe sure sorting
+        # Rename the sample_names (keys of sample_reduced) to make sure sorting
         # will work. Sort make a sorted version of sample_reduced:
         # samples_red_ord
         sample_tmp = dict()

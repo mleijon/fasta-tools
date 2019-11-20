@@ -123,8 +123,8 @@ class FastaList:
     def rmprimers(self, primer_file_name):
         # Removes primer sequences (listed in "primer_file_name) including
         # leading and trailing nucletides.
-        # TODO: Leave as is sequences with more than two primers
-        #  implement min_primer_ln = 0.75
+        primer_frac = 0.75
+
         def too_many_primers(sequence):
             primer_count = 0
             for p in primers_all:
@@ -133,13 +133,15 @@ class FastaList:
                 return True
             else:
                 return False
+
         seqs_noprimers = []
         primers = FastaList(primer_file_name).seq_list
         primers_rc = FastaList(primer_file_name).seq_list_revc()
         primers_all = primers + primers_rc
         primerlst = []
         for item in primers_all:
-            primerlst.append(item.split('\n')[1])
+            primerseq = item.split('\n')[1]
+            primerlst.append(primerseq[round(len(primerseq)*(1-primer_frac)):])
         for seq in self.seq_list:
             seqid = seq.split('\n')[0]
             seqseq = seq.split('\n')[1]
@@ -158,6 +160,15 @@ class FastaList:
                         seqseq = seqseq[:seqseq.find(primer)]
                     found_primers += 1
         return seqs_noprimers
+
+    def wr_fasta_file(self, fasta_file_name):
+        try:
+            fi = open(fasta_file_name, 'a')
+        except FileNotFoundError:
+            fi = open(fasta_file_name, 'w')
+        for item in self.seq_list:
+            fi.write(item)
+        fi.close()
 
 
 if __name__ == "__main__":
