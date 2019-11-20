@@ -11,11 +11,7 @@ PARSER.add_argument('-o', type=str, help='input file', required=True)
 PARSER.add_argument('-m', type=str, help='muscle path', required=True)
 ARGS = PARSER.parse_args()
 fa = FastaList(ARGS.f)
-# with open(ARGS.o, 'w') as fi:
-#     for item in fa.rmprimers(ARGS.p):
-#         fi.write(item)
-# fi.close()
-fa.rmprimers(ARGS.p)
+fa.wr_fasta_file(ARGS.o)
 outfi = ARGS.o.split('.')[0] + '.afa'
 muscle = sub.Popen(ARGS.m + ' -in ' + ARGS.o + ' -out ' + outfi + ' -quiet')
 muscle.wait()

@@ -133,7 +133,6 @@ class FastaList:
                 return True
             else:
                 return False
-
         seqs_noprimers = []
         primers = FastaList(primer_file_name).seq_list
         primers_rc = FastaList(primer_file_name).seq_list_revc()
@@ -161,13 +160,17 @@ class FastaList:
                     found_primers += 1
         return seqs_noprimers
 
-    def wr_fasta_file(self, fasta_file_name):
+    def wr_fasta_file(self, fasta_file_name, primer_file=None):
         try:
             fi = open(fasta_file_name, 'a')
         except FileNotFoundError:
             fi = open(fasta_file_name, 'w')
-        for item in self.seq_list:
-            fi.write(item)
+        if not primer_file:
+            for item in self.seq_list:
+                fi.write(item)
+        else:
+            for item in self.rmprimers(primer_file):
+                fi.write(item)
         fi.close()
 
 
