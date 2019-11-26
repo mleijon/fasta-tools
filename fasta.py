@@ -25,7 +25,7 @@ class FastaList:
             self.name = self.name[:-3]
         if self.name.upper().endswith(('.FQ', '.FASTQ')):
             self.fa_file = self.fq2fa()  # Handle file as fastq
-        elif self.name.upper().endswith(('.FA', '.FASTA', 'FNA')):
+        elif self.name.upper().endswith(('.FA', '.FASTA', 'FNA', 'AFA')):
             self.fa_file = self.rdfi()  # Handle file as fasta
         else:
             sys.exit('Not a fastq or fasta file')
@@ -120,36 +120,29 @@ class FastaList:
         seq_list_div.append(tmp_list)
         return seq_list_div
 
-    def rmprimers(self, primer_file_name):
+    def rmprimers(self, primer_file_name, primer_frac=0.5):
         # Removes primer sequences (listed in "primer_file_name) including
-        # leading and trailing nucletides.
-        primer_frac = 0.75
+        # leading and trailing nucletides. Only the fraction primer_frac from
+        # innermost part of the primer needs to be present
 
-        def too_many_primers(sequence):
-            primer_count = 0
-            for p in primers_all:
-                primer_count += sequence.count(p)
-            if primer_count > 2:
-                return True
-            else:
-                return False
-        seqs_noprimers = []
-        primers = FastaList(primer_file_name).seq_list
+        seqs_noprimers = []  # List of sequences without primers
+
+        # Create list of primers - primerlst
+        pr = FastaList(primer_file_name)
+        primers = pr.seq_list
         primers_rc = FastaList(primer_file_name).seq_list_revc()
         primers_all = primers + primers_rc
         primerlst = []
         for item in primers_all:
             primerseq = item.split('\n')[1]
+            # Shorten the primers to keep the fraction - primer_frac
             primerlst.append(primerseq[round(len(primerseq)*(1-primer_frac)):])
         for seq in self.seq_list:
             seqid = seq.split('\n')[0]
             seqseq = seq.split('\n')[1]
-            if too_many_primers(seqseq):
-                seqs_noprimers.append(seqid + '\n' + seqseq + '\n')
-                continue
             found_primers = 0
             for primer in primerlst:
-                if found_primers == 2:
+                if found_primers > 0:
                     seqs_noprimers.append(seqid + '\n' + seqseq + '\n')
                     break
                 if primer in seqseq:
@@ -158,13 +151,42 @@ class FastaList:
                     else:
                         seqseq = seqseq[:seqseq.find(primer)]
                     found_primers += 1
+        pr.rdfi().close()
         return seqs_noprimers
 
-    def wr_fasta_file(self, fasta_file_name, primer_file=None):
-        try:
-            fi = open(fasta_file_name, 'a')
-        except FileNotFoundError:
-            fi = open(fasta_file_name, 'w')
+    def crop_ends(self):
+        # Remove aligned fasta columns from both ends with gaps until a column
+        # without gaps are found
+        import copy
+
+        def crop(alignment):
+            hyphen = True
+            while hyphen:
+                hyphen = False
+                for seq in alignment:
+                    if seq.split('\n')[1][0] == '-':
+                        hyphen = True
+                        for i in range(len(alignment)):
+                            seqid = alignment[i].split('\n')[0]
+                            newseq = alignment[i].split('\n')[1][1:]
+                            alignment[i] = seqid + '\n' + newseq + '\n'
+                        break
+            return alignment
+        new_alignment = copy.deepcopy(self.seq_list)
+        new_alignment = crop(new_alignment)
+        for i in range(len(new_alignment)):
+            seqid = new_alignment[i].split('\n')[0]
+            seqseq = new_alignment[i].split('\n')[1]
+            new_alignment[i] = seqid + '\n' + seqseq[::-1] + '\n'
+        new_alignment = crop(new_alignment)
+        for i in range(len(new_alignment)):
+            seqid = new_alignment[i].split('\n')[0]
+            seqseq = new_alignment[i].split('\n')[1]
+            new_alignment[i] = seqid + '\n' + seqseq[::-1] + '\n'
+        return new_alignment
+
+    def wr_fasta_file(self, fasta_file_name, primer_file=None, mode='w'):
+        fi = open(fasta_file_name, mode)
         if not primer_file:
             for item in self.seq_list:
                 fi.write(item)
