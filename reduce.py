@@ -30,10 +30,11 @@ if __name__ == "__main__":
                         required=True)
     PARSER.add_argument('-c', action='store_true',
                         help='if set counts will be shown', default=False)
+    PARSER.add_argument('-r', action='store_true',
+                        help='if set reference will be shown', default=False)
     PARSER.add_argument('-t', type=float, help='threshold for fraction of the'
                                                'total amounts of reads for a'
-                                               'sample',
-                        default=0)
+                                               'sample', default=0)
 
     ARGS = PARSER.parse_args()
     # Some controls of input data
@@ -182,6 +183,8 @@ if __name__ == "__main__":
                         dna_seq = item2[1]
                         seq_count = item2[2]
                         seq_count_sum = item2[3]
+                        if 'ref' in name and not ARGS.r:
+                            continue
                         if ARGS.c:
                             fi.write('>{}_f:{}%_c:{}\n{}\n'.format(name, round(100*(
                                     seq_count/seq_count_sum)), seq_count, dna_seq))
