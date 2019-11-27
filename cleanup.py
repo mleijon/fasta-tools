@@ -60,6 +60,8 @@ if os.path.isdir(ARGS.od):
 os.mkdir(ARGS.od)
 refs = FastaList(ARGS.r)
 for seqfile in os.listdir(ARGS.id):
+    if 'log' in seqfile:
+        continue
     input_name = ARGS.id + seqfile
     output_name = ARGS.od + seqfile
     fa_in = FastaList(input_name)
@@ -108,4 +110,3 @@ for seqfile in os.listdir(ARGS.id):
     for item in cropped_alignment:
         crfi.write(item)
     crfi.close()
-

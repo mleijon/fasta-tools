@@ -150,7 +150,7 @@ if __name__ == "__main__":
         sys.exit('Count (-c) ot of range. Exits.')
     # Writes log-file
     logfile = open(ARGS.od + 'demultiplex.log', 'w')
-    logfile.write('Log for ampdemult.py at {}\nUser: {}\n\n'.format(
+    logfile.write('Log for demultiplex.py at {}\nUser: {}\n\n'.format(
         str(datetime.datetime.now()).split('.')[0], getpass.getuser()))
     logfile.write('Minimum sequence length = {}\n'.format(ARGS.m))
     logfile.write('Minimum nr of sequences = {}\n'.format(ARGS.c))
@@ -211,4 +211,3 @@ if __name__ == "__main__":
             seq_fa.nr_seq = 1
         logfile.write("Reduced to {} sequences.\n".format(nr_seq_demult))
         file_nr += 1
-
