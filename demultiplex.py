@@ -3,6 +3,12 @@
 separate fasta-file
 """
 from fasta import FastaList
+import argparse
+import shutil
+import datetime
+import getpass
+import os
+import sys
 
 
 def sep(opsys):
@@ -90,64 +96,7 @@ def reduce_fa(fl):
     return fl
 
 
-if __name__ == "__main__":
-    import argparse
-    import shutil
-    import datetime
-    import getpass
-    import os
-    import sys
-
-    PARSER = argparse.ArgumentParser(description='The script demultiplex '
-                                                 'amplicon sequencing NGS-data'
-                                                 ' based on tags (multiplexed '
-                                                 'primers) listed in a separate'
-                                                 ' fasta-file (alternating '
-                                                 'forward and reverse primers).'
-                                                 ' Assumes the usual file '
-                                                 'extensions. Fasta- and fastq-'
-                                                 'files that may be gzipped are'
-                                                 ' allowed. Sequence reads must'
-                                                 ' contain complete forward '
-                                                 'and reverse primer and are '
-                                                 'optinally filtered on length,'
-                                                 ' count (multipicity) and '
-                                                 'fraction af the most '
-                                                 'abundant sequence.')
-    PARSER.add_argument('-id', type=str, help='Directory for input data',
-                        required=True)
-    PARSER.add_argument('-od', type=str, help='Directory for output data',
-                        required=True)
-    PARSER.add_argument('-t', type=str, help='fasta file name for tag/primer '
-                                             'sequence-list',
-                        required=True)
-    PARSER.add_argument('-m', type=int, help='minimum seq length',
-                        default=250, required=False)
-    PARSER.add_argument('-c', type=int, help='minimum nr of seqs', default=1,
-                        required=False)
-    PARSER.add_argument('-f', type=float, help='minimum fraction of most '
-                                               'abundant seq', default=0,
-                        required=False)
-    ARGS = PARSER.parse_args()
-    # Some control of input file/directory names and parameter values
-    if not os.path.isfile(ARGS.t):
-        sys.exit('No PCR tag file. Exits.')
-    if not ((ARGS.id.endswith(sep(os.name)) and
-             ARGS.od.endswith(sep(os.name)))):
-        sys.exit('Invalid directory name. Exits.')
-    if os.path.isfile(ARGS.od[:-1]):
-        print('{} is a file'.format(ARGS.od[:-1]))
-        sys.exit('Exits')
-    if os.path.isdir(ARGS.od):
-        shutil.rmtree(ARGS.od)
-    os.mkdir(ARGS.od)
-    tag_fa = FastaList(ARGS.t)
-    if not (0 <= ARGS.f <= 1):
-        sys.exit('Fraction (-f) out of range. Exits.')
-    if ARGS.m < 0:
-        sys.exit('Minimum sequence length (-m) ut of range. Exits.')
-    if ARGS.c < 1:
-        sys.exit('Count (-c) ot of range. Exits.')
+def main():
     # Writes log-file
     logfile = open(ARGS.od + 'demultiplex.log', 'w')
     logfile.write('Log for demultiplex.py at {}\nUser: {}\n\n'.format(
@@ -211,3 +160,57 @@ if __name__ == "__main__":
             seq_fa.nr_seq = 1
         logfile.write("Reduced to {} sequences.\n".format(nr_seq_demult))
         file_nr += 1
+
+
+if __name__ == "__main__":
+    PARSER = argparse.ArgumentParser(description='The script demultiplex '
+                                                 'amplicon sequencing NGS-data'
+                                                 ' based on tags (multiplexed '
+                                                 'primers) listed in a separate'
+                                                 ' fasta-file (alternating '
+                                                 'forward and reverse primers).'
+                                                 ' Assumes the usual file '
+                                                 'extensions. Fasta- and fastq-'
+                                                 'files that may be gzipped are'
+                                                 ' allowed. Sequence reads must'
+                                                 ' contain complete forward '
+                                                 'and reverse primer and are '
+                                                 'optinally filtered on length,'
+                                                 ' count (multipicity) and '
+                                                 'fraction af the most '
+                                                 'abundant sequence.')
+    PARSER.add_argument('-id', type=str, help='Directory for input data',
+                        required=True)
+    PARSER.add_argument('-od', type=str, help='Directory for output data',
+                        required=True)
+    PARSER.add_argument('-t', type=str, help='fasta file name for tag/primer '
+                                             'sequence-list',
+                        required=True)
+    PARSER.add_argument('-m', type=int, help='minimum seq length',
+                        default=250, required=False)
+    PARSER.add_argument('-c', type=int, help='minimum nr of seqs', default=1,
+                        required=False)
+    PARSER.add_argument('-f', type=float, help='minimum fraction of most '
+                                               'abundant seq', default=0,
+                        required=False)
+    ARGS = PARSER.parse_args()
+    # Some control of input file/directory names and parameter values
+    if not os.path.isfile(ARGS.t):
+        sys.exit('No PCR tag file. Exits.')
+    if not ((ARGS.id.endswith(sep(os.name)) and
+             ARGS.od.endswith(sep(os.name)))):
+        sys.exit('Invalid directory name. Exits.')
+    if os.path.isfile(ARGS.od[:-1]):
+        print('{} is a file'.format(ARGS.od[:-1]))
+        sys.exit('Exits')
+    if os.path.isdir(ARGS.od):
+        shutil.rmtree(ARGS.od)
+    os.mkdir(ARGS.od)
+    tag_fa = FastaList(ARGS.t)
+    if not (0 <= ARGS.f <= 1):
+        sys.exit('Fraction (-f) out of range. Exits.')
+    if ARGS.m < 0:
+        sys.exit('Minimum sequence length (-m) ut of range. Exits.')
+    if ARGS.c < 1:
+        sys.exit('Count (-c) ot of range. Exits.')
+    main()

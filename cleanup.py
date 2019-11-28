@@ -75,7 +75,8 @@ for seqfile in os.listdir(ARGS.id):
                 fi.write(item + content)
                 fi.close()
     muscle_out = output_name.split('.')[0] + '.afa'
-    muscle = sub.Popen(ARGS.m + ' -in ' + output_name + ' -out ' + muscle_out + ' -quiet')
+    muscle = sub.Popen(ARGS.m + ' -in ' + output_name + ' -out ' + muscle_out +
+                       ' -quiet')
     muscle.wait()
     reference_seq = ''
     cropped_alignment = FastaList(muscle_out).crop_ends()
