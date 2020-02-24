@@ -9,12 +9,15 @@ with open(ARGS.f) as fi:
     readlst = []
     for item in inpdata.split('\n')[:-1]:
         if ' ' in item:
-            readlst.append(item.split('\t')[1].split(' ')[0] + ' ' + item.split('\t')[1].split(' ')[1])
+            readlst.append(item.split('\t')[1].split(' ')[0] + ' '
+                           + item.split('\t')[1].split(' ')[1])
         else:
             readlst.append(item.split('\t')[1])
 readset = set(readlst)
-readdict = {key: round(100*inpdata.count(key)/len(readlst), 1) for key in readset}
-orderedreads = OrderedDict(sorted(readdict.items(), key=lambda t: t[1], reverse=True))
+readdict = {key: round(100*inpdata.count(key)/len(readlst), 1) for key in
+            readset}
+orderedreads = OrderedDict(sorted(readdict.items(), key=lambda t: t[1],
+                                  reverse=True))
 with open(ARGS.o, 'w') as fi:
     for key in orderedreads:
         if orderedreads[key] > 1:
