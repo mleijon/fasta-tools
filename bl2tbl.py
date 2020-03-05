@@ -28,7 +28,7 @@ result = dict()
 acc2taxid = dict()  # {'accession':'taxid',...}
 taxid2name = dict()  # {'taxid':'scientific names',...}
 manager = Manager()
-acc2names = manager.dict()  # {'accession':'scientific names':
+acc2names = dict()  # {'accession':'scientific names':
 blfi_list = []
 
 
@@ -60,26 +60,36 @@ def merge_two_dicts(x, y):
 if __name__ == '__main__':
     try:
         with open('acc2name.js') as fi:
+            print('acc2name.js found. Loading...')
             acc2names = json.load(fi)
+        print('\nDone loading acc2name.js\n')
     except FileNotFoundError:
+        print('"acc2name.js" not found.')
+        print('Loading {}...'.format(ARGS.a))
         with open(ARGS.a) as fi:
             for line in fi:
                 acc2taxid[line.split()[1].strip()] = line.split()[2].strip()
+        print('Done loading {}'.format(ARGS.a))
         with open(ARGS.n) as fi:
+            print('\nLoading {}...'.format(ARGS.n))
             for line in fi:
                 if line.split('|')[3].strip() == 'scientific name':
                     taxid2name[line.split('|')[0].strip()] = \
                         line.split('|')[1].strip()
+            print('Done loading {}\n'.format(ARGS.n))
+            print('Creating acc2names..')
         for key in acc2taxid:
             try:
                 acc2names[key] = taxid2name[acc2taxid[key]]
             except KeyError:
                 pass
+        print('Done creating acc2names')
         with open('acc2name.js', 'w') as fi:
+            print('creating "acc2name.js"...')
             json.dump(acc2names, fi, indent=4)
+        print('Done creating "acc2name.js"')
         del taxid2name
         del acc2taxid
-    print('Done loading json\n')
     blfi = blast.BlastFile(ARGS.b)
     # Split the blast file into ARGS.s smaller files and returns a list of the
     # file names
