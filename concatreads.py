@@ -59,7 +59,7 @@ for sample in get_sample_names():
         for count, item in enumerate(get_concat_variants(sample)):
             result = '>' + sample
             if 'v' in item[0]:
-                result += '_v_' + str(count + 1) + str(round(item[1]*100)) + '%'
+                result += '_v' + str(count + 1) + '_' + str(round(item[1]*100)) + '%'
             result += '\n' + item[2] + '\n'
             outf.write(result)
 outf.close()
