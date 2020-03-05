@@ -127,7 +127,8 @@ def main():
     # and .fastq file extension
     filelst = [name for name in os.listdir(ARGS.id) if
                os.path.isfile(ARGS.id + name) and (name.endswith('.fa') or
-                                                   name.endswith('.fastq'))]
+                                                   name.endswith('.fastq') or
+                                                   name.endswith('.gz'))]
     nr_of_files = len(filelst)
     file_nr = 1
     for seqfile in filelst:
