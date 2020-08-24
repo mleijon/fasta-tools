@@ -75,6 +75,9 @@ for seqfile in os.listdir(ARGS.id):
                 fi.write(item + content)
                 fi.close()
     muscle_out = output_name.split('.')[0] + '.afa'
+    print(ARGS.m + ' -in ' + output_name + ' -out ' + muscle_out +
+                       ' -quiet')
+    exit(0)
     muscle = sub.Popen(ARGS.m + ' -in ' + output_name + ' -out ' + muscle_out +
                        ' -quiet')
     muscle.wait()
