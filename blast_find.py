@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/python3
 """Finds the blast hits containing a case insensitive target string in the fasta
 description line.
 
