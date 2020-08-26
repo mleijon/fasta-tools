@@ -1,8 +1,10 @@
 #!/usr/bin/python3
 
+from collections import Counter
 sciNames = dict()
 mergedTaxids = dict()
 deletedTaxids = set()
+Results = []
 names_file = open("names.dmp")
 merge_file = open("merged.dmp")
 delete_file = open("delnodes.dmp")
@@ -23,10 +25,14 @@ for line in daa_file:
     item = line.split()[1].strip()
     if item != '0':
         if item in mergedTaxids.keys():
-            print(sciNames[mergedTaxids[item]])
+            Results += [sciNames[mergedTaxids[item]]]
         elif item in deletedTaxids:
-            print(item + ' :deleted')
+            Results += [item + ' :deleted']
         else:
-            print(sciNames[item])
-            
+            Results += [sciNames[item]]
+c = Counter(Results).most_common()
+for item in c:
+    #print(item)
+    if "deleted" in item[0]:
+        print(item)
 daa_file.close()
