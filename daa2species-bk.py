@@ -17,6 +17,7 @@ taxsets = {CELLULAR_ORGANISM: set(), ARCHAEA: set(), BACTERIA: set(),
            EUCARYOTA: set(), VIRUSES: set(), UNCLASSIFIED: set(),
            OTHERSEQ: set()}
 taxcounts = defaultdict(int)
+results = defaultdict(lambda: [])
 
 # THese files are needed and downloaded from ncbi:
 # https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz
@@ -43,6 +44,8 @@ merged_file = "merged.dmp"
 
 
 lineage_file = "taxidlineage.dmp"
+
+
 # Taxonomy id lineage file fields:
 #
 # tax_id                    -- node id
@@ -124,6 +127,10 @@ def count_txclass(fname):
             elif (taxid in mergedTaxids.keys()) and (mergedTaxids[taxid]
                                                      in taxsets[OTHERSEQ]):
                 taxcounts[OTHERSEQ] += 1
+            elif taxid in deletedTaxids:
+                taxcounts['DELETED'] += 1
+            elif taxid == CELLULAR_ORGANISM:
+                taxcounts[CELLULAR_ORGANISM] += 1
     return
 
 
@@ -148,20 +155,20 @@ def parse_files(m, d, n):
                 sciNames.update({item[0].strip(): item[1].strip()})
 
 
-def write_summary (fname):
+def write_summary(fname):
     with open(fname, 'w') as f:
         f.write('Total nr of reads: {:>31}\n'.format(nr_of_reads))
         f.write('\nNo hits to db: {:>35} ({} %)\n'.format(nr_of_nohits[0], (
             round(100 * (nr_of_nohits[0] / nr_of_reads), 2))))
         f.write('Could not be classified by db: {:>19} ({} %)\n'.format(
             nr_of_nohits[1], (round(100 * (nr_of_nohits[1] / nr_of_reads), 2))))
-        f.write('Taxid deleted from db: {:>27} ({} %)\n'.format(
-            deleted_count, (round(100 * (deleted_count / nr_of_reads), 2))))
         f.write('\nClassified by db: {:>32} ({} %)\n'.format(
-            SUM_IN_DB, (round(100 * (SUM_IN_DB / nr_of_reads), 2))))
+            sum(taxcounts.values()), (round(100 * (sum(taxcounts.values()) / nr_of_reads), 2))))
         f.write('------------------------------------------------------------\n')
-        f.write('CELLULAR ORGANISM: {:>31} ({} %)\n'.format(cellorg_count, (
-            round(100 * (cellorg_count / nr_of_reads), 2))))
+        f.write('Taxid deleted from db: {:>27} ({} %)\n'.format(
+            taxcounts['DELETED'], (round(100 * (taxcounts['DELETED'] / nr_of_reads), 2))))
+        f.write('CELLULAR ORGANISM: {:>31} ({} %)\n'.format(taxcounts[CELLULAR_ORGANISM], (
+            round(100 * (taxcounts[CELLULAR_ORGANISM] / nr_of_reads), 2))))
         f.write('ARCHAEA: {:>41} ({} %)\n'.format(taxcounts[ARCHAEA], (
             round(100 * (taxcounts[ARCHAEA] / nr_of_reads), 2))))
         f.write('BACTERIA: {:>40} ({} %)\n'.format(taxcounts[BACTERIA], (
@@ -183,6 +190,20 @@ if __name__ == "__main__":
                         required=True)
     PARSER.add_argument('-s', action='store_true',
                         help='switch for summary file output')
+    PARSER.add_argument('-a', action='store_true',
+                        help='switch for summary file output')
+    PARSER.add_argument('-b', action='store_true',
+                        help='switch for summary file output')
+    PARSER.add_argument('-e', action='store_true',
+                        help='switch for summary file output')
+    PARSER.add_argument('-v', action='store_true',
+                        help='switch for summary file output')
+    PARSER.add_argument('-u', action='store_true',
+                        help='switch for summary file output')
+    PARSER.add_argument('-o', action='store_true',
+                        help='switch for summary file output')
+    PARSER.add_argument('-d', action='store_true',
+                        help='switch for summary file output')
     ARGS = PARSER.parse_args()
 
     sciNames = dict()
@@ -197,24 +218,73 @@ if __name__ == "__main__":
     count_txclass(ARGS.f)
 
     with open(ARGS.f) as f:
-        deleted_count = 0
-        cellorg_count = 0
         for line in f:
             item = line.split()[1].strip()
             if item != '0':
                 if item in mergedTaxids.keys():
-                    Results += [sciNames[mergedTaxids[item]]]
+                    if mergedTaxids[item] in taxsets[ARCHAEA]:
+                        results[ARCHAEA] += [sciNames[mergedTaxids[item]]]
+                    elif mergedTaxids[item] in taxsets[BACTERIA]:
+                        results[BACTERIA] += [sciNames[mergedTaxids[item]]]
+                    elif mergedTaxids[item] in taxsets[EUCARYOTA]:
+                        results[EUCARYOTA] += [sciNames[mergedTaxids[item]]]
+                    elif mergedTaxids[item] in taxsets[VIRUSES]:
+                        results[VIRUSES] += [sciNames[mergedTaxids[item]]]
+                    elif mergedTaxids[item] in taxsets[UNCLASSIFIED]:
+                        results[UNCLASSIFIED] += [sciNames[mergedTaxids[item]]]
+                    elif mergedTaxids[item] in taxsets[OTHERSEQ]:
+                        results[OTHERSEQ] += [sciNames[mergedTaxids[item]]]
                 elif item in deletedTaxids:
-                    deleted_count += 1
-                    Results += [item + ' :deleted']
-                elif item == CELLULAR_ORGANISM:
-                    cellorg_count += 1
+                    results['DELETED'] += [item + ' :deleted']
                 else:
-                    Results += [sciNames[item]]
-
-    Results = Counter(Results).most_common()
-
-    SUM_IN_DB = sum(taxcounts.values()) + cellorg_count
+                    if item in taxsets[ARCHAEA]:
+                        results[ARCHAEA] += [sciNames[item]]
+                    elif item in taxsets[BACTERIA]:
+                        results[BACTERIA] += [sciNames[item]]
+                    elif item in taxsets[EUCARYOTA]:
+                        results[EUCARYOTA] += [sciNames[item]]
+                    elif item in taxsets[VIRUSES]:
+                        results[VIRUSES] += [sciNames[item]]
+                    elif item in taxsets[UNCLASSIFIED]:
+                        results[UNCLASSIFIED] += [sciNames[item]]
+                    elif item in taxsets[OTHERSEQ]:
+                        results[OTHERSEQ] += [sciNames[item]]
+    if ARGS.a:
+        with open(ARGS.f.split('.')[0] + '_archaea.txt', 'w') as f:
+            f.write('{:<80}{}'.format('ARCHAEA', 'Nr of reads\n'))
+            for item in Counter(results[ARCHAEA]).most_common():
+                f.write('{:<80}{}\n'.format(item[0], item[1]))
+    if ARGS.b:
+        with open(ARGS.f.split('.')[0] + '_bacteria.txt', 'w') as f:
+            f.write('{:<80}{}'.format('BACTERIA', 'Nr of reads\n'))
+            for item in Counter(results[BACTERIA]).most_common():
+                f.write('{:<80}{}\n'.format(item[0], item[1]))
+    if ARGS.e:
+        with open(ARGS.f.split('.')[0] + '_eucaryota.txt', 'w') as f:
+            f.write('{:<80}{}'.format('EUCARYOTA', 'Nr of reads\n'))
+            for item in Counter(results[EUCARYOTA]).most_common():
+                f.write('{:<80}{}\n'.format(item[0], item[1]))
+    if ARGS.v:
+        with open(ARGS.f.split('.')[0] + '_viruses.txt', 'w') as f:
+            f.write('{:<80}{}'.format('VIRUSES', 'Nr of reads\n'))
+            for item in Counter(results[VIRUSES]).most_common():
+                f.write('{:<80}{}\n'.format(item[0], item[1]))
+    if ARGS.u:
+        with open(ARGS.f.split('.')[0] + '_unclassified.txt', 'w') as f:
+            f.write('{:<80}{}'.format('UNCLASSIFIED', 'Nr of reads\n'))
+            for item in Counter(results[UNCLASSIFIED]).most_common():
+                f.write('{:<80}{}\n'.format(item[0], item[1]))
+    if ARGS.o:
+        with open(ARGS.f.split('.')[0] + '_otherseq.txt', 'w') as f:
+            f.write('{:<80}{}'.format('OTHERSEQ', 'Nr of reads\n'))
+            for item in Counter(results[OTHERSEQ]).most_common():
+                f.write('{:<80}{}\n'.format(item[0], item[1]))
+    if ARGS.d:
+        with open(ARGS.f.split('.')[0] + '_deleted.txt', 'w') as f:
+            f.write('{:<80}{}'.format('DELETED', 'Nr of reads\n'))
+            for item in Counter(results['DELETED']).most_common():
+                f.write('{:<80}{}\n'.format(item[0].split(':')[0].strip(),
+                                            item[1]))
     if ARGS.s:
         summary_file_name = ARGS.f.split('.')[0] + '_summary.txt'
         write_summary(summary_file_name)
