@@ -3,6 +3,7 @@
 fasta and unzip gzipped files"""
 import sys
 import os
+import copy
 
 
 class FastaList:
@@ -10,8 +11,9 @@ class FastaList:
     the fasta sequences (id_list) and a list of the sequences with the newlines
     removed (seq_list), suitable for searching. The sequenes list elements are
     strings with a newline separating the id and the nucleotides sequence and
-    ends with /n. id_list strings end without \n.
+    ends with \n. id_list strings end without \n.
     """
+
     # TODO: try to make the class iterable
 
     def __init__(self, fasta_name):  # Initialized by a filename string
@@ -100,6 +102,7 @@ class FastaList:
                 'H': 'D',
                 '-': '-'
             }[nt.upper()]
+
         seq_list_rc = []
         for item in self.seq_list:
             seqid = item.split('\n')[0] + '_rev\n'
@@ -112,8 +115,8 @@ class FastaList:
     def divide(self, divisor):
         tmp_list = self.seq_list.copy()
         seq_list_div = []
-        item_per_lst = self.nr_seq//divisor + (self.nr_seq % divisor) //\
-            divisor
+        item_per_lst = self.nr_seq // divisor + (self.nr_seq % divisor) // \
+                       divisor
         for i in range(divisor - 1):
             seq_list_div.append(tmp_list[0:item_per_lst])
             del tmp_list[0:item_per_lst]
@@ -136,7 +139,7 @@ class FastaList:
         for item in primers_all:
             primerseq = item.split('\n')[1]
             # Shorten the primers to keep the fraction - primer_frac
-            primerlst.append(primerseq[round(len(primerseq)*(1-primer_frac)):])
+            primerlst.append(primerseq[round(len(primerseq) * (1 - primer_frac)):])
         for seq in self.seq_list:
             seqid = seq.split('\n')[0]
             seqseq = seq.split('\n')[1]
@@ -157,7 +160,6 @@ class FastaList:
     def crop_ends(self):
         # Remove aligned fasta columns from both ends with gaps until a column
         # without gaps are found
-        import copy
 
         def crop(alignment):
             hyphen = True
@@ -172,6 +174,7 @@ class FastaList:
                             alignment[i] = seqid + '\n' + newseq + '\n'
                         break
             return alignment
+
         new_alignment = copy.deepcopy(self.seq_list)
         new_alignment = crop(new_alignment)
         for i in range(len(new_alignment)):
@@ -194,6 +197,28 @@ class FastaList:
             for item in self.rmprimers(primer_file):
                 fi.write(item)
         fi.close()
+
+    def rm_non_agct_columns(self):
+        indices2rm = set()
+        allowed_nts = {'a', 'c', 'g', 't', 'A', 'C', 'G', 'T', '-'}
+        len_first_seq = len(self.seq_list[0].split('\n')[1])
+        for item in self.seq_list:
+            if len(item.split('\n')[1]) != len_first_seq:
+                exit('sequence strings not of same length')
+            for index, nt in enumerate(item.split('\n')[1]):
+                if nt not in allowed_nts:
+                    indices2rm.add(index)
+        new_seq_list = []
+        for item in self.seq_list:
+            newseq = ''
+            seqid, seq, _ = item.split('\n')
+            for index, nt in enumerate(seq):
+                if index in indices2rm:
+                    continue
+                else:
+                    newseq += nt
+            new_seq_list.append(seqid + '\n' + newseq + '\n')
+            self.seq_list = new_seq_list
 
 
 if __name__ == "__main__":
