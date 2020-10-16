@@ -34,8 +34,6 @@ class SpaFaLst(FastaList):
         super(SpaFaLst, self).__init__(ARGS.f)
         sum_cov = 0
         sum_len = 0
-        tmp_lst = []
-        seq_par = dict()
         self.seq_par_lst = []
         self.is_spades = True
         for line in spades_file:
@@ -69,7 +67,7 @@ class SpaFaLst(FastaList):
         parfile.write('_________________________________________\n\n')
 
 
-class BlastTbl():
+class BlastTbl:
     """Create a class from a blast table from the corrsponding contigs created
     by SPades.
 
