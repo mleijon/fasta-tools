@@ -249,42 +249,43 @@ if __name__ == "__main__":
                         results[UNCLASSIFIED] += [sciNames[item]]
                     elif item in taxsets[OTHERSEQ]:
                         results[OTHERSEQ] += [sciNames[item]]
+    basename = ARGS.f.split('/')[-1].split('.')[0]
     if ARGS.a:
-        with open(ARGS.f.split('.')[0] + '_archaea.txt', 'w') as f:
+        with open(basename + '_archaea.txt', 'w') as f:
             f.write('{:<80}{}'.format('ARCHAEA', 'Nr of reads\n'))
             for item in Counter(results[ARCHAEA]).most_common():
                 f.write('{:<80}{}\n'.format(item[0], item[1]))
     if ARGS.b:
-        with open(ARGS.f.split('.')[0] + '_bacteria.txt', 'w') as f:
+        with open(basename + '_bacteria.txt', 'w') as f:
             f.write('{:<80}{}'.format('BACTERIA', 'Nr of reads\n'))
             for item in Counter(results[BACTERIA]).most_common():
                 f.write('{:<80}{}\n'.format(item[0], item[1]))
     if ARGS.e:
-        with open(ARGS.f.split('.')[0] + '_eucaryota.txt', 'w') as f:
+        with open(basename + '_eucaryota.txt', 'w') as f:
             f.write('{:<80}{}'.format('EUCARYOTA', 'Nr of reads\n'))
             for item in Counter(results[EUCARYOTA]).most_common():
                 f.write('{:<80}{}\n'.format(item[0], item[1]))
     if ARGS.v:
-        with open(ARGS.f.split('.')[0] + '_viruses.txt', 'w') as f:
+        with open(basename + '_viruses.txt', 'w') as f:
             f.write('{:<80}{}'.format('VIRUSES', 'Nr of reads\n'))
             for item in Counter(results[VIRUSES]).most_common():
                 f.write('{:<80}{}\n'.format(item[0], item[1]))
     if ARGS.u:
-        with open(ARGS.f.split('.')[0] + '_unclassified.txt', 'w') as f:
+        with open(basename + '_unclassified.txt', 'w') as f:
             f.write('{:<80}{}'.format('UNCLASSIFIED', 'Nr of reads\n'))
             for item in Counter(results[UNCLASSIFIED]).most_common():
                 f.write('{:<80}{}\n'.format(item[0], item[1]))
     if ARGS.o:
-        with open(ARGS.f.split('.')[0] + '_otherseq.txt', 'w') as f:
+        with open(basename + '_otherseq.txt', 'w') as f:
             f.write('{:<80}{}'.format('OTHERSEQ', 'Nr of reads\n'))
             for item in Counter(results[OTHERSEQ]).most_common():
                 f.write('{:<80}{}\n'.format(item[0], item[1]))
     if ARGS.d:
-        with open(ARGS.f.split('.')[0] + '_deleted.txt', 'w') as f:
+        with open(basename + '_deleted.txt', 'w') as f:
             f.write('{:<80}{}'.format('DELETED', 'Nr of reads\n'))
             for item in Counter(results['DELETED']).most_common():
                 f.write('{:<80}{}\n'.format(item[0].split(':')[0].strip(),
                                             item[1]))
     if ARGS.s:
-        summary_file_name = ARGS.f.split('.')[0] + '_summary.txt'
+        summary_file_name = basename + '_summary.txt'
         write_summary(summary_file_name)
