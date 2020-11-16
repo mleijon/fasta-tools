@@ -45,6 +45,57 @@ class SeqFeatures:
                 reference['reference_authors'] = authors
             self.seq_references.append(reference)
             reference = dict()
+        self.seq_sequence = seq.find('INSDSeq_sequence').text
+
+
+class FivepUTR:
+    def __init__(self, ft):
+        self.feature_key = ft.find('INSDFeature_key').text
+        self.feature_location = ft.find('INSDFeature_location').text
+        interval = dict()
+        intervallst = list()
+        for item in ft.findall('INSDFeature_intervals/INSDInterval'):
+            interval['interval_from'] = item.find('INSDInterval_from').text
+            interval['interval_to'] = item.find('INSDInterval_to').text
+            interval['interval_acc'] = item.find('INSDInterval_accession').text
+            intervallst.append(interval)
+            interval = dict()
+        self.feature_intervals = intervallst
+
+
+class Source (FivepUTR):
+    def __init__(self, ft):
+        super().__init__(ft)
+        qualifiers = dict()
+        qualifierlst = list()
+        for qualifier in ft.findall('INSDFeature_quals/INSDQualifier'):
+            if not qualifier.find('INSDQualifier_name') is None:
+                name = qualifier.find('INSDQualifier_name').text
+            else:
+                continue
+            if not qualifier.find('INSDQualifier_value') is None:
+                value = qualifier.find('INSDQualifier_value').text
+            else:
+                value = ""
+            qualifiers[name] = value
+        qualifierlst.append(qualifiers)
+        self.qualifiers = qualifierlst
+
+
+class Gene:
+    pass
+
+
+class CDs:
+    pass
+
+
+class MatPeptide:
+    pass
+
+
+class ThreepUTR:
+    pass
 
 
 if __name__ == "__main__":
@@ -56,9 +107,13 @@ if __name__ == "__main__":
     ARGS = PARSER.parse_args()
     tree = ET.parse(ARGS.f)
     root = tree.getroot()
-    for seq in root.iter('INSDSeq'):
-        test = SeqFeatures(seq)
-        print(test.seq_definition.split(',')[0] )
+    for sequence in root.iter('INSDSeq'):
+        test = SeqFeatures(sequence)
+        for feature in sequence.findall('INSDSeq_feature-table/INSDFeature'):
+            if feature.find('INSDFeature_key').text == 'source':
+                test2 = Source(feature)
+                attrs = vars(test2)
+                print(attrs)
     # path = 'INSDFeature_quals/INSDQualifier/'
     # for features in root.iter('INSDSeq_feature-table'):
     #     featurenr = 0
