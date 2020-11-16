@@ -45,6 +45,7 @@ class SeqFeatures:
                 reference['reference_authors'] = authors
             self.seq_references.append(reference)
             reference = dict()
+        self.seq_comment = seq.find('INSDSeq_comment').text
         self.seq_sequence = seq.find('INSDSeq_sequence').text
 
 
@@ -55,9 +56,20 @@ class FivepUTR:
         interval = dict()
         intervallst = list()
         for item in ft.findall('INSDFeature_intervals/INSDInterval'):
-            interval['interval_from'] = item.find('INSDInterval_from').text
-            interval['interval_to'] = item.find('INSDInterval_to').text
-            interval['interval_acc'] = item.find('INSDInterval_accession').text
+            if not item.find('INSDInterval_from') is None:
+                interval['interval_from'] = item.find('INSDInterval_from').text
+                interval['interval_to'] = item.find('INSDInterval_to').text
+                interval['interval_acc'] = item.find(
+                    'INSDInterval_accession').text
+            elif not item.find('INSDInterval_point') is None:
+                interval['interval_from'] = item.find('INSDInterval_point').text
+                interval['interval_to'] = item.find('INSDInterval_point').text
+                interval['interval_acc'] = item.find(
+                    'INSDInterval_accession').text
+            else:
+                interval['interval_from'] = ""
+                interval['interval_to'] = ""
+                interval['interval_acc'] = ""
             intervallst.append(interval)
             interval = dict()
         self.feature_intervals = intervallst
@@ -82,20 +94,69 @@ class Source (FivepUTR):
         self.qualifiers = qualifierlst
 
 
-class Gene:
-    pass
+class Gene (Source):
+    def __init__(self, ft):
+        super().__init__(ft)
 
 
-class CDs:
-    pass
+class CDS(Source):
+    def __init__(self, ft):
+        super().__init__(ft)
+        if not ft.find('INSDFeature_operator') is None:
+            self.feature_operator = ft.find('INSDFeature_operator').text
 
 
-class MatPeptide:
-    pass
+class MatPeptide(CDS):
+    def __init__(self, ft):
+        super().__init__(ft)
 
 
-class ThreepUTR:
-    pass
+class ThreepUTR(FivepUTR):
+    def __init__(self, ft):
+        super().__init__(ft)
+
+
+class MiscFeature(Source):
+    def __init__(self, ft):
+        super().__init__(ft)
+
+
+class MiscRNA(Source):
+    def __init__(self, ft):
+        super().__init__(ft)
+
+
+class StemLoop(FivepUTR):
+    def __init__(self, ft):
+        super().__init__(ft)
+
+
+class Regulatory(Source):
+    def __init__(self, ft):
+        super().__init__(ft)
+
+
+def extract_seq(xmlroot):
+    outfile = open(ARGS.o, 'w')
+    for sequence in xmlroot.iter('INSDSeq'):
+        seqfeatures = SeqFeatures(sequence)
+        if ARGS.t == 's':
+            seq = seqfeatures.seq_sequence
+            acc = seqfeatures.seq_primaryAccession
+            organism = seqfeatures.seq_organism
+            seq_name = '>' + acc + ';' + organism + '\n'
+            outfile.write(seq_name + seq + '\n')
+        if ARGS.t == 'g':
+            pass
+        if ARGS.t == 'c':
+            pass
+        if ARGS.t == 'm':
+            pass
+        if ARGS.t == '5':
+            pass
+        if ARGS.t == '3':
+            pass
+    outfile.close()
 
 
 if __name__ == "__main__":
@@ -103,30 +164,63 @@ if __name__ == "__main__":
     import xml.etree.ElementTree as ET
 
     PARSER = argparse.ArgumentParser(description='TBD')
-    PARSER.add_argument('-f', type=str, help='xml-filename', required=True)
+    PARSER.add_argument('-f', type=str, help='input xml-file', required=True)
+    PARSER.add_argument('-o', type=str, help='output file', required=True)
+    PARSER.add_argument('-t', choices=['s', 'g', 'c', 'm', '5', '3'], type=str,
+                        help='type of feature (source[s] = full nt-sequence;'
+                             'gene[g]; CDS[c]; mature peptide[m]; 5\'UTR[5];'
+                             '3\'UTR[3])', default='s')
+    PARSER.add_argument('-n', type=str, help='Feature name', default=None)
+    PARSER.add_argument('-s', choices=['s', 'n'], type=str,
+                        help='Sequence type', default='n')
     ARGS = PARSER.parse_args()
     tree = ET.parse(ARGS.f)
     root = tree.getroot()
-    for sequence in root.iter('INSDSeq'):
-        test = SeqFeatures(sequence)
-        for feature in sequence.findall('INSDSeq_feature-table/INSDFeature'):
-            if feature.find('INSDFeature_key').text == 'source':
-                test2 = Source(feature)
-                attrs = vars(test2)
-                print(attrs)
-    # path = 'INSDFeature_quals/INSDQualifier/'
-    # for features in root.iter('INSDSeq_feature-table'):
-    #     featurenr = 0
-    #     for feature in features.iter('INSDFeature'):
-    #         featurenr += 1
-    #         print('feature nr: {}'.format(featurenr))
-    #         for qualifier in feature.iter('INSDQualifier'):
-    #             if not qualifier.find('INSDQualifier_name') is None:
-    #                 name = qualifier.find('INSDQualifier_name').text
-    #             else:
-    #                 name = ""
-    #             if not qualifier.find('INSDQualifier_value') is None:
-    #                 value = qualifier.find('INSDQualifier_value').text
-    #             else:
-    #                 value = ""
-    #             print('{}: {}'.format(name, value))
+    extract_seq(root)
+    # for sequence in root.iter('INSDSeq'):
+    #
+    #
+    #   test = SeqFeatures(sequence)
+    #     for i, feature in enumerate(
+    #             sequence.findall('INSDSeq_feature-table/INSDFeature')):
+    #         #print('Feature: {}'.format(i + 1))
+    #         if feature.find('INSDFeature_key').text == 'source':
+    #             test2 = Source(feature)
+    #             attrs = vars(test2)
+    #             #print(attrs)
+    #         elif feature.find('INSDFeature_key').text == '5\'UTR':
+    #             test2 = FivepUTR(feature)
+    #             attrs = vars(test2)
+    #             #print(attrs)
+    #         elif feature.find('INSDFeature_key').text == 'gene':
+    #             test2 = Gene(feature)
+    #             attrs = vars(test2)
+    #             #print(attrs)
+    #         elif feature.find('INSDFeature_key').text == 'CDS':
+    #             test2 = CDS(feature)
+    #             attrs = vars(test2)
+    #             #print(attrs)
+    #         elif feature.find('INSDFeature_key').text == 'mat_peptide':
+    #             test2 = MatPeptide(feature)
+    #             attrs = vars(test2)
+    #             #print(attrs)
+    #         elif feature.find('INSDFeature_key').text == '3\'UTR':
+    #             test2 = ThreepUTR(feature)
+    #             attrs = vars(test2)
+    #             #print(attrs)
+    #         elif feature.find('INSDFeature_key').text == 'misc_feature':
+    #             test2 = MiscFeature(feature)
+    #             attrs = vars(test2)
+    #             #print(attrs)
+    #         elif feature.find('INSDFeature_key').text == 'misc_RNA':
+    #             test2 = MiscRNA(feature)
+    #             attrs = vars(test2)
+    #             print(attrs)
+    #         elif feature.find('INSDFeature_key').text == 'stem_loop':
+    #             test2 = StemLoop(feature)
+    #             attrs = vars(test2)
+    #             print(attrs)
+    #         elif feature.find('INSDFeature_key').text == 'regulatory':
+    #             test2 = Regulatory(feature)
+    #             attrs = vars(test2)
+    #             print(attrs)
