@@ -137,9 +137,9 @@ class Regulatory(Source):
 def extract_seq(xmlroot):
     outfile = open(ARGS.o, 'w')
     for sequence in xmlroot.iter('INSDSeq'):
-        seq = ""
         seqfeatures = SeqFeatures(sequence)
         if ARGS.t == 's':
+            seq = ""
             for feature in sequence.findall(
                     'INSDSeq_feature-table/INSDFeature'):
                 if feature.find('INSDFeature_key').text == 'source':
@@ -154,6 +154,7 @@ def extract_seq(xmlroot):
             if seq != "":
                 outfile.write(seq_name + seq + '\n')
         if ARGS.t == 'g':
+            seq = ""
             gene_name = ""
             for feature in sequence.findall(
                     'INSDSeq_feature-table/INSDFeature'):
@@ -197,17 +198,17 @@ if __name__ == "__main__":
                              'gene[g]; CDS[c]; mature peptide[m]; 5\'UTR[5];'
                              '3\'UTR[3])', default='s')
     PARSER.add_argument('-n', type=str, help='Feature name', nargs='+', )
-    PARSER.add_argument('-s', choices=['a', 'n'], type=str,
+    PARSER.add_argument('-s', choices=['s', 'n'], type=str,
                         help='Sequence type', default='n')
     ARGS = PARSER.parse_args()
     if ARGS.t in ['g', 'c', 'm'] and not ARGS.n:
         exit('No feature name. Use the -n option to give the name of the '
              'selected feature. Note: this can be a list of names separated by'
              'spaces')
-    if ARGS.t in ['g', '5', '3'] and ARGS.s == 'a':
-        exit('Genes and UTRs can only have nt-sequence type. Leave out the -s'
-             ' option or set -s n')
+    if ARGS.t in ['g', '5', '3']:
+        exit('')
     feature_names = [item.casefold() for item in ARGS.n]
     tree = ET.parse(ARGS.f)
     root = tree.getroot()
+
     extract_seq(root)
