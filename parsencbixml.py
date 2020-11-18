@@ -253,22 +253,22 @@ def extract_info(xmlroot, inff):
                 gene = SeqGene(feature)
                 if 'gene' not in gene.qualifiers.keys():
                     continue
-                if gene.qualifiers['gene'] in genes.keys():
-                    genes[gene.qualifiers['gene']] += 1
+                if gene.qualifiers['gene'].casefold() in genes.keys():
+                    genes[gene.qualifiers['gene'].casefold()] += 1
                 else:
-                    genes[gene.qualifiers['gene']] = 1
+                    genes[gene.qualifiers['gene'].casefold()] = 1
             elif feature.find('INSDFeature_key').text == 'CDS':
                 cds = CDS(feature)
-                if cds.qualifiers['product'] in cdss.keys():
-                    cdss[cds.qualifiers['product']] += 1
+                if cds.qualifiers['product'].casefold() in cdss.keys():
+                    cdss[cds.qualifiers['product'].casefold()] += 1
                 else:
-                    cdss[cds.qualifiers['product']] = 1
+                    cdss[cds.qualifiers['product'].casefold()] = 1
             elif feature.find('INSDFeature_key').text == 'mat_peptide':
                 mp = MatPeptide(feature)
-                if mp.qualifiers['product'] in mps.keys():
-                    mps[mp.qualifiers['product']] += 1
+                if mp.qualifiers['product'].casefold() in mps.keys():
+                    mps[mp.qualifiers['product'].casefold()] += 1
                 else:
-                    mps[mp.qualifiers['product']] = 1
+                    mps[mp.qualifiers['product'].casefold()] = 1
     inff.write('GENES:\n{}\n\nCDS:\n{}\n\nMATURE PEPTIDES:\n{}'.format(
         dict(sorted(genes.items(), key=lambda item: item[1], reverse=True)),
         dict(sorted(cdss.items(), key=lambda item: item[1], reverse=True)),
@@ -306,4 +306,4 @@ if __name__ == "__main__":
     if ARGS.l:
         info_file = open(ARGS.f.split('.')[0] + '.info', 'w')
         extract_info(root, info_file)
-    #extract_seq(root)
+    extract_seq(root)
