@@ -270,9 +270,12 @@ def extract_info(xmlroot, inff):
                 else:
                     mps[mp.qualifiers['product'].casefold()] = 1
     inff.write('GENES:\n{}\n\nCDS:\n{}\n\nMATURE PEPTIDES:\n{}'.format(
-        dict(sorted(genes.items(), key=lambda item: item[1], reverse=True)),
-        dict(sorted(cdss.items(), key=lambda item: item[1], reverse=True)),
-        dict(sorted(mps.items(), key=lambda item: item[1], reverse=True))))
+        {k: v for k, v in sorted(genes.items(), key=lambda item: item[1],
+                                 reverse=True)},
+        {k: v for k, v in sorted(cdss.items(), key=lambda item: item[1],
+                                 reverse=True)},
+        {k: v for k, v in sorted(mps.items(), key=lambda item: item[1],
+                                 reverse=True)}))
 
 
 if __name__ == "__main__":
@@ -290,7 +293,9 @@ if __name__ == "__main__":
     PARSER.add_argument('-s', choices=['a', 'n'], type=str,
                         help='Sequence type', default='n')
     PARSER.add_argument('-l', action="store_true", default=False,
-                        help='Switch for output og info-file')
+                        help='Switch for output of info-file')
+    PARSER.add_argument('-a', type=str, help='input feature alias file',
+                        required=False)
     ARGS = PARSER.parse_args()
     if ARGS.t in ['g', 'c', 'm'] and not ARGS.n:
         exit('No feature name. Use the -n option to give the name of the '
@@ -301,6 +306,16 @@ if __name__ == "__main__":
              ' option or set -s n')
     if ARGS.n:
         feature_names = [item.casefold() for item in ARGS.n]
+    if ARGS.a:
+        alias_file = open(ARGS.a)
+        aliases = list()
+        with open(ARGS.a) as f:
+            for line in f.readlines():
+                alias_lst = line.split(',')
+                alias_lst = [x.strip() for x in alias_lst]
+                aliases.append(alias_lst)
+        print(aliases)
+        exit()
     tree = Et.parse(ARGS.f)
     root = tree.getroot()
     if ARGS.l:
