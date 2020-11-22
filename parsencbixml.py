@@ -289,7 +289,7 @@ if __name__ == "__main__":
                         help='type of feature (source[s] = full nt-sequence;'
                              'gene[g]; CDS[c]; mature peptide[m]; 5\'UTR[5];'
                              '3\'UTR[3])', default='s')
-    PARSER.add_argument('-n', type=str, help='Feature name', nargs='+', )
+    PARSER.add_argument('-n', type=str, help='Feature name', nargs='+')
     PARSER.add_argument('-s', choices=['a', 'n'], type=str,
                         help='Sequence type', default='n')
     PARSER.add_argument('-l', action="store_true", default=False,
@@ -304,18 +304,24 @@ if __name__ == "__main__":
     if ARGS.t in ['g', '5', '3'] and ARGS.s == 'a':
         exit('Genes and UTRs can only have nt-sequence type. Leave out the -s'
              ' option or set -s n')
+    if ARGS.a and not ARGS.n:
+        exit('A feture name (-n) is required to use an feature alias-file (-a)')
     if ARGS.n:
         feature_names = [item.casefold() for item in ARGS.n]
-    if ARGS.a:
-        alias_file = open(ARGS.a)
-        aliases = list()
-        with open(ARGS.a) as f:
-            for line in f.readlines():
-                alias_lst = line.split(',')
-                alias_lst = [x.strip() for x in alias_lst]
-                aliases.append(alias_lst)
-        print(aliases)
-        exit()
+        if ARGS.a:
+            alias_file = open(ARGS.a)
+            aliases = list()
+            with open(ARGS.a) as f:
+                for line in f.readlines():
+                    alias_lst = line.split(',')
+                    alias_lst = [x.strip() for x in alias_lst]
+                    aliases.append(alias_lst)
+            for item in aliases:
+                if set(feature_names).isdisjoint(set(item)):
+                    continue
+                else:
+                    feature_names = list(set(item).union(set(feature_names)))
+                    break
     tree = Et.parse(ARGS.f)
     root = tree.getroot()
     if ARGS.l:

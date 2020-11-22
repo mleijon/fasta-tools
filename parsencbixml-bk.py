@@ -253,26 +253,29 @@ def extract_info(xmlroot, inff):
                 gene = SeqGene(feature)
                 if 'gene' not in gene.qualifiers.keys():
                     continue
-                if gene.qualifiers['gene'] in genes.keys():
-                    genes[gene.qualifiers['gene']] += 1
+                if gene.qualifiers['gene'].casefold() in genes.keys():
+                    genes[gene.qualifiers['gene'].casefold()] += 1
                 else:
-                    genes[gene.qualifiers['gene']] = 1
+                    genes[gene.qualifiers['gene'].casefold()] = 1
             elif feature.find('INSDFeature_key').text == 'CDS':
                 cds = CDS(feature)
-                if cds.qualifiers['product'] in cdss.keys():
-                    cdss[cds.qualifiers['product']] += 1
+                if cds.qualifiers['product'].casefold() in cdss.keys():
+                    cdss[cds.qualifiers['product'].casefold()] += 1
                 else:
-                    cdss[cds.qualifiers['product']] = 1
+                    cdss[cds.qualifiers['product'].casefold()] = 1
             elif feature.find('INSDFeature_key').text == 'mat_peptide':
                 mp = MatPeptide(feature)
-                if mp.qualifiers['product'] in mps.keys():
-                    mps[mp.qualifiers['product']] += 1
+                if mp.qualifiers['product'].casefold() in mps.keys():
+                    mps[mp.qualifiers['product'].casefold()] += 1
                 else:
-                    mps[mp.qualifiers['product']] = 1
+                    mps[mp.qualifiers['product'].casefold()] = 1
     inff.write('GENES:\n{}\n\nCDS:\n{}\n\nMATURE PEPTIDES:\n{}'.format(
-        dict(sorted(genes.items(), key=lambda item: item[1], reverse=True)),
-        dict(sorted(cdss.items(), key=lambda item: item[1], reverse=True)),
-        dict(sorted(mps.items(), key=lambda item: item[1], reverse=True))))
+        {k: v for k, v in sorted(genes.items(), key=lambda item: item[1],
+                                 reverse=True)},
+        {k: v for k, v in sorted(cdss.items(), key=lambda item: item[1],
+                                 reverse=True)},
+        {k: v for k, v in sorted(mps.items(), key=lambda item: item[1],
+                                 reverse=True)}))
 
 
 if __name__ == "__main__":
@@ -286,11 +289,13 @@ if __name__ == "__main__":
                         help='type of feature (source[s] = full nt-sequence;'
                              'gene[g]; CDS[c]; mature peptide[m]; 5\'UTR[5];'
                              '3\'UTR[3])', default='s')
-    PARSER.add_argument('-n', type=str, help='Feature name', nargs='+', )
+    PARSER.add_argument('-n', type=str, help='Feature name', nargs='+')
     PARSER.add_argument('-s', choices=['a', 'n'], type=str,
                         help='Sequence type', default='n')
     PARSER.add_argument('-l', action="store_true", default=False,
-                        help='Switch for output og info-file')
+                        help='Switch for output of info-file')
+    PARSER.add_argument('-a', type=str, help='input feature alias file',
+                        required=False)
     ARGS = PARSER.parse_args()
     if ARGS.t in ['g', 'c', 'm'] and not ARGS.n:
         exit('No feature name. Use the -n option to give the name of the '
@@ -299,11 +304,27 @@ if __name__ == "__main__":
     if ARGS.t in ['g', '5', '3'] and ARGS.s == 'a':
         exit('Genes and UTRs can only have nt-sequence type. Leave out the -s'
              ' option or set -s n')
+    if ARGS.a and not ARGS.n:
+        exit('A feture name (-n) is required to use an feature alias-file (-a)')
     if ARGS.n:
         feature_names = [item.casefold() for item in ARGS.n]
+        if ARGS.a:
+            alias_file = open(ARGS.a)
+            aliases = list()
+            with open(ARGS.a) as f:
+                for line in f.readlines():
+                    alias_lst = line.split(',')
+                    alias_lst = [x.strip() for x in alias_lst]
+                    aliases.append(alias_lst)
+            for item in aliases:
+                if set(feature_names).isdisjoint(set(item)):
+                    continue
+                else:
+                    feature_names = list(set(item).union(set(feature_names)))
+                    break
     tree = Et.parse(ARGS.f)
     root = tree.getroot()
     if ARGS.l:
         info_file = open(ARGS.f.split('.')[0] + '.info', 'w')
         extract_info(root, info_file)
-    #extract_seq(root)
+    extract_seq(root)
