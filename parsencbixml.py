@@ -45,8 +45,10 @@ class SeqFeatures:
                 reference['reference_authors'] = authors
             self.seq_references.append(reference)
             reference = dict()
-        self.seq_comment = seq.find('INSDSeq_comment').text
-        self.seq_sequence = seq.find('INSDSeq_sequence').text
+        if not seq.find('INSDSeq_comment') is None:
+            self.seq_comment = seq.find('INSDSeq_comment').text
+        if not seq.find('IINSDSeq_sequence') is None:
+            self.seq_sequence = seq.find('INSDSeq_sequence').text
 
 
 class FivepUTR:
