@@ -14,7 +14,6 @@ class FastaList:
     ends with \n. id_list strings end without \n.
     """
 
-
     def __init__(self, fasta_name):  # Initialized by a filename string
         self.name = str(os.path.abspath(fasta_name))
         if self.name.upper().endswith('.GZ'):
