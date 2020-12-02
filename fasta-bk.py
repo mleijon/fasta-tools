@@ -6,18 +6,6 @@ import os
 import copy
 
 
-class FastaListIterator:
-    def __init__(self, fastalist):
-        self._fastalist = fastalist
-        self._index = 0
-
-    def __next__(self):
-        if self._index < self._fastalist.nr_seq:
-            self._index += 1
-            return self._fastalist.seq_list[self._index - 1]
-        raise StopIteration
-
-
 class FastaList:
     """From a fasta text file (fastq or fasta) creates a list with the id:s of
     the fasta sequences (id_list) and a list of the sequences with the newlines
@@ -26,7 +14,6 @@ class FastaList:
     ends with \n. id_list strings end without \n.
     """
 
-    # TODO: try to make the class iterable
 
     def __init__(self, fasta_name):  # Initialized by a filename string
         self.name = str(os.path.abspath(fasta_name))
@@ -57,9 +44,6 @@ class FastaList:
         self.seq_list.append(newseq + '\n')
         self.fa_file.seek(0)
         self.nr_seq = len(self.id_list)
-
-    def __iter__(self):
-        return FastaListIterator(self)
 
     def rdfi(self):
         """ Return a fasta file object"""
