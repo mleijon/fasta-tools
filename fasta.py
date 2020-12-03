@@ -128,8 +128,8 @@ class FastaList:
     def divide(self, divisor):
         tmp_list = self.seq_list.copy()
         seq_list_div = []
-        item_per_lst = self.nr_seq // divisor + (self.nr_seq % divisor) // \
-                       divisor
+        item_per_lst = self.nr_seq // divisor + (self.nr_seq % divisor)\
+            // divisor
         for i in range(divisor - 1):
             seq_list_div.append(tmp_list[0:item_per_lst])
             del tmp_list[0:item_per_lst]
@@ -152,7 +152,8 @@ class FastaList:
         for item in primers_all:
             primerseq = item.split('\n')[1]
             # Shorten the primers to keep the fraction - primer_frac
-            primerlst.append(primerseq[round(len(primerseq) * (1 - primer_frac)):])
+            primerlst.append(
+                primerseq[round(len(primerseq) * (1 - primer_frac)):])
         for seq in self.seq_list:
             seqid = seq.split('\n')[0]
             seqseq = seq.split('\n')[1]
@@ -162,7 +163,8 @@ class FastaList:
                     seqs_noprimers.append(seqid + '\n' + seqseq + '\n')
                     break
                 if primer in seqseq:
-                    if seqseq.find(primer) < (len(seqseq) - seqseq.find(primer)):
+                    if seqseq.find(primer) < (
+                            len(seqseq) - seqseq.find(primer)):
                         seqseq = seqseq[(seqseq.find(primer) + len(primer)):]
                     else:
                         seqseq = seqseq[:seqseq.find(primer)]
