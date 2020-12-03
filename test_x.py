@@ -7,9 +7,8 @@ import datetime as dt
 from fasta import FastaList
 
 
-def derep(filename):
+def derep():
     starttime = time.time()
-    fl = FastaList(filename)
     init_nrofseq = fl.nr_seq
     unique_strands = list()
     unique_strands.append(fl.seq_list[0])
@@ -43,11 +42,14 @@ def derep(filename):
                      format(removed_nrseq))
 
 
+def rmdegenerates():
+    pass
+
+
 def write_logfile():
-    global logfilename
-    logfilename = ARGS.o.split('.')[0] + '.log'
     with open(logfilename, 'w') as fi:
-        fi.write(process1.stderr)
+        fi.write(proc1.stderr.read())
+        fi.write(proc2.stderr.read())
 
 
 if __name__ == "__main__":
@@ -62,12 +64,21 @@ if __name__ == "__main__":
     PARSER.add_argument('-l', action='store_true',
                         help='switch for log file output')
     ARGS = PARSER.parse_args()
+
+    fl = FastaList(ARGS.f)
+
     vsearch_path = '/home/micke/miniconda3/bin/'
-    process1 = subprocess.run([vsearch_path + 'vsearch', '--derep_prefix',
-                               ARGS.f, '--sizeout',
-                               '--minseqlength', ARGS.m, '--output', ARGS.o],
-                              capture_output=True, text=True)
+    proc1args = [vsearch_path + 'vsearch --derep_prefix ' + ARGS.f +
+                 ' --sizeout --minseqlength ' + ARGS.m + ' --output '
+                 + '/dev/stdout']
+    proc2args = [vsearch_path + 'vsearch', '--sortbylength', '-', '--output',
+                 ARGS.o]
+    proc1 = subprocess.Popen(proc1args, shell=True, stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE, text=True)
+    proc2 = subprocess.Popen(proc2args, stdin=proc1.stdout,
+                             stderr=subprocess.PIPE, text=True)
+    proc2.wait()
     if ARGS.l:
-        global logfilename
+        logfilename = ARGS.o.split('.')[0] + '.log'
         write_logfile()
-    derep(ARGS.o)
+    derep()

@@ -63,10 +63,14 @@ if __name__ == "__main__":
                         help='switch for log file output')
     ARGS = PARSER.parse_args()
     vsearch_path = '/home/micke/miniconda3/bin/'
-    process1 = subprocess.run([vsearch_path + 'vsearch', '--derep_prefix',
-                               ARGS.f, '--sizeout',
-                               '--minseqlength', ARGS.m, '--output', ARGS.o],
-                              capture_output=True, text=True)
+    process1 = subprocess.Popen([vsearch_path + 'vsearch --derep_prefix '
+                                 + ARGS.f + ' --sizeout --minseqlength ' +
+                                 ARGS.m + ' --output ' + '/dev/stdout'],
+                                shell=True, stdout=subprocess.PIPE)
+    process2 = subprocess.Popen([vsearch_path + 'vsearch', '--sortbylength',
+                                 '-', '--output', ARGS.o],
+                                stdin=process1.stdout)
+    process2.wait()
     if ARGS.l:
         global logfilename
         write_logfile()
