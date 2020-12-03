@@ -32,22 +32,30 @@ def derep(filename):
             infi.write(item)
     endtime = time.time()
     if ARGS.l:
-        global logfilename
-        with open(logfilename, 'a') as fi:
-            fi.write('*****************************'
-                     '******************************\n')
-            fi.write('2nd round dereplication complete in {}'.format(
-                dt.timedelta(seconds=(endtime - starttime))).split(
-                '.')[0])
-            fi.write('\nAdditionally {} sequences removed'.
-                     format(removed_nrseq))
+        fi.write('*****************************'
+                 '******************************\n')
+        fi.write('2nd round dereplication complete in {}'.format(
+            dt.timedelta(seconds=(endtime - starttime))).split(
+            '.')[0])
+        fi.write('\nAdditionally {} sequences removed'.
+                 format(removed_nrseq))
 
 
-def write_logfile():
-    global logfilename
-    logfilename = ARGS.o.split('.')[0] + '.log'
-    with open(logfilename, 'w') as fi:
-        fi.write(process1.stderr)
+def run_vsearch():
+    vsearch_path = '/home/micke/miniconda3/bin/'
+    proc1_arg = [vsearch_path + 'vsearch --derep_prefix ' + ARGS.f +
+                 ' --sizeout --minseqlength ' + ARGS.m + ' --output ' +
+                 '/dev/stdout']
+    proc2_arg = [vsearch_path + 'vsearch', '--sortbylength',
+                 '-', '--output', ARGS.o]
+    proc1 = subprocess.Popen(proc1_arg, shell=True, stderr=subprocess.PIPE,
+                             stdout=subprocess.PIPE, text=True)
+    proc2 = subprocess.Popen(proc2_arg, stderr=subprocess.PIPE,
+                             stdin=proc1.stdout, text=True)
+    proc2.wait()
+    if ARGS.l:
+        fi.write(proc1.stderr.read())
+        fi.write(proc2.stderr.read())
 
 
 if __name__ == "__main__":
@@ -62,16 +70,8 @@ if __name__ == "__main__":
     PARSER.add_argument('-l', action='store_true',
                         help='switch for log file output')
     ARGS = PARSER.parse_args()
-    vsearch_path = '/home/micke/miniconda3/bin/'
-    process1 = subprocess.Popen([vsearch_path + 'vsearch --derep_prefix '
-                                 + ARGS.f + ' --sizeout --minseqlength ' +
-                                 ARGS.m + ' --output ' + '/dev/stdout'],
-                                shell=True, stdout=subprocess.PIPE)
-    process2 = subprocess.Popen([vsearch_path + 'vsearch', '--sortbylength',
-                                 '-', '--output', ARGS.o],
-                                stdin=process1.stdout)
-    process2.wait()
+
     if ARGS.l:
-        global logfilename
-        write_logfile()
+        fi = open(ARGS.o.split('.')[0] + '.log', 'w')
+    run_vsearch()
     derep(ARGS.o)
