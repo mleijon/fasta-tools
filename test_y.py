@@ -3,8 +3,32 @@
 import subprocess
 import time
 import datetime as dt
+from tempfile import NamedTemporaryFile
 
 from fasta import FastaList
+
+
+def rm_degenerates(inputfile):
+    standard_nts = list('ACGTU')
+    fl1 = FastaList(inputfile)
+    for item in fl1.seq_list:
+        seq_id = item.split('\n')[0]
+        seq_seq = item.split('\n')[1].upper()
+        nt = seq_seq[0]
+        while nt not in standard_nts:
+            seq_seq = seq_seq[1:]
+            nt = seq_seq[0]
+        nt = seq_seq[-1]
+        while nt not in standard_nts:
+            seq_seq = seq_seq[:-1]
+            nt = seq_seq[-1]
+        fraction_nondeg = 1 - (seq_seq.count('A') + seq_seq.count('T') +
+                               seq_seq.count('G') + seq_seq.count('C') +
+                               seq_seq.count('U')) / (len(seq_seq))
+        if fraction_nondeg <= ARGS.q:
+            tmpfile.write(seq_id + '\n' + seq_seq + '\n')
+    tmpfile.seek(0)
+    return tmpfile.name
 
 
 def derep():
@@ -41,9 +65,9 @@ def derep():
                  format(removed_nrseq, final_nrseq))
 
 
-def run_vsearch():
+def run_vsearch(filename):
     vsearch_path = '/home/micke/miniconda3/bin/'
-    proc1_arg = [vsearch_path + 'vsearch --derep_prefix ' + ARGS.f +
+    proc1_arg = [vsearch_path + 'vsearch --derep_prefix ' + filename +
                  ' --sizeout --minseqlength ' + ARGS.m + ' --output ' +
                  '/dev/stdout']
     proc2_arg = [vsearch_path + 'vsearch', '--sortbylength',
@@ -67,12 +91,16 @@ if __name__ == "__main__":
                         required=True)
     PARSER.add_argument('-m', type=str, help='minimun sequence length',
                         default='200')
+    PARSER.add_argument('-q', type=float, help='maximum fraction degenerate '
+                                               'nucleotides',
+                        default=0)
     PARSER.add_argument('-l', action='store_true',
                         help='switch for log file output')
     ARGS = PARSER.parse_args()
-
+    tmpfile = NamedTemporaryFile(mode='w+')
+    rm_degenerates(ARGS.f)
     if ARGS.l:
         fi = open(ARGS.o.split('.')[0] + '.log', 'w')
-    run_vsearch()
+    run_vsearch(rm_degenerates(ARGS.f))
     fl2 = FastaList(ARGS.o)
     derep()

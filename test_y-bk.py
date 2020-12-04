@@ -3,17 +3,37 @@
 import subprocess
 import time
 import datetime as dt
+from tempfile import NamedTemporaryFile
 
 from fasta import FastaList
 
 
-def derep(filename):
+def rm_degenerates(inputfile):
+    standard_nts = list('ACGTU')
+    fl1 = FastaList(inputfile)
+    for item in fl1.seq_list:
+        seq_id = item.split('\n')[0]
+        seq_seq = item.split('\n')[1].upper()
+        nt = seq_seq[0]
+        while nt not in standard_nts:
+            seq_seq = seq_seq[1:]
+            nt = seq_seq[0]
+        nt = seq_seq[-1]
+        while nt not in standard_nts:
+            seq_seq = seq_seq[:-1]
+            nt = seq_seq[-1]
+        tmpfile.write(seq_id + '\n' + seq_seq + '\n')
+    tmpfile.seek(0)
+    return tmpfile.name
+
+
+def derep():
     starttime = time.time()
-    fl = FastaList(filename)
-    init_nrofseq = fl.nr_seq
+
+    init_nrofseq = fl2.nr_seq
     unique_strands = list()
-    unique_strands.append(fl.seq_list[0])
-    for item in fl:
+    unique_strands.append(fl2.seq_list[0])
+    for item in fl2:
         newstr = item.split('\n')[1].casefold()
         for i, entry in enumerate(unique_strands, start=1):
             entry_strand = entry.split('\n')[1].casefold()
@@ -37,13 +57,13 @@ def derep(filename):
         fi.write('2nd round dereplication complete in {}'.format(
             dt.timedelta(seconds=(endtime - starttime))).split(
             '.')[0])
-        fi.write('\nAdditionally {} sequences removed'.
-                 format(removed_nrseq))
+        fi.write('\nAdditionally {} sequences removed. {} remains.'.
+                 format(removed_nrseq, final_nrseq))
 
 
-def run_vsearch():
+def run_vsearch(filename):
     vsearch_path = '/home/micke/miniconda3/bin/'
-    proc1_arg = [vsearch_path + 'vsearch --derep_prefix ' + ARGS.f +
+    proc1_arg = [vsearch_path + 'vsearch --derep_prefix ' + filename +
                  ' --sizeout --minseqlength ' + ARGS.m + ' --output ' +
                  '/dev/stdout']
     proc2_arg = [vsearch_path + 'vsearch', '--sortbylength',
@@ -70,8 +90,10 @@ if __name__ == "__main__":
     PARSER.add_argument('-l', action='store_true',
                         help='switch for log file output')
     ARGS = PARSER.parse_args()
-
+    tmpfile = NamedTemporaryFile(mode='w+')
+    rm_degenerates(ARGS.f)
     if ARGS.l:
         fi = open(ARGS.o.split('.')[0] + '.log', 'w')
-    run_vsearch()
-    derep(ARGS.o)
+    run_vsearch(rm_degenerates(ARGS.f))
+    fl2 = FastaList(ARGS.o)
+    derep()
