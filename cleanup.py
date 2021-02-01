@@ -48,6 +48,7 @@ PARSER.add_argument('-r', type=str, help='input reference sequence fasta'
 PARSER.add_argument('-od', type=str, help='output file directory', required=True)
 PARSER.add_argument('-m', type=str, help='muscle path', required=True)
 ARGS = PARSER.parse_args()
+
 # Some controls of input data
 if not ((ARGS.id.endswith(sep(os.name)) and
          ARGS.od.endswith(sep(os.name)))):
@@ -55,6 +56,7 @@ if not ((ARGS.id.endswith(sep(os.name)) and
 if os.path.isfile(ARGS.od[:-1]):
     print('{} is a file'.format(ARGS.od[:-1]))
     sys.exit('Exits')
+
 if os.path.isdir(ARGS.od):
     shutil.rmtree(ARGS.od)
 os.mkdir(ARGS.od)
@@ -62,22 +64,22 @@ refs = FastaList(ARGS.r)
 for seqfile in os.listdir(ARGS.id):
     if 'log' in seqfile:
         continue
+    print('Cleaning: {}'.format(seqfile))
     input_name = ARGS.id + seqfile
     output_name = ARGS.od + seqfile
     fa_in = FastaList(input_name)
-    while fa_in.rmprimers(ARGS.p):
+
+    # Remove primers if primers exit in seq. rmprimers return an empty list
+    # if no primers are found
+    if fa_in.rmprimers(ARGS.p):
         fa_in.wr_fasta_file(output_name, ARGS.p)
         fa_in = FastaList(output_name)
     for item in refs.seq_list:
         if seqfile.split('.')[0] in item.split('\n')[0]:
-            with open(output_name, 'r+') as fi:
-                content = fi.read()
-                fi.write(item + content)
+            with open(output_name, 'a') as fi:
+                fi.write(item)
                 fi.close()
     muscle_out = output_name.split('.')[0] + '.afa'
-    print(ARGS.m + ' -in ' + output_name + ' -out ' + muscle_out +
-                       ' -quiet')
-    exit(0)
     muscle = sub.Popen(ARGS.m + ' -in ' + output_name + ' -out ' + muscle_out +
                        ' -quiet')
     muscle.wait()
