@@ -12,6 +12,7 @@ def get_variants(sample, marker):
             variant = item[0].split('_')[1]
             if variant == 'f:100%':
                 variant = 's'  # single
+            # TODO Why split at '_c', no '_c' exist in input?
             fraction = float(item[0].split('f:')[1].split('_c')[0][:-1])/100
             seq = item[1]
             variants.append([sample, variant, fraction, seq])
@@ -41,6 +42,8 @@ def get_concat_variants(sample):
                 variants_new.append([new_label, new_fraction, new_seq])
         variants_old = variants_new.copy()
         variants_new = []
+    print(variants_old)
+    test = input('wait')
     return variants_old
 
 
@@ -48,10 +51,11 @@ PARSER = argparse.ArgumentParser(description='concatenate markers')
 PARSER.add_argument('-d', type=str, help='input file directory', required=True)
 PARSER.add_argument('-f', type=str, help='output filename', required=True)
 ARGS = PARSER.parse_args()
-markerlst = []
+markerlst = list()
 for filename in os.listdir(ARGS.d):
-    with open(ARGS.d + '\\' + filename) as fi:
-        markerlst.append([x.split('\n')[:2] for x in fi.read().split('>')][1:])
+    if filename.endswith('.afa'):
+        with open(ARGS.d + '\\' + filename) as fi:
+            markerlst.append([x.split('\n')[:2] for x in fi.read().split('>')][1:])
 outf = open(ARGS.f, 'w')
 for sample in get_sample_names():
     if 'a' not in get_concat_variants(sample)[0][0] and not \
