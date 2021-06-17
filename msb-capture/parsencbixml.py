@@ -64,10 +64,12 @@ class SeqFeatures:
             self.seq_comment = seq.find('INSDSeq_comment').text
         if not seq.find('INSDSeq_sequence') is None:
             self.seq_sequence = seq.find('INSDSeq_sequence').text
+            print('****')
+            print(self.seq_sequence)
 
 
-class FivepUTR:
-    """Class defining the genetic region and sequence of an 5'UTR"""
+class Feature:
+    """Class defining the genetic region of an 5'UTR feature"""
     def __init__(self, ft):
         self.feature_key = ft.find('INSDFeature_key').text
         self.feature_location = ft.find('INSDFeature_location').text
@@ -93,8 +95,8 @@ class FivepUTR:
         self.feature_intervals = intervallst
 
 
-class Source(FivepUTR):
-    """Class defining the source sequence"""
+class Source(Feature):
+    """Class defining the genetic sequence of a source feature"""
     def __init__(self, ft):
         super().__init__(ft)
         qualifiers = dict()
@@ -112,7 +114,7 @@ class Source(FivepUTR):
 
 
 class CDS(Source):
-    """Class defining the coding region"""
+    """Class defining the genetic sequence of a coding region (CDS) feature"""
     def __init__(self, ft):
         super().__init__(ft)
         if not ft.find('INSDFeature_operator') is None:
@@ -131,7 +133,7 @@ class CDS(Source):
 #         super().__init__(ft)
 #
 #
-# class StemLoop(FivepUTR):
+# class StemLoop(Feature):
 #     """TBD"""
 #     def __init__(self, ft):
 #         super().__init__(ft)
@@ -229,7 +231,7 @@ def extract_seq():
                                mp_name + '\n'
             if ARGS.t == '5' and feature.find('INSDFeature_key').text ==\
                     '5\'UTR':
-                fivep_utr = FivepUTR(feature)
+                fivep_utr = Feature(feature)
                 for interval in fivep_utr.feature_intervals:
                     int_from.add(int(interval['interval_from']))
                     int_to.add(int(interval['interval_to']))
@@ -239,7 +241,7 @@ def extract_seq():
                 seq_name = '>' + acc + ';' + organism + ';5\'UTR\n'
             if ARGS.t == '3' and feature.find('INSDFeature_key').text ==\
                     '3\'UTR':
-                threep_utr = FivepUTR(feature)
+                threep_utr = Feature(feature)
                 print(threep_utr.feature_intervals)
                 for interval in threep_utr.feature_intervals:
                     int_from.add(int(interval['interval_from']))

@@ -1,7 +1,22 @@
 #!/usr/bin/python
+"""
+Parses an NCBI INSDSeq XML (-f) file and creates a fasta file (-o) with
+either the full source sequences (-t s); gene sequences (-t g); coding sequnces
+(CDS) (-t c); mature peptide sequences (-t m); 5'-UTR sequences (-t 5) or
+3'-UTR sequences (-t 3). For genes, CDS and mature peptides a name (-n) is
+required that also can be a list of names separated by blank spaces. If the
+names contain blank spaces enclose in quotation marks. Besides the name (s),
+which are required an alias file (-a) can be prepared with ALIASES for each
+feature on single line separated by commas. The name given by (-n) must be
+included among the ALIASES. The alias file can be combined with with a list of
+names given with the name option and only one of the names need to to be in the
+alias file
+"""
 
 
 class SeqFeatures:
+    """General information about the serquence entries"""
+
     def __init__(self, seq):
         self.seq_locus = seq.find('INSDSeq_locus').text
         self.seq_length = seq.find('INSDSeq_length').text
@@ -9,14 +24,14 @@ class SeqFeatures:
         self.seq_moltype = seq.find('INSDSeq_moltype').text
         self.seq_topology = seq.find('INSDSeq_topology').text
         self.seq_division = seq.find('INSDSeq_division').text
-        self.seq_updateDate = seq.find('INSDSeq_update-date').text
-        self.seq_createDate = seq.find('INSDSeq_create-date').text
+        self.seq_update = seq.find('INSDSeq_update-date').text
+        self.seq_create_date = seq.find('INSDSeq_create-date').text
         self.seq_definition = seq.find('INSDSeq_definition').text
-        self.seq_primaryAccession = seq.find('INSDSeq_primary-accession').text
-        self.seq_accessionVersion = seq.find('INSDSeq_accession-version').text
-        self.seq_OtherSeqIds = list()
+        self.seq_primary_accession = seq.find('INSDSeq_primary-accession').text
+        self.seq_accession_ver = seq.find('INSDSeq_accession-version').text
+        self.seq_other_ids = list()
         for item in seq.findall('INSDSeq_other-seqids/INSDSeqid'):
-            self.seq_OtherSeqIds.append(item.text)
+            self.seq_other_ids.append(item.text)
         self.seq_keywords = list()
         if not seq.find('INSDSeq_project') is None:
             self.seq_project = seq.find('INSDSeq_project').text
@@ -45,11 +60,14 @@ class SeqFeatures:
                 reference['reference_authors'] = authors
             self.seq_references.append(reference)
             reference = dict()
-        self.seq_comment = seq.find('INSDSeq_comment').text
-        self.seq_sequence = seq.find('INSDSeq_sequence').text
+        if not seq.find('INSDSeq_comment') is None:
+            self.seq_comment = seq.find('INSDSeq_comment').text
+        if not seq.find('INSDSeq_sequence') is None:
+            self.seq_sequence = seq.find('INSDSeq_sequence').text
 
 
 class FivepUTR:
+    """Class defining the genetic region of an 5'UTR feature"""
     def __init__(self, ft):
         self.feature_key = ft.find('INSDFeature_key').text
         self.feature_location = ft.find('INSDFeature_location').text
@@ -76,6 +94,7 @@ class FivepUTR:
 
 
 class Source(FivepUTR):
+    """Class defining the genetic sequence of a source feature"""
     def __init__(self, ft):
         super().__init__(ft)
         qualifiers = dict()
@@ -92,157 +111,157 @@ class Source(FivepUTR):
         self.qualifiers = qualifiers
 
 
-class SeqGene(Source):
-    def __init__(self, ft):
-        super().__init__(ft)
-
-
 class CDS(Source):
+    """Class defining the coding region"""
     def __init__(self, ft):
         super().__init__(ft)
         if not ft.find('INSDFeature_operator') is None:
             self.feature_operator = ft.find('INSDFeature_operator').text
 
-
-class MatPeptide(CDS):
-    def __init__(self, ft):
-        super().__init__(ft)
-
-
-class ThreepUTR(FivepUTR):
-    def __init__(self, ft):
-        super().__init__(ft)
-
-
-class MiscFeature(Source):
-    def __init__(self, ft):
-        super().__init__(ft)
-
-
-class MiscRNA(Source):
-    def __init__(self, ft):
-        super().__init__(ft)
-
-
-class StemLoop(FivepUTR):
-    def __init__(self, ft):
-        super().__init__(ft)
-
-
-class Regulatory(Source):
-    def __init__(self, ft):
-        super().__init__(ft)
+#
+# class MiscFeature(Source):
+#     """TBD"""
+#     def __init__(self, ft):
+#         super().__init__(ft)
+#
+#
+# class MiscRNA(Source):
+#     """TBD"""
+#     def __init__(self, ft):
+#         super().__init__(ft)
+#
+#
+# class StemLoop(FivepUTR):
+#     """TBD"""
+#     def __init__(self, ft):
+#         super().__init__(ft)
+#
+#
+# class Regulatory(Source):
+#     """TBD"""
+#     def __init__(self, ft):
+#         super().__init__(ft)
 
 
-def extract_seq(xmlroot):
+def extract_seq():
+    """Extract the sequences and create sequence fasta-type id string and write
+    to a fasta file (-o)"""
+    seq_count = 0
+    seq_found = 0
     outfile = open(ARGS.o, 'w')
-    for sequence in xmlroot.iter('INSDSeq'):
-        gene_name = ""
-        cds_name = ""
+    for sequence in ROOT.iter('INSDSeq'):
+        seq_count += 1
         seq_name = ""
-        mp_name = ""
         seq = ""
         int_from = set()
         int_to = set()
         seqfeatures = SeqFeatures(sequence)
         for feature in sequence.findall(
                 'INSDSeq_feature-table/INSDFeature'):
-            acc = seqfeatures.seq_primaryAccession
+            acc = seqfeatures.seq_primary_accession
             organism = seqfeatures.seq_organism.replace(' ', '_')
-            if ARGS.t == 's':
-                if feature.find('INSDFeature_key').text == 'source':
-                    source = Source(feature)
-                    for interval in source.feature_intervals:
-                        int_from.add(int(interval['interval_from']))
-                        int_to.add(int(interval['interval_to']))
-                    min_int = min(int_from)
-                    max_int = max(int_to)
-                    seq = seqfeatures.seq_sequence[min_int - 1: max_int]
+
+            if ARGS.t == 's' and feature.find('INSDFeature_key').text == \
+                    'source':
+                source = Source(feature)
+                for interval in source.feature_intervals:
+                    int_from.add(int(interval['interval_from']))
+                    int_to.add(int(interval['interval_to']))
+                min_int = min(int_from)
+                max_int = max(int_to)
+                seq_found += 1
+                seq = seqfeatures.seq_sequence[min_int - 1: max_int]
                 seq_name = '>' + acc + ';' + organism + '\n'
-            if ARGS.t == 'g':
-                if feature.find('INSDFeature_key').text == 'gene':
-                    gene = SeqGene(feature)
-                    if 'gene' not in gene.qualifiers.keys():
-                        continue
-                    elif gene.qualifiers['gene'].casefold() not in \
-                            feature_names:
-                        continue
-                    gene_name = gene.qualifiers['gene']
-                    for interval in gene.feature_intervals:
+
+            if ARGS.t == 'g' and feature.find('INSDFeature_key').text == 'gene':
+                gene = Source(feature)
+                if 'gene' not in gene.qualifiers.keys() or \
+                        gene.qualifiers['gene'].casefold() not in FEATURE_NAMES:
+                    continue
+                gene_name = gene.qualifiers['gene'].replace(' ', '_')
+                for interval in gene.feature_intervals:
+                    int_from.add(int(interval['interval_from']))
+                    int_to.add(int(interval['interval_to']))
+                min_int = min(int_from)
+                max_int = max(int_to)
+                seq_found += 1
+                seq = seqfeatures.seq_sequence[min_int - 1: max_int]
+                seq_name = '>' + acc + ';' + organism + ';gene=' + gene_name +\
+                           '\n'
+                break
+
+            if ARGS.t == 'c' and feature.find('INSDFeature_key').text == 'CDS':
+                cds = CDS(feature)
+                if 'product' not in cds.qualifiers.keys() or\
+                        cds.qualifiers['product'].casefold()\
+                        not in FEATURE_NAMES:
+                    continue
+                cds_name = cds.qualifiers['product'].replace(' ', '_')
+                if ARGS.s == 'a':
+                    seq = cds.qualifiers['translation']
+                else:
+                    for interval in cds.feature_intervals:
                         int_from.add(int(interval['interval_from']))
                         int_to.add(int(interval['interval_to']))
                     min_int = min(int_from)
                     max_int = max(int_to)
+                    seq_found += 1
                     seq = seqfeatures.seq_sequence[min_int - 1: max_int]
-                seq_name = '>' + acc + ';' + organism + ';gene=' + gene_name\
-                           + '\n'
-            if ARGS.t == 'c':
-                if feature.find('INSDFeature_key').text == 'CDS':
-                    cds = CDS(feature)
-                    if 'product' not in cds.qualifiers.keys():
-                        continue
-                    elif cds.qualifiers['product'].casefold() not in \
-                            feature_names:
-                        continue
-                    cds_name = cds.qualifiers['product']
-                    if ARGS.s == 'a':
-                        seq = cds.qualifiers['translation']
-                    else:
-                        for interval in cds.feature_intervals:
-                            int_from.add(int(interval['interval_from']))
-                            int_to.add(int(interval['interval_to']))
-                        min_int = min(int_from)
-                        max_int = max(int_to)
-                        seq = seqfeatures.seq_sequence[min_int - 1: max_int]
-                seq_name = '>' + acc + ';' + organism + ';CDS=' + cds_name \
-                           + '\n'
-            if ARGS.t == 'm':
-                if feature.find('INSDFeature_key').text == 'mat_peptide':
-                    mat_peptide = MatPeptide(feature)
-                    if 'product' not in mat_peptide.qualifiers.keys():
-                        continue
-                    elif mat_peptide.qualifiers['product'].casefold() not in \
-                            feature_names:
-                        continue
-                    mp_name = mat_peptide.qualifiers['product']
-                    if ARGS.s == 'a':
-                        seq = mat_peptide.qualifiers['peptide']
-                    else:
-                        for interval in mat_peptide.feature_intervals:
-                            int_from.add(int(interval['interval_from']))
-                            int_to.add(int(interval['interval_to']))
-                        min_int = min(int_from)
-                        max_int = max(int_to)
-                        seq = seqfeatures.seq_sequence[min_int - 1: max_int]
-                seq_name = '>' + acc + ';' + organism + ';peptide=' + mp_name \
-                           + '\n'
-            if ARGS.t == '5':
-                if feature.find('INSDFeature_key').text == '5\'UTR':
-                    fivep_utr = FivepUTR(feature)
-                    for interval in fivep_utr.feature_intervals:
+                    seq_name = '>' + acc + ';' + organism + ';CDS=' +\
+                               cds_name + '\n'
+                    break
+
+            if ARGS.t == 'm' and feature.find('INSDFeature_key').text ==\
+                    'mat_peptide':
+                mat_peptide = Source(feature)
+                if 'product' not in mat_peptide.qualifiers.keys() or\
+                        mat_peptide.qualifiers['product'].casefold()\
+                        not in FEATURE_NAMES:
+                    continue
+                mp_name = mat_peptide.qualifiers['product']
+                if ARGS.s == 'a':
+                    seq = mat_peptide.qualifiers['peptide']
+                else:
+                    for interval in mat_peptide.feature_intervals:
                         int_from.add(int(interval['interval_from']))
                         int_to.add(int(interval['interval_to']))
                     min_int = min(int_from)
                     max_int = max(int_to)
+                    seq_found += 1
                     seq = seqfeatures.seq_sequence[min_int - 1: max_int]
+                    seq_name = '>' + acc + ';' + organism + ';peptide=' +\
+                               mp_name + '\n'
+
+            if ARGS.t == '5' and feature.find('INSDFeature_key').text ==\
+                    '5\'UTR':
+                fivep_utr = FivepUTR(feature)
+                for interval in fivep_utr.feature_intervals:
+                    int_from.add(int(interval['interval_from']))
+                    int_to.add(int(interval['interval_to']))
+                min_int = min(int_from)
+                max_int = max(int_to)
+                seq = seqfeatures.seq_sequence[min_int - 1: max_int]
                 seq_name = '>' + acc + ';' + organism + ';5\'UTR\n'
-            if ARGS.t == '3':
-                if feature.find('INSDFeature_key').text == '3\'UTR':
-                    threep_utr = ThreepUTR(feature)
-                    print(threep_utr.feature_intervals)
-                    for interval in threep_utr.feature_intervals:
-                        int_from.add(int(interval['interval_from']))
-                        int_to.add(int(interval['interval_to']))
-                    min_int = min(int_from)
-                    max_int = max(int_to)
-                    seq = seqfeatures.seq_sequence[min_int - 1: max_int]
+
+            if ARGS.t == '3' and feature.find('INSDFeature_key').text ==\
+                    '3\'UTR':
+                threep_utr = FivepUTR(feature)
+                print(threep_utr.feature_intervals)
+                for interval in threep_utr.feature_intervals:
+                    int_from.add(int(interval['interval_from']))
+                    int_to.add(int(interval['interval_to']))
+                min_int = min(int_from)
+                max_int = max(int_to)
+                seq = seqfeatures.seq_sequence[min_int - 1: max_int]
                 seq_name = '>' + acc + ';' + organism + ';3\'UTR\n'
         if seq != "":
             outfile.write(seq_name + seq + '\n')
     outfile.close()
+    return seq_count, seq_found
 
 
 def extract_info(xmlroot, inff):
+    """Extract information about all feature names"""
     genes = dict()
     cdss = dict()
     mps = dict()
@@ -250,7 +269,7 @@ def extract_info(xmlroot, inff):
         for feature in sequence.findall(
                 'INSDSeq_feature-table/INSDFeature'):
             if feature.find('INSDFeature_key').text == 'gene':
-                gene = SeqGene(feature)
+                gene = Source(feature)
                 if 'gene' not in gene.qualifiers.keys():
                     continue
                 if gene.qualifiers['gene'].casefold() in genes.keys():
@@ -264,11 +283,11 @@ def extract_info(xmlroot, inff):
                 else:
                     cdss[cds.qualifiers['product'].casefold()] = 1
             elif feature.find('INSDFeature_key').text == 'mat_peptide':
-                mp = MatPeptide(feature)
-                if mp.qualifiers['product'].casefold() in mps.keys():
-                    mps[mp.qualifiers['product'].casefold()] += 1
+                mat_pep = Source(feature)
+                if mat_pep.qualifiers['product'].casefold() in mps.keys():
+                    mps[mat_pep.qualifiers['product'].casefold()] += 1
                 else:
-                    mps[mp.qualifiers['product'].casefold()] = 1
+                    mps[mat_pep.qualifiers['product'].casefold()] = 1
     inff.write('GENES:\n{}\n\nCDS:\n{}\n\nMATURE PEPTIDES:\n{}'.format(
         {k: v for k, v in sorted(genes.items(), key=lambda item: item[1],
                                  reverse=True)},
@@ -279,6 +298,7 @@ def extract_info(xmlroot, inff):
 
 
 if __name__ == "__main__":
+    import sys
     import argparse
     import xml.etree.ElementTree as Et
 
@@ -298,33 +318,48 @@ if __name__ == "__main__":
                         required=False)
     ARGS = PARSER.parse_args()
     if ARGS.t in ['g', 'c', 'm'] and not ARGS.n:
-        exit('No feature name. Use the -n option to give the name of the '
-             'selected feature. Note: this can be a list of names separated by'
-             'spaces')
+        sys.exit('No feature name. Use the -n option to give the name of the '
+                 'selected feature. Note: this can be a list of names separated'
+                 'byspaces')
     if ARGS.t in ['g', '5', '3'] and ARGS.s == 'a':
-        exit('Genes and UTRs can only have nt-sequence type. Leave out the -s'
-             ' option or set -s n')
+        sys.exit('Genes and UTRs can only have nt-sequence type. Leave out the'
+                 '-s option or set -s n')
     if ARGS.a and not ARGS.n:
-        exit('A feture name (-n) is required to use an feature alias-file (-a)')
+        sys.exit('A feature name (-n) is required to use an feature alias-file'
+                 ' (-a)')
     if ARGS.n:
-        feature_names = [item.casefold() for item in ARGS.n]
+        FEATURE_NAMES = [item.strip().casefold() for item in ARGS.n]
         if ARGS.a:
-            alias_file = open(ARGS.a)
-            aliases = list()
+            # creates a union set of name(s) given at -n and the alias-file row
+            # containing either of theses name(s) and store in 'FEATURE_NAMES'
+            ALIASES = list()
             with open(ARGS.a) as f:
                 for line in f.readlines():
                     alias_lst = line.split(',')
-                    alias_lst = [x.strip() for x in alias_lst]
-                    aliases.append(alias_lst)
-            for item in aliases:
-                if set(feature_names).isdisjoint(set(item)):
+                    alias_lst = [x.strip().casefold() for x in alias_lst]
+                    ALIASES.append(alias_lst)
+            for alias in ALIASES:
+                if set(FEATURE_NAMES).isdisjoint(set(alias)):
                     continue
-                else:
-                    feature_names = list(set(item).union(set(feature_names)))
-                    break
-    tree = Et.parse(ARGS.f)
-    root = tree.getroot()
+                FEATURE_NAMES = list(set(alias).union(set(FEATURE_NAMES)))
+                break
+    TREE = Et.parse(ARGS.f)
+    ROOT = TREE.getroot()
     if ARGS.l:
-        info_file = open(ARGS.f.split('.')[0] + '.info', 'w')
-        extract_info(root, info_file)
-    extract_seq(root)
+        INFO_FILE = open(ARGS.f.split('.')[0] + '.info', 'w')
+        extract_info(ROOT, INFO_FILE)
+    SEQ_COUNT, SEQ_FOUND = extract_seq()
+    if ARGS.t == 's':
+        LBL = 'source sequences'
+    elif ARGS.t == 'g':
+        LBL = 'genes'
+    elif ARGS.t == 'c':
+        LBL = 'coding regions (CDS)'
+    elif ARGS.t == '5':
+        LBL = '5\'UTR regions'
+    elif ARGS.t == 'm':
+        LBL = 'mature peptides'
+    else:
+        LBL = '3\'UTR regions'
+    print('{} {} found from {} sequences ({} %)'.
+          format(SEQ_FOUND, LBL, SEQ_COUNT, round(100 * SEQ_FOUND/SEQ_COUNT)))
