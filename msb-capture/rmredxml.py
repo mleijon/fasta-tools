@@ -19,58 +19,57 @@ if __name__ == "__main__":
     nr_no_seq = 0
     x = 0
     y = 0
-    for sequence in ROOT.iter('INSDSeq'):
-        y += 1
-    print(y)
-    for sequence in ROOT.iter('INSDSeq'):
-        if sequence.find('INSDSeq_sequence') is None:
-            ROOT.remove(sequence)
-            nr_no_seq += 1
-    for sequence in ROOT.iter('INSDSeq'):
-        x += 1
-    print(x)
-    nr_no_seq = 0
-    for sequence in ROOT.iter('INSDSeq'):
-        if sequence.find('INSDSeq_sequence') is None:
-            ROOT.remove(sequence)
-            nr_no_seq += 1
-    print(nr_no_seq)
-    exit()
-    for sequence in ROOT.iter('INSDSeq'):
-        x += 1
-        print(x)
-        if sum(map(sequence.find('INSDSeq_sequence').text.count,
-                   DEG_NUC)) >= MAX_DEG:
-            ROOT.remove(sequence)
-            nr_degnuc_rm += 1
-    for sequence in ROOT.iter('INSDSeq'):
-        source_seq = source_seq_tmp.copy()
-        for seq in source_seq:
-            if sequence.find('INSDSeq_sequence').text in seq:
+    removed = True
+    while removed:
+        for sequence in ROOT.iter('INSDSeq'):
+            removed = False
+            if sequence.find('INSDSeq_sequence') is None:
                 ROOT.remove(sequence)
-                nr_degseq_rm += 1
+                removed = True
+                nr_no_seq += 1
                 break
-            elif seq in sequence.find('INSDSeq_sequence').text:
-                source_seq_tmp.remove(seq)
-                source_seq_tmp.add(sequence.find('INSDSeq_sequence').text)
-                break
-            else:
-                source_seq_tmp.add(sequence.find('INSDSeq_sequence').text)
-    source_seq = source_seq_tmp.copy()
-    for sequence in ROOT.iter('INSDSeq'):
-        if sequence.find('INSDSeq_sequence') is None:
-            nr_no_seq += 1
-            break
-        for seq in source_seq:
-            if sequence.find('INSDSeq_sequence').text in seq and \
-                    len(sequence.find('INSDSeq_sequence').text) < len(seq):
+
+    removed = True
+    while removed:
+        for sequence in ROOT.iter('INSDSeq'):
+            removed = False
+            if sum(map(sequence.find('INSDSeq_sequence').text.count,
+                       DEG_NUC)) >= MAX_DEG:
+                print(sum(map(sequence.find('INSDSeq_sequence').text.count,
+                              DEG_NUC)))
                 ROOT.remove(sequence)
-                nr_degseq_rm += 1
+                removed = True
+                nr_degnuc_rm += 1
                 break
-    TREE.write(ARGS.o)
+
+    # for sequence in ROOT.iter('INSDSeq'):
+    #     source_seq = source_seq_tmp.copy()
+    #     for seq in source_seq:
+    #         if sequence.find('INSDSeq_sequence').text in seq:
+    #             ROOT.remove(sequence)
+    #             nr_degseq_rm += 1
+    #             break
+    #         elif seq in sequence.find('INSDSeq_sequence').text:
+    #             source_seq_tmp.remove(seq)
+    #             source_seq_tmp.add(sequence.find('INSDSeq_sequence').text)
+    #             break
+    #         else:
+    #             source_seq_tmp.add(sequence.find('INSDSeq_sequence').text)
+    # source_seq = source_seq_tmp.copy()
+    # for sequence in ROOT.iter('INSDSeq'):
+    #     if sequence.find('INSDSeq_sequence') is None:
+    #         nr_no_seq += 1
+    #         break
+    #     for seq in source_seq:
+    #         if sequence.find('INSDSeq_sequence').text in seq and \
+    #                 len(sequence.find('INSDSeq_sequence').text) < len(seq):
+    #             ROOT.remove(sequence)
+    #             nr_degseq_rm += 1
+    #             break
+    # TREE.write(ARGS.o)
     print('{} sequences not found for INSDSeq entry: '.format(nr_no_seq))
-    print('{} sequences removed due to sequence degeneracy'.
-          format(nr_degseq_rm))
+    # print('{} sequences removed due to sequence degeneracy'.
+    #       format(nr_degseq_rm))
     print('{} sequences removed due to nucleotide degeneracy'.
           format(nr_degnuc_rm))
     os.system('spd-say -l sv "Programmet klart"')
