@@ -8,50 +8,53 @@ MIN_LEN = 27000
 
 PARSER = argparse.ArgumentParser(description='TBD')
 PARSER.add_argument('-i', type=str, help='input fasta file', required=True)
+PARSER.add_argument('-o', type=str, help='output fasta file', required=True)
 PARSER.add_argument('-d', type=str, help='output degeneracy file', required=False)
-PARSER.add_argument('-o', type=str, help='output fasta file', required=False)
+PARSER.add_argument('-l', type=int, help='fasta row length', required=False)
 ARGS = PARSER.parse_args()
 unique_seqs = set()
 org_seqs = list()
 deg_counters = defaultdict(lambda: 0)
 fl = FastaList(ARGS.i)
-for item in fl:
-    org_seqs.append(item.split('\n')[1])
 max_len = 0
 min_len = 27000
 
 
 def cnt_nt_deg(seq):
-    count = 0
+    cnt = 0
     for char in seq:
         if char not in ['A', 'C', 'G', 'T']:
-            count += 1
-    return count
+            cnt += 1
+    return cnt
+
+
+for item in fl:
+    org_seqs.append(item.split('\n')[1])
+    sequence = item.split('\n')[1].strip('N').rstrip('A')
+    if len(sequence) >= MIN_LEN and cnt_nt_deg(sequence) <= MAX_DEG:
+        unique_seqs.add(sequence)
 
 
 def maxmin_len(seqs):
     seqs = list(seqs)
     max_length = len(seqs[0])
     min_length = len(seqs[0])
-    for item in seqs:
-        if len(item) > max_length:
-            max_length = len(item)
-        if len(item) < min_length:
-            min_length = len(item)
+    for seq in seqs:
+        if len(seq) > max_length:
+            max_length = len(seq)
+        if len(seq) < min_length:
+            min_length = len(seq)
     return min_length, max_length
 
 
-def deg_summary():
-    global unique_seqs, deg_counters
-    deg_file = open(ARGS.d, 'w')
-    for item in fl:
-        sequence = item.split('\n')[1].strip('N').rstrip('A')
-        if len(sequence) >= MIN_LEN and cnt_nt_deg(sequence) <= MAX_DEG:
-            unique_seqs.add(sequence)
-        deg_counters[cnt_nt_deg(sequence)] += 1
-    for key in sorted(deg_counters.keys()):
-        deg_file.write('{}\t{}\n'.format(key, deg_counters[key]))
-    deg_file.close()
+def deg_summary(seqs):
+    global deg_counters
+    for seq in seqs:
+        deg_counters[cnt_nt_deg(seq)] += 1
+    if ARGS.d:
+        with open(ARGS.d, 'w') as deg_file:
+            for key in sorted(deg_counters.keys()):
+                deg_file.write('{}\t{}\n'.format(key, deg_counters[key]))
 
 
 def red_uniq_seq(uniq_seq):
@@ -95,7 +98,7 @@ def red_uniq_seq(uniq_seq):
     return new_seq
 
 
-deg_summary()
+deg_summary(org_seqs)
 print('Nr of input sequences: {:38} {}'.format(len(org_seqs), maxmin_len(org_seqs)))
 print('Nr of sequences without degeneracy: {:25}'.format(deg_counters[0]))
 print('Nr of unique sequences (including subsequences): {:12} {}'.format(len(unique_seqs), maxmin_len(unique_seqs)))
@@ -109,4 +112,7 @@ count = 0
 with open(ARGS.o, 'w') as fi:
     for s in final_seqs:
         count += 1
+        if ARGS.l:
+            s_list = [s[i:i + ARGS.l] for i in range(0, len(s), ARGS.l)]
+            s = '\n'.join(s_list)
         fi.write('>Uniq_{}\n{}\n'.format(count, s))
