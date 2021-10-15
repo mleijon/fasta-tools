@@ -5,32 +5,16 @@ from datetime import datetime
 
 MAX_DEG = 0
 MIN_LEN = 27000
-
-PARSER = argparse.ArgumentParser(description='TBD')
-PARSER.add_argument('-i', type=str, help='input fasta file', required=True)
-PARSER.add_argument('-o', type=str, help='output fasta file', required=True)
-PARSER.add_argument('-d', type=str, help='output degeneracy file', required=False)
-PARSER.add_argument('-l', type=int, help='fasta row length', required=False)
-ARGS = PARSER.parse_args()
-unique_seqs = set()
-org_seqs = list()
 deg_counters = defaultdict(lambda: 0)
-fl = FastaList(ARGS.i)
 
 
+# Counts the number of deg nucs in seq
 def cnt_nt_deg(seq):
     cnt = 0
     for char in seq:
         if char not in ['A', 'C', 'G', 'T']:
             cnt += 1
     return cnt
-
-
-for item in fl:
-    org_seqs.append(item.split('\n')[1])
-    sequence = item.split('\n')[1].strip('N').rstrip('A')
-    if len(sequence) >= MIN_LEN and cnt_nt_deg(sequence) <= MAX_DEG:
-        unique_seqs.add(sequence)
 
 
 def maxmin_len(seqs):
@@ -45,14 +29,15 @@ def maxmin_len(seqs):
     return min_length, max_length
 
 
+# Creates a global dict with the nr of deg nucs as keys and the number of seqs
+# carrying the number of deg nucs as value. Writes to an optional file (ARGS.d).
 def deg_summary(seqs):
     global deg_counters
     for seq in seqs:
         deg_counters[cnt_nt_deg(seq)] += 1
-    if ARGS.d:
-        with open(ARGS.d, 'w') as deg_file:
-            for key in sorted(deg_counters.keys()):
-                deg_file.write('{}\t{}\n'.format(key, deg_counters[key]))
+    with open(ARGS.d, 'w') as deg_file:
+        for key in sorted(deg_counters.keys()):
+            deg_file.write('{}\t{}\n'.format(key, deg_counters[key]))
 
 
 def red_uniq_seq(uniq_seq):
@@ -96,20 +81,46 @@ def red_uniq_seq(uniq_seq):
     return new_seq
 
 
-deg_summary(unique_seqs)
-print('Nr of input sequences: {:38} {}'.format(len(org_seqs), maxmin_len(org_seqs)))
-print('Nr of unique sequences (including subsequences): {:12} {}'.format(len(unique_seqs), maxmin_len(unique_seqs)))
-print('\n***Removing subsequences***')
-unique_lst = list(unique_seqs)
-unique_lst.sort(key=len, reverse=True)
-start = datetime.now()
-final_seqs = red_uniq_seq(unique_lst)
-print('Nr of unique sequences (excluding subsequenes): {:13} {}'.format(len(final_seqs), maxmin_len(final_seqs)))
-count = 0
-with open(ARGS.o, 'w') as fi:
-    for s in final_seqs:
-        count += 1
-        if ARGS.l:
-            s_list = [s[i:i + ARGS.l] for i in range(0, len(s), ARGS.l)]
-            s = '\n'.join(s_list)
-        fi.write('>Uniq_{}\n{}\n'.format(count, s))
+if __name__ == '__main__':
+    PARSER = argparse.ArgumentParser(description='TBD')
+    PARSER.add_argument('-i', type=str, help='input fasta file', required=True)
+    PARSER.add_argument('-o', type=str, help='output fasta file', required=True)
+    PARSER.add_argument('-d', type=str, help='output degeneracy file', required=False)
+    PARSER.add_argument('-l', type=int, help='fasta row length', required=False)
+    PARSER.add_argument('--rm_subseqs',  action='store_true',
+                        help='switch for removal of subseqs')
+    ARGS = PARSER.parse_args()
+    org_seqs = list()
+    unique_seqs = set()
+    #  Create a set of unique seqs without flanking Ns or polyA-tail and store
+    #  the originals seqs in the list org_seqs. The seqs must be at least of
+    #  MIN_LEN length and contain at most MAX_DEG number of deg nucs
+    for item in FastaList(ARGS.i):
+        org_seqs.append(item.split('\n')[1])
+        sequence = item.split('\n')[1].strip('N').rstrip('A')
+        if len(sequence) >= MIN_LEN and cnt_nt_deg(sequence) <= MAX_DEG:
+            unique_seqs.add(sequence)
+    if ARGS.d:
+        deg_summary(unique_seqs)
+    print('Nr of input sequences: {:38} {}'.format(len(org_seqs),
+                                                   maxmin_len(org_seqs)))
+    print('Nr of unique sequences (including subsequences): {:12} {}'
+          .format(len(unique_seqs), maxmin_len(unique_seqs)))
+    if ARGS.rm_subseqs:
+        print('\n***Removing subsequences***')
+        unique_lst = list(unique_seqs)
+        unique_lst.sort(key=len, reverse=True)
+        start = datetime.now()
+        final_seqs = red_uniq_seq(unique_lst)
+        print(
+            'Nr of unique sequences (excluding subsequenes): {:13} {}'.format(len(final_seqs), maxmin_len(final_seqs)))
+    else:
+        final_seqs = unique_seqs
+    count = 0
+    with open(ARGS.o, 'w') as fi:
+        for s in final_seqs:
+            count += 1
+            if ARGS.l:
+                s_list = [s[i:i + ARGS.l] for i in range(0, len(s), ARGS.l)]
+                s = '\n'.join(s_list)
+            fi.write('>Uniq_{}\n{}\n'.format(count, s))
