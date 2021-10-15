@@ -16,8 +16,6 @@ unique_seqs = set()
 org_seqs = list()
 deg_counters = defaultdict(lambda: 0)
 fl = FastaList(ARGS.i)
-max_len = 0
-min_len = 27000
 
 
 def cnt_nt_deg(seq):
@@ -98,9 +96,8 @@ def red_uniq_seq(uniq_seq):
     return new_seq
 
 
-deg_summary(org_seqs)
+deg_summary(unique_seqs)
 print('Nr of input sequences: {:38} {}'.format(len(org_seqs), maxmin_len(org_seqs)))
-print('Nr of sequences without degeneracy: {:25}'.format(deg_counters[0]))
 print('Nr of unique sequences (including subsequences): {:12} {}'.format(len(unique_seqs), maxmin_len(unique_seqs)))
 print('\n***Removing subsequences***')
 unique_lst = list(unique_seqs)
