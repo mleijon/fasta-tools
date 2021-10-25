@@ -42,10 +42,13 @@ def deg_summary(seqs):
 
 def red_uniq_seq(uniq_seq):
     global start
+    if ARGS.subsample:
+        uniq_seq = sample(uniq_seq, 10*ARGS.subsample)
+        print('Subsampled: {:38}'.format(len(uniq_seq)))
     new_seq = [uniq_seq[0]]
     i = 1
     one_percent = (len(uniq_seq) + len(uniq_seq) % 100) // 100
-    for s1 in uniq_seq:
+    for s1 in uniq_seq[1:]:
         if i % one_percent == 0:
             print('\r{}%'.format(i // one_percent), end="")
         i += 1
@@ -76,6 +79,7 @@ def red_uniq_seq(uniq_seq):
     if calc_time >= 60:
         print(' {} minutes'.format(calc_time // 60), end="")
         calc_time = calc_time % 60
+    else:
         print(' {} seconds'.format(calc_time))
         print()
     return new_seq
@@ -87,9 +91,12 @@ if __name__ == '__main__':
     PARSER.add_argument('-o', type=str, help='output fasta file', required=True)
     PARSER.add_argument('-d', type=str, help='output degeneracy file', required=False)
     PARSER.add_argument('-l', type=int, help='fasta row length', required=False)
-    PARSER.add_argument('--rm_subseqs',  action='store_true',
-                        help='switch for removal of subseqs')
+    PARSER.add_argument('--rm_subseqs',  action='store_true', help='switch for removal of subseqs')
+    PARSER.add_argument('--subsample',  type=int, help='switch for removal of subseqs', required=False)
+
     ARGS = PARSER.parse_args()
+    if ARGS.subsample:
+        from random import sample
     org_seqs = list()
     unique_seqs = set()
     #  Create a set of unique seqs without flanking Ns or polyA-tail and store
@@ -101,22 +108,25 @@ if __name__ == '__main__':
         if len(sequence) >= MIN_LEN and cnt_nt_deg(sequence) <= MAX_DEG:
             unique_seqs.add(sequence)
     if ARGS.d:
-        deg_summary(unique_seqs)
-    print('Nr of input sequences: {:38} {}'.format(len(org_seqs),
-                                                   maxmin_len(org_seqs)))
-    print('Nr of unique sequences (including subsequences): {:12} {}'
-          .format(len(unique_seqs), maxmin_len(unique_seqs)))
+        deg_summary(org_seqs)
+    print('Nr of input sequences: {:38}'.format(len(org_seqs)))
+    print('Nr of unique sequences (including subsequences): {:12}'.format(len(unique_seqs)))
+    unique_seqs = list(unique_seqs)
     if ARGS.rm_subseqs:
         print('\n***Removing subsequences***')
-        unique_lst = list(unique_seqs)
-        unique_lst.sort(key=len, reverse=True)
+        unique_seqs.sort(key=len, reverse=True)
         start = datetime.now()
-        final_seqs = red_uniq_seq(unique_lst)
-        print(
-            'Nr of unique sequences (excluding subsequenes): {:13} {}'.format(len(final_seqs), maxmin_len(final_seqs)))
+        final_seqs = red_uniq_seq(unique_seqs)
+        print('Nr of unique sequences (excluding subsequenes): {:13}'.format(len(final_seqs)))
     else:
+        print('subsequences not removed ')
         final_seqs = unique_seqs
     count = 0
+    if ARGS.subsample:
+        final_seqs = sample(final_seqs, ARGS.subsample)
+        print('Subsampled: {:38}'.format(len(final_seqs)))
+    else:
+        print('No subsampling')
     with open(ARGS.o, 'w') as fi:
         for s in final_seqs:
             count += 1
