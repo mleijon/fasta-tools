@@ -1,5 +1,6 @@
 import argparse
 import subprocess
+from os.path import exists as file_exists
 
 url_tax_aa = 'https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/prot.accession2taxid.FULL.gz'
 url_tax_nt = 'https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/nucl_gb.accession2taxid.gz'
@@ -37,6 +38,11 @@ def get_file(url, md5):
     args.pop()
 
 
+def makeblastdb(file_str):
+    args = ['makeblastdb -in ' + file_str + ' -input_type asn1_bin -dbtype nucl -parse_seqids -out test']
+    subprocess.call(args, shell=True)
+
+
 if __name__ == "__main__":
     PARSER = argparse.ArgumentParser(description='TBD')
     PARSER.add_argument('-p', type=str, help='input genbank patition', required=True)
@@ -59,9 +65,9 @@ if __name__ == "__main__":
                 url_gen = 'https://ftp.ncbi.nlm.nih.gov/ncbi-asn1/gb' + ARGS.p + str(nr) + '.aso.gz'
                 args.append(url_gen)
                 subprocess.check_call(args)
-                print(args[3].rsplit('/', maxsplit=1)[1])
             except subprocess.CalledProcessError:
                 break
+        print(args[3].rsplit('/', maxsplit=1)[1])
         filestr += url_gen.rsplit('/', maxsplit=1)[1][:-3] + ' '
         args.pop()
     filestr = '"' + filestr[:-1] + '"'
@@ -69,6 +75,6 @@ if __name__ == "__main__":
     print('** PHASE 2 - Checking taxonomy file **')
     get_file(url_tax_aa, True)
     get_file(url_tax_nt, True)
-    args = ['makeblastdb -in ' + filestr + ' -input_type asn1_bin -dbtype nucl -parse_seqids -out test']
-    subprocess.call(args, shell=True)
+    makeblastdb(filestr)
+
 

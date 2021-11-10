@@ -18,11 +18,11 @@ taxsets = {CELLULAR_ORGANISM: set(), ARCHAEA: set(), BACTERIA: set(),
            OTHERSEQ: set()}
 taxcounts = defaultdict(int)
 results = defaultdict(lambda: [])
-
-# THese files are needed and downloaded from ncbi:
+classify_dir = "/mnt/e/classify/"
+# These files are needed and downloaded from ncbi:
 # https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz
 
-names_file = "names.dmp"
+names_file = classify_dir + "names.dmp"
 # Taxonomy names file has these fields:
 #
 # tax_id					-- the id of node associated with this name
@@ -31,19 +31,19 @@ names_file = "names.dmp"
 #                              unique
 # name class				-- (synonym, common name, ...)
 
-deleted_file = 'delnodes.dmp'
+deleted_file = classify_dir + "delnodes.dmp"
 # Deleted nodes (nodes that existed but were deleted) file field:
 #
 # tax_id					-- deleted node id
 
-merged_file = "merged.dmp"
+merged_file = classify_dir + "merged.dmp"
 # Merged nodes file fields:
 #
 # old_tax_id                -- id of nodes which has been merged
 # new_tax_id                -- id of nodes which is result of merging
 
 
-lineage_file = "taxidlineage.dmp"
+lineage_file = classify_dir + "taxidlineage.dmp"
 
 
 # Taxonomy id lineage file fields:
@@ -213,7 +213,7 @@ if __name__ == "__main__":
 
     nr_of_reads = count_rows(ARGS.f)
     nr_of_nohits = count_0and1(ARGS.f)
-    create_taxsets("taxidlineage.dmp")
+    create_taxsets(lineage_file)
     parse_files(merged_file, deleted_file, names_file)
     count_txclass(ARGS.f)
 
@@ -223,32 +223,32 @@ if __name__ == "__main__":
             if item != '0':
                 if item in mergedTaxids.keys():
                     if mergedTaxids[item] in taxsets[ARCHAEA]:
-                        results[ARCHAEA] += [sciNames[mergedTaxids[item]]]
+                        results[ARCHAEA] += [sciNames[mergedTaxids[item]] + ' (' + item + ')']
                     elif mergedTaxids[item] in taxsets[BACTERIA]:
-                        results[BACTERIA] += [sciNames[mergedTaxids[item]]]
+                        results[BACTERIA] += [sciNames[mergedTaxids[item]] + ' (' + item + ')']
                     elif mergedTaxids[item] in taxsets[EUCARYOTA]:
-                        results[EUCARYOTA] += [sciNames[mergedTaxids[item]]]
+                        results[EUCARYOTA] += [sciNames[mergedTaxids[item]] + ' (' + item + ')']
                     elif mergedTaxids[item] in taxsets[VIRUSES]:
-                        results[VIRUSES] += [sciNames[mergedTaxids[item]]]
+                        results[VIRUSES] += [sciNames[mergedTaxids[item]] + ' (' + item + ')']
                     elif mergedTaxids[item] in taxsets[UNCLASSIFIED]:
-                        results[UNCLASSIFIED] += [sciNames[mergedTaxids[item]]]
+                        results[UNCLASSIFIED] += [sciNames[mergedTaxids[item]] + ' (' + item + ')']
                     elif mergedTaxids[item] in taxsets[OTHERSEQ]:
-                        results[OTHERSEQ] += [sciNames[mergedTaxids[item]]]
+                        results[OTHERSEQ] += [sciNames[mergedTaxids[item]] + ' (' + item + ')']
                 elif item in deletedTaxids:
                     results['DELETED'] += [item + ' :deleted']
                 else:
                     if item in taxsets[ARCHAEA]:
-                        results[ARCHAEA] += [sciNames[item]]
+                        results[ARCHAEA] += [sciNames[item] + ' (' + item + ')']
                     elif item in taxsets[BACTERIA]:
-                        results[BACTERIA] += [sciNames[item]]
+                        results[BACTERIA] += [sciNames[item] + ' (' + item + ')']
                     elif item in taxsets[EUCARYOTA]:
-                        results[EUCARYOTA] += [sciNames[item]]
+                        results[EUCARYOTA] += [sciNames[item] + ' (' + item + ')']
                     elif item in taxsets[VIRUSES]:
-                        results[VIRUSES] += [sciNames[item]]
+                        results[VIRUSES] += [sciNames[item] + ' (' + item + ')']
                     elif item in taxsets[UNCLASSIFIED]:
-                        results[UNCLASSIFIED] += [sciNames[item]]
+                        results[UNCLASSIFIED] += [sciNames[item] + ' (' + item + ')']
                     elif item in taxsets[OTHERSEQ]:
-                        results[OTHERSEQ] += [sciNames[item]]
+                        results[OTHERSEQ] += [sciNames[item] + ' (' + item + ')']
     basename = ARGS.f.split('/')[-1].split('.')[0]
     if ARGS.a:
         with open(basename + '_archaea.txt', 'w') as f:
