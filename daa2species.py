@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 
 from collections import Counter, defaultdict
 import argparse
@@ -18,7 +18,7 @@ taxsets = {CELLULAR_ORGANISM: set(), ARCHAEA: set(), BACTERIA: set(),
            OTHERSEQ: set()}
 taxcounts = defaultdict(int)
 results = defaultdict(lambda: [])
-classify_dir = "/mnt/e/classify/"
+classify_dir = "/ssd2/classify/"
 # These files are needed and downloaded from ncbi:
 # https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz
 
